@@ -34,7 +34,7 @@ const StyledButton3 = styled.button`
   font-family: Arial;
   font-size: 17px;
   font-weight: bold;
-  padding: 32px 76px;
+  padding: 32px 46px;
   height: 250px;
   width: 250px;
   margin: 10px;
