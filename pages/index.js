@@ -18,7 +18,7 @@ const StyledButton1 = styled.button`
   margin: 10px;
   text-decoration: none;
   text-shadow: 0px 1px 0px rgb(102, 48, 39);
-  &: hover {
+  &:hover {
     background-color: rgb(216, 17, 156);
   }
 `;
@@ -40,7 +40,7 @@ const StyledButton3 = styled.button`
   margin: 10px;
   text-decoration: none;
   text-shadow: 0px 1px 0px rgb(43, 39, 102);
-  &: hover {
+  &:hover {
     background-color: rgb(55, 201, 238);
   }
 `;
@@ -62,7 +62,7 @@ const StyledButton2 = styled.button`
   margin: 10px;
   text-decoration: none;
   text-shadow: 0px 1px 0px #2f6627;
-  &: hover {
+  &:hover {
     background-color: rgb(103, 236, 132);
   }
 `;
