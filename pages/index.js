@@ -76,8 +76,8 @@ const StyledContainer = styled.div`
 export default function HomePage() {
   return (
     <>
-      <h1>Inventory Hub</h1>
       <StyledContainer>
+        <h1>Inventory Hub</h1>
         <StyledButton1>Keycap Inventory</StyledButton1>
         <StyledButton2>Switch Inventory</StyledButton2>
         <StyledButton3>Keyboard Kit Inventory</StyledButton3>
