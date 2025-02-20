@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      const keycapset = await Keycapset.find();
+      const keycapset = await Keycapset.find().populate("kits");
       res.status(200).json(keycapset);
       return;
     }

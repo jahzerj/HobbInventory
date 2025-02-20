@@ -10,7 +10,7 @@ const keycapsetSchema = new Schema({
   profile: { type: String, required: true },
   link: { type: String, required: false },
   render_pics: { type: Array, required: false },
-  kits: { type: [Schema.Types.ObjectId], ref: "Kit" },
+  kits: { type: [Schema.Types.ObjectId], ref: "Kit", required: false },
 });
 
 const Keycapset =
