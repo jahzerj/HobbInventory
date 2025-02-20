@@ -18,6 +18,7 @@ export default function Dropdown() {
         <li key={keycap._id}>
           <p>{keycap.name}</p>
           <p>{keycap.profile}</p>
+          {/* <p>{keycap.kits}</p> */}
         </li>
       ))}
     </ul>
