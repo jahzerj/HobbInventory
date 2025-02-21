@@ -12,7 +12,6 @@ const keycapsetSchema = new Schema({
   link: { type: String, required: false },
   render_pics: { type: Array, required: false },
   kits: [{ type: Schema.ObjectId, ref: "Kit" }],
-  words: { type: String, required: false },
 });
 
 const Keycapset =
