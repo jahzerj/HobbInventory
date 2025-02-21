@@ -3,6 +3,7 @@ import Link from "next/link";
 import AddButtton from "@/components/AddButtton";
 import Modal from "@/components/Modal";
 import { useState } from "react";
+import styled from "styled-components";
 
 const BUTTON_WRAPPER_STYLES = {
   position: "relative",
@@ -15,7 +16,7 @@ const OTHER_CONTENT_STYLES = {
   backgroundColor: "orange",
   padding: "10px",
 };
-import styled from "styled-components";
+
 
 const StyledContainer = styled.div`
   display: flex;
@@ -30,9 +31,8 @@ export default function Keycaps() {
       <Link href="/">Back to Hub</Link>
       <h1>Keycap Inventory</h1>
       <div style={BUTTON_WRAPPER_STYLES}>
-        <button onClick={() => setIsOpen(true)}> Open Modal </button>
         <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-          Fancy Modal
+          THIS TEXT APPEARS INSIDE MODAL
         </Modal>
       </div>
       <div style={OTHER_CONTENT_STYLES}>Other Content</div>
