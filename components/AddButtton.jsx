@@ -1,11 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-export default function AddButtton() {
+export default function AddButtton({ onOpenModal }) {
   const [expanded, setExpanded] = useState(false);
+  const buttonRef = useRef(null);
+
+  //Handle click outside the collapse the button
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setExpanded(false);
+      }
+    };
+
+    if (expanded) {
+      window.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [expanded]);
+
+  //Handle button click
+
+  const handleClick = () => {
+    if (expanded) {
+      onOpenModal(); // OPen the modal on the second click
+    } else {
+      setExpanded(true); // Expand on the first click
+    }
+  };
 
   return (
-    <StyledButton expanded={expanded} onClick={() => setExpanded(!expanded)}>
+    <StyledButton ref={buttonRef} expanded={expanded} onClick={handleClick}>
       {expanded ? "+ Add keycaps" : "+"}
     </StyledButton>
   );
