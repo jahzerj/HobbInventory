@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 
 const StyledCard = styled.div`
@@ -21,10 +20,6 @@ const StyledDetails = styled.div`
   align-items: center;
   gap: 2px;
   margin-bottom: 5px;
-
-  p {
-    margin: 0; /* ✅ Remove extra spacing between lines */
-  }
 `;
 
 export default function InventoryCard({ data }) {

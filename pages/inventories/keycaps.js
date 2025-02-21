@@ -14,7 +14,7 @@ export default function Keycaps() {
       <Link href="/">Back to Hub</Link>
       <StyledContainer>
         <h1>Keycap Inventory</h1>
-        {data.length > 0 ? (
+        {data?.length ? (
           <InventoryCard data={data} />
         ) : (
           <>
