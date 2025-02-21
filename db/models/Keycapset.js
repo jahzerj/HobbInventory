@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import "./Kit";
+import { type } from "@testing-library/user-event/dist/types/utility";
 
 const { Schema } = mongoose;
 
@@ -11,6 +12,7 @@ const keycapsetSchema = new Schema({
   link: { type: String, required: false },
   render_pics: { type: Array, required: false },
   kits: [{ type: Schema.ObjectId, ref: "Kit" }],
+  words: { type: String, required: false },
 });
 
 const Keycapset =
