@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import "./Kit";
-import { type } from "@testing-library/user-event/dist/types/utility";
 
 const { Schema } = mongoose;
 
