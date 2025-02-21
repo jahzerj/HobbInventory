@@ -23,18 +23,14 @@ const StyledDetails = styled.div`
 `;
 
 export default function InventoryCard({ data }) {
-  return (
-    <>
-      {data.map((keycap) => (
-        <StyledCard key={keycap._id}>
-          <h3>CYL {keycap.name}</h3>
-          <StyledDetails>
-            <p>Manufacturer: {keycap.keycapstype}</p>
-            <p>Profile: {keycap.profile}</p>
-            <p>Designer: {keycap.designer}</p>
-          </StyledDetails>
-        </StyledCard>
-      ))}
-    </>
-  );
+  return data.map((keycap) => (
+    <StyledCard key={keycap._id}>
+      <h3>CYL {keycap.name}</h3>
+      <StyledDetails>
+        <p>Manufacturer: {keycap.keycapstype}</p>
+        <p>Profile: {keycap.profile}</p>
+        <p>Designer: {keycap.designer}</p>
+      </StyledDetails>
+    </StyledCard>
+  ));
 }
