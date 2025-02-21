@@ -27,7 +27,7 @@ export default function AddButtton({ onOpenModal }) {
 
   const handleClick = () => {
     if (expanded) {
-      onOpenModal(); // OPen the modal on the second click
+      onOpenModal(); // Open the modal on the second click
     } else {
       setExpanded(true); // Expand on the first click
     }
