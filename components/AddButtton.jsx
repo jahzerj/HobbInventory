@@ -23,8 +23,12 @@ export default function AddButtton({ onOpenModal }) {
     };
   }, [expanded]);
 
+<<<<<<< HEAD
   //Handle button click
 
+=======
+  //Button click behaivor
+>>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
   const handleClick = () => {
     if (expanded) {
       onOpenModal(); // Open the modal on the second click

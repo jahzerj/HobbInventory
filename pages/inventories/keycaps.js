@@ -26,6 +26,7 @@ const StyledContainer = styled.div`
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <Link href="/">Back to Hub</Link>
