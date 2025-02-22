@@ -9,9 +9,7 @@ export default function Keycaps() {
     <>
       <Link href="/">Back to Hub</Link>
       <h1>Keycap Inventory</h1>
-      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        THIS TEXT APPEARS INSIDE MODAL
-      </Modal>
+      <Modal open={isOpen} onClose={() => setIsOpen(false)}></Modal>
 
       <AddButtton onOpenModal={() => setIsOpen(true)} />
     </>
