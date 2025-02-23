@@ -5,19 +5,6 @@ import Modal from "@/components/Modal";
 import { useState } from "react";
 import styled from "styled-components";
 
-const BUTTON_WRAPPER_STYLES = {
-  position: "relative",
-  zIndex: 1,
-};
-
-const OTHER_CONTENT_STYLES = {
-  position: "relative",
-  zIndex: 2,
-  backgroundColor: "orange",
-  padding: "10px",
-};
-
-
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -26,22 +13,35 @@ const StyledContainer = styled.div`
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [userKeycaps, setUserKeycaps] = useState(userKeycapsIDs);
+
+  //Function for adding keycap ID to the userKeycaps array
+  const handleAddKeycap = (keycapId) => {
+    if (!userKeycaps.includes(keycapId)) {
+      setUserKeycaps([...userKeycaps, keycapId]);
+    }
+    console.log(userKeycaps);
+  };
+
   return (
     <>
       <Link href="/">Back to Hub</Link>
       <h1>Keycap Inventory</h1>
-      <div style={BUTTON_WRAPPER_STYLES}>
-        <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-          THIS TEXT APPEARS INSIDE MODAL
-        </Modal>
-      </div>
-      <div style={OTHER_CONTENT_STYLES}>Other Content</div>
-      <AddButtton />
+
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        onAddKeycap={handleAddKeycap}
+      />
+
       <StyledContainer>
         <h1>Keycap Inventory</h1>
         {data?.length ? (
-          <InventoryCard data={data} />
+          <InventoryCard
+            data={data.filter((keycap) =>
+              userKeycaps.includes(keycap._id.$oid)
+            )}
+          />
         ) : (
           <>
             <p> You have no keycaps in your inventory!</p>
@@ -49,9 +49,16 @@ export default function Keycaps() {
           </>
         )}
       </StyledContainer>
+      <AddButtton onOpenModal={() => setIsOpen(true)} />
     </>
   );
 }
+
+const userKeycapsIDs = [
+  "67af15ccba07c6a2595b086d",
+  "67af15ccba07c6a2595b0898",
+  "67af15ccba07c6a2595b08d3",
+];
 
 const data = [
   {

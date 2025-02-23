@@ -23,12 +23,8 @@ export default function AddButtton({ onOpenModal }) {
     };
   }, [expanded]);
 
-<<<<<<< HEAD
-  //Handle button click
-
-=======
   //Button click behaivor
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
+
   const handleClick = () => {
     if (expanded) {
       onOpenModal(); // Open the modal on the second click
@@ -38,7 +34,7 @@ export default function AddButtton({ onOpenModal }) {
   };
 
   return (
-    <StyledButton ref={buttonRef} expanded={expanded} onClick={handleClick}>
+    <StyledButton ref={buttonRef} $expanded={expanded} onClick={handleClick}>
       {expanded ? "+ Add keycaps" : "+"}
     </StyledButton>
   );
@@ -52,14 +48,14 @@ const StyledButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${(props) => (props.expanded ? "16px" : "24px")};
+  font-size: ${(props) => (props.$expanded ? "16px" : "24px")};
   font-weight: bold;
-  border-radius: ${(props) => (props.expanded ? "8px" : "50%")};
-  width: ${(props) => (props.expanded ? "160px" : "50px")};
+  border-radius: ${(props) => (props.$expanded ? "8px" : "50%")};
+  width: ${(props) => (props.$expanded ? "160px" : "50px")};
   height: 50px;
   transition: all 0.3s ease-in-out;
   white-space: nowrap;
-  padding: ${(props) => (props.expanded ? "0 15px" : "0")};
+  padding: ${(props) => (props.$expanded ? "0 15px" : "0")};
 
   &:hover {
     background-color: #0056b3;

@@ -1,6 +1,7 @@
 import ReactDom from "react-dom";
 import useSWR from "swr";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 const MODAL_STYLES = {
   position: "fixed",
@@ -10,12 +11,9 @@ const MODAL_STYLES = {
   backgroundColor: "#FFF",
   padding: "50px",
   zIndex: 1000,
-<<<<<<< HEAD
-=======
   borderRadius: "10px",
   boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
   width: "400px",
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
 };
 
 const OVERLAY_STYLES = {
@@ -24,12 +22,6 @@ const OVERLAY_STYLES = {
   left: 0,
   right: 0,
   bottom: 0,
-<<<<<<< HEAD
-  backgroundColor: "rgba(0,0,0,.7)",
-  zIndex: 1000,
-};
-
-=======
   backgroundColor: "rgba(0,0,0,0.7)",
   zIndex: 1000,
 };
@@ -84,33 +76,29 @@ const ADD_BUTTON_STYLES = {
   textAlign: "center",
 };
 
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
-export default function Modal({ open, onClose }) {
+export default function Modal({ open, onClose, onAddKeycap }) {
   const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
   const [selectedKeycap, setSelectedKeycap] = useState("");
   const [selectedKits, setSelectedKits] = useState([]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedKeycap(""); //Resets selected keycaps when modal is opened
+    }
+  }, [open]);
 
   if (!open) return null;
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps) return <p> Loading keycaps...</p>;
 
   const selectedKeycapObj = keycaps.find(
-    (k) => k.name.toString() === selectedKeycap.toString()
+    (keycap) => keycap.name === selectedKeycap
   );
 
-<<<<<<< HEAD
   const kitsAvailable =
-    selectedKeycapObj?.kits?.[0]?.price_list?.map((kit) => kit.name) ?? [];
+    selectedKeycapObj?.kits?.flatMap((kit) => kit.price_list) ?? [];
 
-  const handleKitSelection = (event) => {
-    const selectedOptions = Array.from(event.target.selectedOptions).map(
-      (option) => option.value
-    );
-    setSelectedKits([...selectedOptions]);
-=======
-  const kitsAvailable = selectedKeycapObj?.kits?.[0]?.price_list ?? [];
-
-  // Handle Checkbox Selection
+  // Code for Checkbox Selection
   const handleKitSelection = (event) => {
     const { value, checked } = event.target;
     setSelectedKits(
@@ -119,36 +107,25 @@ export default function Modal({ open, onClose }) {
           ? [...prevSelected, value] // Add kit
           : prevSelected.filter((kit) => kit !== value) // Remove kit
     );
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
   };
 
   return ReactDom.createPortal(
     <>
       <div style={OVERLAY_STYLES} />
       <div style={MODAL_STYLES}>
-<<<<<<< HEAD
-        <h2>Select a Keycapset </h2>
-=======
         <h2>Select a Keycap Set</h2>
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
 
-        {/* First Dropdown: Select Keycap Set */}
+        {/* Dropdown: Select Keycap Set */}
         <select
           value={selectedKeycap}
           onChange={(e) => {
             setSelectedKeycap(e.target.value);
-<<<<<<< HEAD
-            setSelectedKits([]); //Reset kit selection
-          }}
-        >
-          <option value="">-- Choose a keycap set -- </option>
-=======
             setSelectedKits([]); // Reset kit selection
           }}
           style={SELECT_STYLES}
         >
           <option value="">-- Choose a keycap set --</option>
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
+
           {keycaps.map((keycap) => (
             <option key={keycap._id} value={keycap.name}>
               {keycap.name}
@@ -156,24 +133,8 @@ export default function Modal({ open, onClose }) {
           ))}
         </select>
 
-<<<<<<< HEAD
-        {kitsAvailable.length > 0 ? (
-          <>
-            <h3>Selected Kits</h3>
-            <select
-              multiple={true}
-              value={selectedKits}
-              onChange={handleKitSelection}
-            >
-              {kitsAvailable.map((kitName, index) => (
-                <option key={index} value={kitName}>
-                  {kitName}
-                </option>
-              ))}
-            </select>
-=======
         {/* Checkbox Selection for Kits */}
-        {kitsAvailable.length > 0 ? (
+        {kitsAvailable?.length > 0 ? (
           <>
             <h3>Available Kits</h3>
             <div style={CHECKBOX_CONTAINER_STYLES}>
@@ -185,21 +146,30 @@ export default function Modal({ open, onClose }) {
                     checked={selectedKits.includes(kit.name)}
                     onChange={handleKitSelection}
                   />
+                  {kit.pic && (
+                    <Image
+                      src={kit.pic}
+                      alt={kit.name}
+                      width={50}
+                      height={50}
+                      style={{
+                        objectFit: "cover",
+                        marginRight: "10px",
+                        borderRadius: "5px",
+                      }}
+                    />
+                  )}
                   {kit.name}
                 </label>
               ))}
             </div>
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
           </>
         ) : selectedKeycap ? (
           <p>No kits available for this set.</p>
         ) : null}
 
         {/* Display Selected Items */}
-<<<<<<< HEAD
 
-=======
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
         {selectedKeycap && (
           <p>
             <strong>Set:</strong> {selectedKeycap}
@@ -211,17 +181,18 @@ export default function Modal({ open, onClose }) {
           </p>
         )}
 
-<<<<<<< HEAD
-        <br />
-        <button onClick={onClose}>Cancel</button>
-=======
         <button onClick={onClose} style={CANCEL_BUTTON_STYLES}>
           Cancel
         </button>
-        <button onClick={onClose} style={ADD_BUTTON_STYLES}>
+        <button
+          onClick={() =>
+            selectedKeycapObj && (onAddKeycap(selectedKeycapObj._id), onClose())
+          }
+          disabled={!selectedKeycapObj}
+          style={{ ...ADD_BUTTON_STYLES, opacity: selectedKeycapObj ? 1 : 0.5 }}
+        >
           Add Keycap
         </button>
->>>>>>> dcbb6437bb8849b6fdeab9abf76ee401ca06dcba
       </div>
     </>,
     document.getElementById("portal")

@@ -13,6 +13,23 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    domains: [
+      "i.imgur.com",
+      "novelkeys.com",
+      "cdn.shopify.com",
+      "massdrop-s3.imgix.net",
+      "i.ibb.co",
+      "media.discordapp.net",
+      "cdn.discordapp.com",
+      "omnitype.com",
+      "live.staticflickr.com",
+      "geekhack.org",
+      "switchmod.net",
+      "mekibo.com",
+      "media.biipmk.com",
+    ],
+  },
 };
 
 module.exports = nextConfig;
