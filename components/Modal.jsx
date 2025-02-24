@@ -3,79 +3,6 @@ import useSWR from "swr";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
-const MODAL_STYLES = {
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  backgroundColor: "#FFF",
-  padding: "50px",
-  zIndex: 1000,
-  borderRadius: "10px",
-  boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-  width: "400px",
-};
-
-const OVERLAY_STYLES = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.7)",
-  zIndex: 1000,
-};
-
-const SELECT_STYLES = {
-  width: "100%",
-  padding: "10px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  marginBottom: "15px",
-  fontSize: "16px",
-  backgroundColor: "#f9f9f9",
-};
-
-const CHECKBOX_CONTAINER_STYLES = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const CHECKBOX_LABEL_STYLES = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  marginBottom: "8px",
-  fontSize: "14px",
-  cursor: "pointer",
-};
-
-const CANCEL_BUTTON_STYLES = {
-  padding: "10px 15px",
-  border: "none",
-  backgroundColor: "#ff4d4d",
-  color: "white",
-  cursor: "pointer",
-  borderRadius: "5px",
-  fontSize: "16px",
-  marginTop: "15px",
-  width: "50%",
-  textAlign: "center",
-};
-
-const ADD_BUTTON_STYLES = {
-  padding: "10px 15px",
-  border: "none",
-  backgroundColor: "#007bff",
-  color: "white",
-  cursor: "pointer",
-  borderRadius: "5px",
-  fontSize: "16px",
-  marginTop: "15px",
-  width: "50%",
-  textAlign: "center",
-};
-
 export default function Modal({ open, onClose, onAddKeycap }) {
   const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
   const [selectedKeycap, setSelectedKeycap] = useState("");
@@ -198,3 +125,76 @@ export default function Modal({ open, onClose, onAddKeycap }) {
     document.getElementById("portal")
   );
 }
+
+const MODAL_STYLES = {
+  position: "fixed",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "#FFF",
+  padding: "50px",
+  zIndex: 1000,
+  borderRadius: "10px",
+  boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+  width: "400px",
+};
+
+const OVERLAY_STYLES = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.7)",
+  zIndex: 1000,
+};
+
+const SELECT_STYLES = {
+  width: "100%",
+  padding: "10px",
+  borderRadius: "5px",
+  border: "1px solid #ccc",
+  marginBottom: "15px",
+  fontSize: "16px",
+  backgroundColor: "#f9f9f9",
+};
+
+const CHECKBOX_CONTAINER_STYLES = {
+  display: "flex",
+  flexDirection: "column",
+};
+
+const CHECKBOX_LABEL_STYLES = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  marginBottom: "8px",
+  fontSize: "14px",
+  cursor: "pointer",
+};
+
+const CANCEL_BUTTON_STYLES = {
+  padding: "10px 15px",
+  border: "none",
+  backgroundColor: "#ff4d4d",
+  color: "white",
+  cursor: "pointer",
+  borderRadius: "5px",
+  fontSize: "16px",
+  marginTop: "15px",
+  width: "50%",
+  textAlign: "center",
+};
+
+const ADD_BUTTON_STYLES = {
+  padding: "10px 15px",
+  border: "none",
+  backgroundColor: "#007bff",
+  color: "white",
+  cursor: "pointer",
+  borderRadius: "5px",
+  fontSize: "16px",
+  marginTop: "15px",
+  width: "50%",
+  textAlign: "center",
+};
