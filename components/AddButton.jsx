@@ -45,6 +45,10 @@ export default function AddButtton({ onOpenModal }) {
 }
 
 const StyledButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  left 20px;
+  z-index: 1000;
   background-color: #007bff;
   color: white;
   border: none;
