@@ -26,11 +26,17 @@ const StyledDetails = styled.div`
 `;
 
 const ImageWrapper = styled.div`
-  width: 320px;
-  height: 180px;
+  width: 100%;
+  max-width: 320px;
   position: relative;
   overflow: hidden;
   border-radius: 10px;
+
+  aspect-ratio: 16 / 9;
+
+  @media (max-width: 320px) {
+    width: 90%;
+  }
 `;
 
 export default function InventoryCard({ data }) {
@@ -48,8 +54,10 @@ export default function InventoryCard({ data }) {
             <Image
               src={keycap.render_pics[0]}
               alt={keycap.name}
-              layout="fill"
+              layout="responsive"
               objectFit="cover"
+              width={320}
+              height={180}
             />
           </ImageWrapper>
         )}
