@@ -1,0 +1,197 @@
+import { createPortal } from "react-dom";
+import useSWR from "swr";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import styled from "styled-components";
+
+export default function Modal({ open, onClose, onAddKeycap }) {
+  const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
+  const [selectedKeycap, setSelectedKeycap] = useState("");
+  const [selectedKits, setSelectedKits] = useState([]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedKeycap(""); //Resets selected keycaps when modal is opened
+    }
+  }, [open]);
+
+  if (!open) return null;
+  if (error) return <p>Error loading keycaps...</p>;
+  if (!keycaps) return <p> Loading keycaps...</p>;
+
+  const selectedKeycapObj = keycaps.find(
+    (keycap) => keycap.name === selectedKeycap
+  );
+
+  const kitsAvailable =
+    selectedKeycapObj?.kits?.flatMap((kit) => kit.price_list) ?? [];
+
+  // Code for Checkbox Selection
+  const handleKitSelection = (event) => {
+    const { value, checked } = event.target;
+    setSelectedKits(
+      (prevSelected) =>
+        checked
+          ? [...prevSelected, value] // Add kit
+          : prevSelected.filter((kit) => kit !== value) // Remove kit
+    );
+  };
+
+  return createPortal(
+    <>
+      <OverlayDiv />
+      <ModalHolder>
+        <h2>Select a Keycap Set</h2>
+
+        {/* Dropdown: Select Keycap Set */}
+        <DropDownSelect
+          value={selectedKeycap}
+          onChange={(event) => {
+            setSelectedKeycap(event.target.value);
+            setSelectedKits([]); // Reset kit selection
+          }}
+        >
+          <option value="">-- Choose a keycap set --</option>
+
+          {keycaps.map((keycap) => (
+            <option key={keycap._id} value={keycap.name}>
+              {keycap.name}
+            </option>
+          ))}
+        </DropDownSelect>
+
+        {/* Checkbox Selection for Kits */}
+        {kitsAvailable?.length > 0 ? (
+          <>
+            <h3>Available Kits</h3>
+            <CheckboxContainer>
+              {kitsAvailable.map((kit) => (
+                <CheckboxLabel key={kit._id || kit.name}>
+                  <input
+                    type="checkbox"
+                    value={kit.name}
+                    checked={selectedKits.includes(kit.name)}
+                    onChange={handleKitSelection}
+                  />
+                  {kit.pic && (
+                    <Image
+                      src={kit.pic}
+                      alt={kit.name}
+                      width={50}
+                      height={50}
+                      style={{
+                        objectFit: "cover",
+                        marginRight: "10px",
+                        borderRadius: "5px",
+                      }}
+                    />
+                  )}
+                  {kit.name}
+                </CheckboxLabel>
+              ))}
+            </CheckboxContainer>
+          </>
+        ) : selectedKeycap ? (
+          <p>No kits available for this set.</p>
+        ) : null}
+
+        {/* Display Selected Items */}
+
+        {selectedKeycap && (
+          <p>
+            <strong>Set:</strong> {selectedKeycap}
+          </p>
+        )}
+        {selectedKits.length > 0 && (
+          <p>
+            <strong>Selected Kits:</strong> {selectedKits.join(", ")}
+          </p>
+        )}
+
+        <CancelButton onClick={onClose}>Cancel</CancelButton>
+        <AddButton
+          onClick={() => {
+            if (!selectedKeycap) return;
+
+            onAddKeycap(selectedKeycapObj._id);
+            onClose();
+          }}
+          disabled={!selectedKeycapObj}
+        >
+          Add Keycaps
+        </AddButton>
+      </ModalHolder>
+    </>,
+    document.getElementById("portal")
+  );
+}
+const ModalHolder = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 50px;
+  z-index: 1000;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+`;
+
+const OverlayDiv = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+`;
+
+const DropDownSelect = styled.select`
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  cursor: pointer;
+`;
+
+const CancelButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  background-color: #ff4d4d;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 15px;
+  width: 50%;
+  text-align: center;
+`;
+const AddButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 15px;
+  width: 50%;
+  text-align: center;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+`;
