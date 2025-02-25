@@ -1,8 +1,10 @@
 import styled from "styled-components";
+import { useRouter } from "next/router";
+import Image from "next/image";
 
 const StyledCard = styled.div`
   background-color: lightgreen;
-  width: 60%;
+  width: 50%;
   border-radius: 30px;
   display: flex;
   flex-direction: column;
@@ -10,8 +12,9 @@ const StyledCard = styled.div`
   padding: 15px;
   margin: 10px;
   height: 250px;
-  justify-content: space-between;
+  justify-content: space-around;
   box-shadow: 10px 5px 5px darkgreen;
+  cursor: pointer;
 `;
 
 const StyledDetails = styled.div`
@@ -22,17 +25,34 @@ const StyledDetails = styled.div`
   margin-bottom: 5px;
 `;
 
-export default function InventoryCard({ data }) {
-  return data.map((keycap) => (
-    // const keycapId = keycap._id?.$oid || keycap._id;
-    // <StyledCard key={keycapId}></StyledCard>
+const ImageWrapper = styled.div`
+  width: 320px;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+`;
 
-    <StyledCard key={keycap._id}>
-      <h3>CYL {keycap.name}</h3>
+export default function InventoryCard({ data }) {
+  const router = useRouter();
+
+  return data.map((keycap) => (
+    <StyledCard
+      key={keycap._id}
+      onClick={() => router.push(`/inventories/keycaps/${keycap._id}`)}
+    >
+      <h3>{keycap.name}</h3>
       <StyledDetails>
-        <p>Manufacturer: {keycap.keycapstype}</p>
-        <p>Profile: {keycap.profile}</p>
-        <p>Designer: {keycap.designer}</p>
+        {keycap.render_pics?.length > 0 && (
+          <ImageWrapper>
+            <Image
+              src={keycap.render_pics[0]}
+              alt={keycap.name}
+              layout="fill"
+              objectFit="cover"
+            />
+          </ImageWrapper>
+        )}
       </StyledDetails>
     </StyledCard>
   ));

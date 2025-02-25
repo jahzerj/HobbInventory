@@ -6,12 +6,6 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
@@ -54,7 +48,6 @@ export default function Keycaps() {
   return (
     <>
       <Link href="/">Back to Hub</Link>
-      <h1>Keycap Inventory</h1>
 
       <Modal
         open={isOpen}
@@ -77,3 +70,9 @@ export default function Keycaps() {
     </>
   );
 }
+
+const StyledContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
