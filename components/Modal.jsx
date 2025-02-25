@@ -1,7 +1,8 @@
-import ReactDom from "react-dom";
+import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import styled from "styled-components";
 
 export default function Modal({ open, onClose, onAddKeycap }) {
   const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
@@ -36,7 +37,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
     );
   };
 
-  return ReactDom.createPortal(
+  return createPortal(
     <>
       <div style={OVERLAY_STYLES} />
       <div style={MODAL_STYLES}>
@@ -65,8 +66,8 @@ export default function Modal({ open, onClose, onAddKeycap }) {
           <>
             <h3>Available Kits</h3>
             <div style={CHECKBOX_CONTAINER_STYLES}>
-              {kitsAvailable.map((kit, index) => (
-                <label key={index} style={CHECKBOX_LABEL_STYLES}>
+              {kitsAvailable.map((kit) => (
+                <label key={kit._id || kit.name} style={CHECKBOX_LABEL_STYLES}>
                   <input
                     type="checkbox"
                     value={kit.name}
@@ -108,18 +109,15 @@ export default function Modal({ open, onClose, onAddKeycap }) {
           </p>
         )}
 
-        <button onClick={onClose} style={CANCEL_BUTTON_STYLES}>
-          Cancel
-        </button>
-        <button
+        <CancelButton onClick={onClose}>Cancel</CancelButton>
+        <AddButton
           onClick={() =>
             selectedKeycapObj && (onAddKeycap(selectedKeycapObj._id), onClose())
           }
           disabled={!selectedKeycapObj}
-          style={{ ...ADD_BUTTON_STYLES, opacity: selectedKeycapObj ? 1 : 0.5 }}
         >
-          Add Keycap
-        </button>
+          Add KeycapS
+        </AddButton>
       </div>
     </>,
     document.getElementById("portal")
@@ -173,28 +171,26 @@ const CHECKBOX_LABEL_STYLES = {
   cursor: "pointer",
 };
 
-const CANCEL_BUTTON_STYLES = {
-  padding: "10px 15px",
-  border: "none",
-  backgroundColor: "#ff4d4d",
-  color: "white",
-  cursor: "pointer",
-  borderRadius: "5px",
-  fontSize: "16px",
-  marginTop: "15px",
-  width: "50%",
-  textAlign: "center",
-};
-
-const ADD_BUTTON_STYLES = {
-  padding: "10px 15px",
-  border: "none",
-  backgroundColor: "#007bff",
-  color: "white",
-  cursor: "pointer",
-  borderRadius: "5px",
-  fontSize: "16px",
-  marginTop: "15px",
-  width: "50%",
-  textAlign: "center",
-};
+const CancelButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  background-color: #ff4d4d;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 15px;
+  width: 50%;
+  text-align: center;
+`;
+const AddButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 15px;
+  width: 50%;
+  text-align: center;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+`;

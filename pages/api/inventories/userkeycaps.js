@@ -28,18 +28,15 @@ export default async function handler(req, res) {
       }
 
       const userId = req.body.userId || "guest_user";
-      let userKeycaps = await UserKeycaps.findOne({ userId });
+      const userKeycaps = await UserKeycaps.findOneAndUpdate(
+        { userId }, //Search for this userId
+        { $addToSet: { keycaps: keycapId } }, //Add keycap if it's not already there
+        { new: true, upsert: true } // Create new document if none exists
+      );
 
-      if (!userKeycaps) {
-        userKeycaps = new UserKeycaps({ userId, keycaps: [keycapId] });
-      } else {
-        if (!userKeycaps.keycaps.includes(keycapId)) {
-          userKeycaps.keycaps.push(keycapId);
-        }
-      }
-
-      await userKeycaps.save();
-      res.status(200).json({ message: "Keycap added successfully." });
+      res
+        .status(200)
+        .json({ message: "Keycap added successfully.", userKeycaps });
       return;
     }
   } catch (error) {
