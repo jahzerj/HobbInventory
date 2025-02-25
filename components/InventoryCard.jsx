@@ -24,9 +24,6 @@ const StyledDetails = styled.div`
 
 export default function InventoryCard({ data }) {
   return data.map((keycap) => (
-    // const keycapId = keycap._id?.$oid || keycap._id;
-    // <StyledCard key={keycapId}></StyledCard>
-
     <StyledCard key={keycap._id}>
       <h3>CYL {keycap.name}</h3>
       <StyledDetails>

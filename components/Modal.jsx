@@ -46,8 +46,8 @@ export default function Modal({ open, onClose, onAddKeycap }) {
         {/* Dropdown: Select Keycap Set */}
         <DropDownSelect
           value={selectedKeycap}
-          onChange={(e) => {
-            setSelectedKeycap(e.target.value);
+          onChange={(event) => {
+            setSelectedKeycap(event.target.value);
             setSelectedKits([]); // Reset kit selection
           }}
         >
@@ -110,9 +110,12 @@ export default function Modal({ open, onClose, onAddKeycap }) {
 
         <CancelButton onClick={onClose}>Cancel</CancelButton>
         <AddButton
-          onClick={() =>
-            selectedKeycapObj && (onAddKeycap(selectedKeycapObj._id), onClose())
-          }
+          onClick={() => {
+            if (!selectedKeycap) return;
+
+            onAddKeycap(selectedKeycapObj._id);
+            onClose();
+          }}
           disabled={!selectedKeycapObj}
         >
           Add Keycaps
