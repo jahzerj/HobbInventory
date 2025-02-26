@@ -3,6 +3,7 @@ import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
 import useLocalStorageState from "use-local-storage-state";
+import { useState } from "react";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -16,11 +17,6 @@ export default function KeyCapDetail() {
     `colors-${id}`,
     { defaultValue: [] }
   );
-
-  if (error) return <p>Error loading keycap details.</p>;
-  if (!keycaps) return <p>Loading...</p>;
-
-  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
 
   const handleColorSelect = (event) => {
     const selectedColor = event.target.value;
@@ -42,19 +38,27 @@ export default function KeyCapDetail() {
     );
   };
 
-  const colorOptions = [
-    { name: "Red", emoji: "🔴" },
-    { name: "Orange", emoji: "🟠" },
-    { name: "Yellow", emoji: "🟡" },
-    { name: "Green", emoji: "🟢" },
-    { name: "Blue", emoji: "🔵" },
-    { name: "Purple", emoji: "🟣" },
-    { name: "Pink", emoji: "🩷" },
-    { name: "Black", emoji: "⚫" },
-    { name: "Brown", emoji: "🟤" },
-    { name: "White", emoji: "⚪" },
-    { name: "Beige/Grey", emoji: "🩶" },
-  ];
+  const [notes, setNotes] = useLocalStorageState(`notes-${id}`, {
+    defaultValue: [],
+  });
+  const [newNote, setNewNote] = useState("");
+
+  const handleAddNote = () => {
+    if (newNote.trim() === "") return; //no empty notes please
+    if (newNote.length > 100)
+      return alert("Note must be 100 characters or less.");
+
+    const timestamp = new Date().toLocaleString(); //get date and time for note
+
+    setNotes([...notes, { text: newNote, timestamp }]); //add new note to notes array
+
+    setNewNote(""); //clear input field
+  };
+
+  if (error) return <p>Error loading keycap details.</p>;
+  if (!keycaps) return <p>Loading...</p>;
+
+  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
 
   return (
     <DetailPageContainer>
@@ -146,10 +150,44 @@ export default function KeyCapDetail() {
       </SelectedColorsContainer>
 
       <h3>Notes</h3>
-      <TextArea placeholder="Write your notes here..." />
+      <NoteInput
+        type="text"
+        maxLength={100}
+        placeholder="Write a note (max 100 chars)..."
+        value={newNote}
+        onChange={(event) => setNewNote(event.target.value)}
+      />
+      <NoteSubmitButton onClick={handleAddNote}>Submit Note</NoteSubmitButton>
+
+      <NotesContainer>
+        {notes.length > 0 ? (
+          notes.map((note, index) => (
+            <NoteCard key={index}>
+              <p>{note.text}</p>
+              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+            </NoteCard>
+          ))
+        ) : (
+          <p> No notes yet.</p>
+        )}
+      </NotesContainer>
     </DetailPageContainer>
   );
 }
+
+const colorOptions = [
+  { name: "Red", emoji: "🔴" },
+  { name: "Orange", emoji: "🟠" },
+  { name: "Yellow", emoji: "🟡" },
+  { name: "Green", emoji: "🟢" },
+  { name: "Blue", emoji: "🔵" },
+  { name: "Purple", emoji: "🟣" },
+  { name: "Pink", emoji: "🩷" },
+  { name: "Black", emoji: "⚫" },
+  { name: "Brown", emoji: "🟤" },
+  { name: "White", emoji: "⚪" },
+  { name: "Beige/Grey", emoji: "🩶" },
+];
 
 const DetailPageContainer = styled.div`
   max-width: 900px;
@@ -259,14 +297,48 @@ const RemoveColorButton = styled.button`
   }
 `;
 
-const TextArea = styled.textarea`
-  width: 60%;
+const NotesContainer = styled.div`
+  margin-top: 15px;
+  width: 100%;
   max-width: 600px;
+`;
+
+const NoteCard = styled.div`
+  background: #f9f9f9;
   padding: 10px;
   border-radius: 5px;
+  margin-bottom: 10px;
+  text-align: left;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+`;
+
+const NoteTimestamp = styled.span`
+  font-size: 12px;
+  color: #666;
+`;
+
+const NoteInput = styled.input`
+  width: 100%;
+  max-width: 600px;
+  padding: 8px;
   border: 1px solid #ccc;
+  border-radius: 5px;
   font-size: 16px;
-  background-color: #f9f9f9;
+`;
+
+const NoteSubmitButton = styled.button`
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #218838;
+  }
 `;
 
 const CloseButton = styled.button`
