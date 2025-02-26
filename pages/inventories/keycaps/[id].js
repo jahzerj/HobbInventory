@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
+import useLocalStorageState from "use-local-storage-state";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -12,10 +12,49 @@ export default function KeyCapDetail() {
     id ? `/api/inventories/keycaps/${id}` : null
   );
 
+  const [selectedColors, setSelectedColors] = useLocalStorageState(
+    `colors-${id}`,
+    { defaultValue: [] }
+  );
+
   if (error) return <p>Error loading keycap details.</p>;
   if (!keycaps) return <p>Loading...</p>;
 
   const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
+
+  const handleColorSelect = (event) => {
+    const selectedColor = event.target.value;
+
+    if (selectedColors.includes(selectedColor)) {
+      setSelectedColors((prevColors) =>
+        prevColors.filter((existingColor) => existingColor !== selectedColor)
+      );
+      return;
+    }
+    if (selectedColors.length < 3) {
+      setSelectedColors((prevColors) => [...prevColors, selectedColor]);
+    }
+  };
+
+  const handleRemoveColor = (color) => {
+    setSelectedColors((prevColors) =>
+      prevColors.filter((existingColor) => existingColor !== color)
+    );
+  };
+
+  const colorOptions = [
+    { name: "Red", emoji: "🔴" },
+    { name: "Orange", emoji: "🟠" },
+    { name: "Yellow", emoji: "🟡" },
+    { name: "Green", emoji: "🟢" },
+    { name: "Blue", emoji: "🔵" },
+    { name: "Purple", emoji: "🟣" },
+    { name: "Pink", emoji: "🩷" },
+    { name: "Black", emoji: "⚫" },
+    { name: "Brown", emoji: "🟤" },
+    { name: "White", emoji: "⚪" },
+    { name: "Beige/Grey", emoji: "🩶" },
+  ];
 
   return (
     <DetailPageContainer>
@@ -78,20 +117,33 @@ export default function KeyCapDetail() {
       )}
 
       <h3>Choose 3 Colors</h3>
-      <DropDownSelect multiple size={4}>
-        <option value="">-- Choose 3 colors --</option>
-        <option value="red"> Red 🔴</option>
-        <option value="orange"> Orange 🟠</option>
-        <option value="yellow"> Yellow 🟡</option>
-        <option value="green"> Green 🟢</option>
-        <option value="blue"> Blue 🔵</option>
-        <option value="purple"> Purple 🟣</option>
-        <option value="pink"> Pink 🩷</option>
-        <option value="black"> Black ⚫</option>
-        <option value="brown"> Brown 🟤</option>
-        <option value="white"> White ⚪</option>
-        <option value="grey-beige"> Beige/Grey 🩶</option>
+      <DropDownSelect onChange={handleColorSelect} value="">
+        <option value="" disabled>
+          -- Choose up to 3 colors --
+        </option>
+        {colorOptions.map((color) => (
+          <option key={color.name} value={color.name}>
+            {color.name}
+            {color.emoji}
+          </option>
+        ))}
       </DropDownSelect>
+
+      <SelectedColorsContainer>
+        {selectedColors.length > 0
+          ? selectedColors.map((color) => {
+              const colorData = colorOptions.find((c) => c.name === color);
+              return (
+                <SelectedColor key={color} bgColor={colorData?.name}>
+                  {colorData?.emoji} {color}
+                  <RemoveColorButton onClick={() => handleRemoveColor(color)}>
+                    x
+                  </RemoveColorButton>
+                </SelectedColor>
+              );
+            })
+          : "No colors selected"}
+      </SelectedColorsContainer>
 
       <h3>Notes</h3>
       <TextArea placeholder="Write your notes here..." />
@@ -171,6 +223,40 @@ const DropDownSelect = styled.select`
   border: 1px solid #ccc;
   font-size: 16px;
   background-color: #f9f9f9;
+`;
+
+const SelectedColorsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+`;
+
+const SelectedColor = styled.span`
+  background-color: #f9f9f9;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  border: 2px solid ${(props) => props.bgColor || "black"};
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const RemoveColorButton = styled.button`
+  background-color: #f9f9f9;
+  border: none;
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+  &hover {
+    color: #ff4d4d;
+  }
 `;
 
 const TextArea = styled.textarea`
