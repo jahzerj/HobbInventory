@@ -4,6 +4,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import useLocalStorageState from "use-local-storage-state";
 import { useState } from "react";
+import { colorOptions } from "@/utils/colors";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function KeyCapDetail() {
         )}
       </HeaderSection>
 
-      <DetailsContainer>
+      <BoxContainer>
         <p>
           <strong>Manufacturer:</strong> {keycaps.keycapstype}
         </p>
@@ -96,11 +97,11 @@ export default function KeyCapDetail() {
             Visit Geekhack
           </ExternalLink>
         </p>
-      </DetailsContainer>
+      </BoxContainer>
 
       <h3>Your Kits</h3>
       {kitsAvailable.length > 0 ? (
-        <KitsContainer>
+        <GridContainer>
           {kitsAvailable.map((kit) => (
             <KitCard key={kit.name}>
               {kit.pic && (
@@ -115,13 +116,18 @@ export default function KeyCapDetail() {
               <p>{kit.name}</p>
             </KitCard>
           ))}
-        </KitsContainer>
+        </GridContainer>
       ) : (
         <p>No kits available for this keycap set.</p>
       )}
 
       <h3>Choose 3 Colors</h3>
-      <DropDownSelect onChange={handleColorSelect} value="">
+      <StyledInput
+        as="select"
+        onChange={handleColorSelect}
+        value=""
+        maxWidth="400px"
+      >
         <option value="" disabled>
           -- Choose up to 3 colors --
         </option>
@@ -131,12 +137,14 @@ export default function KeyCapDetail() {
             {color.emoji}
           </option>
         ))}
-      </DropDownSelect>
+      </StyledInput>
 
-      <SelectedColorsContainer>
+      <GridContainer flexMode padding="10px" border bgColor="#f9f9f9">
         {selectedColors.length > 0
           ? selectedColors.map((color) => {
-              const colorData = colorOptions.find((c) => c.name === color);
+              const colorData = colorOptions.find(
+                (option) => option.name === color
+              );
               return (
                 <SelectedColor key={color} bgColor={colorData?.name}>
                   {colorData?.emoji} {color}
@@ -147,47 +155,33 @@ export default function KeyCapDetail() {
               );
             })
           : "No colors selected"}
-      </SelectedColorsContainer>
+      </GridContainer>
 
       <h3>Notes</h3>
-      <NoteInput
+      <StyledInput
         type="text"
         maxLength={100}
         placeholder="Write a note (max 100 chars)..."
         value={newNote}
         onChange={(event) => setNewNote(event.target.value)}
       />
-      <NoteSubmitButton onClick={handleAddNote}>Submit Note</NoteSubmitButton>
+      <BaseButton bgColor="#28a745" onClick={handleAddNote}>
+        Submit Note
+      </BaseButton>
 
-      <NotesContainer>
-        {notes.length > 0 ? (
-          notes.map((note, index) => (
-            <NoteCard key={index}>
-              <p>{note.text}</p>
-              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
-            </NoteCard>
-          ))
-        ) : (
-          <p> No notes yet.</p>
-        )}
-      </NotesContainer>
+      {notes.length > 0 ? (
+        notes.map((note, index) => (
+          <BoxContainer bgColor="#f9f9f9" key={index}>
+            <p>{note.text}</p>
+            <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+          </BoxContainer>
+        ))
+      ) : (
+        <p> No notes yet.</p>
+      )}
     </DetailPageContainer>
   );
 }
-
-const colorOptions = [
-  { name: "Red", emoji: "🔴" },
-  { name: "Orange", emoji: "🟠" },
-  { name: "Yellow", emoji: "🟡" },
-  { name: "Green", emoji: "🟢" },
-  { name: "Blue", emoji: "🔵" },
-  { name: "Purple", emoji: "🟣" },
-  { name: "Pink", emoji: "🩷" },
-  { name: "Black", emoji: "⚫" },
-  { name: "Brown", emoji: "🟤" },
-  { name: "White", emoji: "⚪" },
-  { name: "Beige/Grey", emoji: "🩶" },
-];
 
 const DetailPageContainer = styled.div`
   max-width: 900px;
@@ -215,14 +209,40 @@ const HeaderImage = styled.div`
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
 `;
 
-const DetailsContainer = styled.div`
-  background: #f9f9f9;
+const BoxContainer = styled.div`
+  background: ${(props) => props.bgColor || "#f9f9f9"};
   padding: 15px;
   border-radius: 10px;
   width: 100%;
-  max-width: 600px;
-  text-align: left;
+  max-width: ${(props) => props.maxWidth || "600px"};
+  text-align: ${(props) => props.align || "left"};
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: ${(props) => props.margin || "15px"};
+`;
+
+const GridContainer = styled.div`
+  display: ${(props) => (props.flexMode ? "flex" : "grid")};
+  flex-wrap: ${(props) => (props.flexMode ? "wrap" : "unset")};
+  grid-template-columns: ${(props) =>
+    props.flexMode ? "unset" : "repeat(auto-fit, minmax(150px, 1fr))"};
+  gap: 15px;
+  width: auto;
+  margin: 10px 0;
+  max-width: ${(props) => props.maxWidth || "600px"};
+  padding: ${(props) => props.padding || "0"};
+  border: ${(props) => (props.border ? "1px solid #ccc" : "none")};
+  border-radius: ${(props) => (props.border ? "5px" : "0")};
+  background-color: ${(props) => props.bgColor || "transparent"};
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  max-width: ${(props) => props.maxWidth || "600px"};
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: ${(props) => props.bgColor || "#f9f9f9"};
 `;
 
 const ExternalLink = styled.a`
@@ -235,14 +255,6 @@ const ExternalLink = styled.a`
   }
 `;
 
-const KitsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  width: 100%;
-  max-width: 600px;
-`;
-
 const KitCard = styled.div`
   background: white;
   border-radius: 10px;
@@ -251,27 +263,6 @@ const KitCard = styled.div`
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-`;
-
-const DropDownSelect = styled.select`
-  width: 100%;
-  max-width: 300px;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  background-color: #f9f9f9;
-`;
-
-const SelectedColorsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
 `;
 
 const SelectedColor = styled.span`
@@ -285,79 +276,51 @@ const SelectedColor = styled.span`
   align-items: center;
   gap: 5px;
 `;
-
-const RemoveColorButton = styled.button`
-  background-color: #f9f9f9;
-  border: none;
-  font-size: 14px;
-  margin-left: 5px;
-  cursor: pointer;
-  &hover {
-    color: #ff4d4d;
-  }
-`;
-
-const NotesContainer = styled.div`
-  margin-top: 15px;
-  width: 100%;
-  max-width: 600px;
-`;
-
-const NoteCard = styled.div`
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  text-align: left;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-`;
-
 const NoteTimestamp = styled.span`
   font-size: 12px;
   color: #666;
 `;
 
-const NoteInput = styled.input`
-  width: 100%;
-  max-width: 600px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-`;
-
-const NoteSubmitButton = styled.button`
-  margin-top: 10px;
+const BaseButton = styled.button`
+  margin-top: ${(props) => props.margin || "10px"};
   padding: 8px 15px;
-  background-color: #28a745;
+  background-color: ${(props) => props.bgColor || "#28a745"};
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: ${(props) => props.fontSize || "16px"};
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease-in-out;
 
   &:hover {
-    background-color: #218838;
+    background-color: ${(props) => props.hoverColor || "#218838"};
   }
 `;
 
-const CloseButton = styled.button`
+const RemoveColorButton = styled(BaseButton)`
+  background-color: #f9f9f9;
+  color: black;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 0;
+
+  &:hover {
+    background-color: #ff4d4d;
+  }
+`;
+
+const CloseButton = styled(BaseButton)`
   position: fixed;
   top: 20px;
   right: 20px;
   background-color: #ff4d4d;
   border-radius: 50%;
   font-size: 24px;
-  color: white;
-  border: none;
-  cursor: pointer;
   height: 40px;
   width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  transition: background 0.3s ease-in-out;
 
   &:hover {
     background-color: rgb(162, 24, 24);
