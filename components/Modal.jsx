@@ -39,18 +39,17 @@ export default function Modal({ open, onClose, onAddKeycap }) {
 
   return createPortal(
     <>
-      <div style={OVERLAY_STYLES} />
-      <div style={MODAL_STYLES}>
+      <OverlayDiv />
+      <ModalHolder>
         <h2>Select a Keycap Set</h2>
 
         {/* Dropdown: Select Keycap Set */}
-        <select
+        <DropDownSelect
           value={selectedKeycap}
-          onChange={(e) => {
-            setSelectedKeycap(e.target.value);
+          onChange={(event) => {
+            setSelectedKeycap(event.target.value);
             setSelectedKits([]); // Reset kit selection
           }}
-          style={SELECT_STYLES}
         >
           <option value="">-- Choose a keycap set --</option>
 
@@ -59,15 +58,15 @@ export default function Modal({ open, onClose, onAddKeycap }) {
               {keycap.name}
             </option>
           ))}
-        </select>
+        </DropDownSelect>
 
         {/* Checkbox Selection for Kits */}
         {kitsAvailable?.length > 0 ? (
           <>
             <h3>Available Kits</h3>
-            <div style={CHECKBOX_CONTAINER_STYLES}>
+            <CheckboxContainer>
               {kitsAvailable.map((kit) => (
-                <label key={kit._id || kit.name} style={CHECKBOX_LABEL_STYLES}>
+                <CheckboxLabel key={kit._id || kit.name}>
                   <input
                     type="checkbox"
                     value={kit.name}
@@ -88,9 +87,9 @@ export default function Modal({ open, onClose, onAddKeycap }) {
                     />
                   )}
                   {kit.name}
-                </label>
+                </CheckboxLabel>
               ))}
-            </div>
+            </CheckboxContainer>
           </>
         ) : selectedKeycap ? (
           <p>No kits available for this set.</p>
@@ -111,65 +110,67 @@ export default function Modal({ open, onClose, onAddKeycap }) {
 
         <CancelButton onClick={onClose}>Cancel</CancelButton>
         <AddButton
-          onClick={() =>
-            selectedKeycapObj && (onAddKeycap(selectedKeycapObj._id), onClose())
-          }
+          onClick={() => {
+            if (!selectedKeycap) return;
+
+            onAddKeycap(selectedKeycapObj._id);
+            onClose();
+          }}
           disabled={!selectedKeycapObj}
         >
           Add Keycaps
         </AddButton>
-      </div>
+      </ModalHolder>
     </>,
     document.getElementById("portal")
   );
 }
+const ModalHolder = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 50px;
+  z-index: 1000;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+`;
 
-const MODAL_STYLES = {
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  backgroundColor: "#FFF",
-  padding: "50px",
-  zIndex: 1000,
-  borderRadius: "10px",
-  boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-  width: "400px",
-};
+const OverlayDiv = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+`;
 
-const OVERLAY_STYLES = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.7)",
-  zIndex: 1000,
-};
+const DropDownSelect = styled.select`
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+`;
 
-const SELECT_STYLES = {
-  width: "100%",
-  padding: "10px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  marginBottom: "15px",
-  fontSize: "16px",
-  backgroundColor: "#f9f9f9",
-};
+const CheckboxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
-const CHECKBOX_CONTAINER_STYLES = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const CHECKBOX_LABEL_STYLES = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  marginBottom: "8px",
-  fontSize: "14px",
-  cursor: "pointer",
-};
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  cursor: pointer;
+`;
 
 const CancelButton = styled.button`
   padding: 10px 15px;
