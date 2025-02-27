@@ -44,7 +44,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
         <h2>Select a Keycap Set</h2>
 
         {/* Dropdown: Select Keycap Set */}
-        <StyledSelect
+        <DropDownSelect
           value={selectedKeycap}
           onChange={(event) => {
             setSelectedKeycap(event.target.value);
@@ -58,7 +58,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
               {keycap.name}
             </option>
           ))}
-        </StyledSelect>
+        </DropDownSelect>
 
         {/* Checkbox Selection for Kits */}
         {kitsAvailable?.length > 0 ? (
@@ -110,9 +110,12 @@ export default function Modal({ open, onClose, onAddKeycap }) {
 
         <CancelButton onClick={onClose}>Cancel</CancelButton>
         <AddButton
-          onClick={() =>
-            selectedKeycapObj && (onAddKeycap(selectedKeycapObj._id), onClose())
-          }
+          onClick={() => {
+            if (!selectedKeycap) return;
+
+            onAddKeycap(selectedKeycapObj._id);
+            onClose();
+          }}
           disabled={!selectedKeycapObj}
         >
           Add Keycaps
@@ -147,9 +150,9 @@ const Overlay = styled.div`
   z-index: 1000;
 `;
 
-const StyledSelect = styled.select`
+const DropDownSelect = styled.select`
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
   margin-bottom: 15px;
@@ -157,19 +160,19 @@ const StyledSelect = styled.select`
   background-color: #f9f9f9;
 `;
 
-const CHECKBOX_CONTAINER_STYLES = {
-  display: "flex",
-  flexDirection: "column",
-};
+const CheckboxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
-const CHECKBOX_LABEL_STYLES = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  marginBottom: "8px",
-  fontSize: "14px",
-  cursor: "pointer",
-};
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  cursor: pointer;
+`;
 
 const KitList = styled.ul`
   list-style-type: none;
