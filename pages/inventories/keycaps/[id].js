@@ -6,6 +6,7 @@ import useLocalStorageState from "use-local-storage-state";
 import { useState } from "react";
 import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
+import { nanoid } from "nanoid";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function KeyCapDetail() {
       );
       return;
     }
-    if (selectedColors.length < 3) {
+    if (selectedColors.length < 4) {
       setSelectedColors((prevColors) => [...prevColors, selectedColor]);
     }
   };
@@ -120,7 +121,7 @@ export default function KeyCapDetail() {
         <p>No kits available for this keycap set.</p>
       )}
 
-      <h3>Choose 3 Colors</h3>
+      <h3>Choose 4 Colors</h3>
       <StyledInput
         as="select"
         onChange={handleColorSelect}
@@ -128,7 +129,7 @@ export default function KeyCapDetail() {
         maxWidth="400px"
       >
         <option value="" disabled>
-          -- Choose up to 3 colors --
+          -- Choose up to 4 colors --
         </option>
         {colorOptions.map((color) => (
           <option key={color.name} value={color.name}>
@@ -138,7 +139,7 @@ export default function KeyCapDetail() {
         ))}
       </StyledInput>
 
-      <GridContainer flexMode padding="10px" border bgColor="#f9f9f9">
+      <ColorsContainer>
         {selectedColors.length > 0
           ? selectedColors.map((color) => {
               const colorData = colorOptions.find(
@@ -154,7 +155,7 @@ export default function KeyCapDetail() {
               );
             })
           : "No colors selected"}
-      </GridContainer>
+      </ColorsContainer>
 
       <h3>Notes</h3>
       <StyledInput
@@ -168,16 +169,18 @@ export default function KeyCapDetail() {
         Submit Note
       </BaseButton>
 
-      {notes.length > 0 ? (
-        notes.map((note, index) => (
-          <BoxContainer bgColor="#f9f9f9" key={index}>
-            <li>{note.text}</li>
-            <NoteTimestamp>{note.timestamp}</NoteTimestamp>
-          </BoxContainer>
-        ))
-      ) : (
-        <p> No notes yet.</p>
-      )}
+      <NotesContainer>
+        {notes.length > 0 ? (
+          notes.map((note) => (
+            <NoteItem key={nanoid()}>
+              <span>{note.text}</span>
+              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+            </NoteItem>
+          ))
+        ) : (
+          <p> No notes yet.</p>
+        )}
+      </NotesContainer>
     </DetailPageContainer>
   );
 }
@@ -190,6 +193,23 @@ const DetailPageContainer = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
+`;
+const StyledLink = styled(Link)`
+  position: fixed;
+  top: 5px;
+  right: 5px;
+  text-decoration: none;
+  color: white;
+  background-color: #ff4d4d;
+  border-radius: 50%;
+  font-size: 24px;
+  height: 40px;
+  width: 40px;
+  z-index: 1000;
+
+  &:hover {
+    background-color: rgb(162, 24, 24);
+  }
 `;
 
 const HeaderSection = styled.div`
@@ -231,39 +251,6 @@ const BoxContainer = styled.ul`
   list-style-type: none;
 `;
 
-const GridContainer = styled.ul`
-  display: ${(props) => (props.flexMode ? "flex" : "grid")};
-  flex-wrap: ${(props) => (props.flexMode ? "wrap" : "unset")};
-  grid-template-columns: ${(props) =>
-    props.flexMode ? "unset" : "repeat(auto-fit, minmax(150px, 1fr))"};
-  gap: 15px;
-  width: auto;
-  margin: 10px 0;
-  max-width: ${(props) => props.maxWidth || "365px"};
-  padding: ${(props) => props.padding || "0"};
-  border: ${(props) => (props.border ? "1px solid #ccc" : "none")};
-  border-radius: ${(props) => (props.border ? "5px" : "0")};
-  background-color: ${(props) => props.bgColor || "transparent"};
-
-  @media (min-width: 430px) {
-    max-width: 400px;
-  }
-
-  @media (min-width: 600px) {
-    max-width: 600px;
-  }
-`;
-
-const StyledInput = styled.input`
-  width: 100%;
-  max-width: ${(props) => props.maxWidth || "600px"};
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  background-color: ${(props) => props.bgColor || "#f9f9f9"};
-`;
-
 const ExternalLink = styled.a`
   color: #007bff;
   text-decoration: none;
@@ -271,6 +258,24 @@ const ExternalLink = styled.a`
 
   &:hover {
     text-decoration: underline;
+  }
+`;
+
+const GridContainer = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  width: auto;
+  margin: 10px 0;
+  max-width: 365px;
+  background-color: transparent;
+
+  @media (min-width: 430px) {
+    max-width: 400px;
+  }
+
+  @media (min-width: 600px) {
+    max-width: 600px;
   }
 `;
 
@@ -284,7 +289,34 @@ const KitCard = styled.li`
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 `;
 
-const SelectedColor = styled.span`
+const StyledInput = styled.input`
+  width: 100%;
+  max-width: ${(props) => props.maxWidth || "600px"};
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: ${(props) => props.bgColor || "#f9f9f9"};
+`;
+
+const ColorsContainer = styled.ul`
+  display: flex;
+  background-color: #f9f9f9;
+  padding: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+  width: auto;
+  margin 10px 0;
+  max-width: 365px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+
+  @media (min-width: 430px) {
+    max-width: 400px;
+  }
+`;
+
+const SelectedColor = styled.li`
   background-color: #f9f9f9;
   color: black;
   padding: 5px 10px;
@@ -294,10 +326,6 @@ const SelectedColor = styled.span`
   display: flex;
   align-items: center;
   gap: 5px;
-`;
-const NoteTimestamp = styled.span`
-  font-size: 12px;
-  color: #666;
 `;
 
 const BaseButton = styled.button`
@@ -331,20 +359,32 @@ const RemoveColorButton = styled(BaseButton)`
   }
 `;
 
-const StyledLink = styled(Link)`
-  position: fixed;
-  top: 5px;
-  right: 5px;
-  text-decoration: none;
-  color: white;
-  background-color: #ff4d4d;
-  border-radius: 50%;
-  font-size: 24px;
-  height: 40px;
-  width: 40px;
-  z-index: 1000;
+const NotesContainer = styled.ul`
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  list-style-type: none;
+`;
 
-  &:hover {
-    background-color: rgb(162, 24, 24);
+const NoteItem = styled.li`
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 5px;
+  &:last-child {
+    border-bottom: none;
   }
+`;
+
+const NoteTimestamp = styled.span`
+  font-size: 12px;
+  color: #666;
 `;
