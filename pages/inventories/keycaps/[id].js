@@ -5,6 +5,7 @@ import styled from "styled-components";
 import useLocalStorageState from "use-local-storage-state";
 import { useState } from "react";
 import { colorOptions } from "@/utils/colors";
+import Link from "next/link";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -63,9 +64,7 @@ export default function KeyCapDetail() {
 
   return (
     <DetailPageContainer>
-      <CloseButton onClick={() => router.push("/inventories/keycaps")}>
-        ×
-      </CloseButton>
+      <StyledLink href="/inventories/keycaps">×</StyledLink>
 
       <HeaderSection>
         <h1>{keycaps.name}</h1>
@@ -82,21 +81,21 @@ export default function KeyCapDetail() {
       </HeaderSection>
 
       <BoxContainer>
-        <p>
+        <li>
           <strong>Manufacturer:</strong> {keycaps.keycapstype}
-        </p>
-        <p>
+        </li>
+        <li>
           <strong>Profile:</strong> {keycaps.profile}
-        </p>
-        <p>
+        </li>
+        <li>
           <strong>Designer:</strong> {keycaps.designer}
-        </p>
-        <p>
+        </li>
+        <li>
           <strong>Geekhack Thread:</strong>{" "}
           <ExternalLink href={keycaps.link} target="_blank">
             Visit Geekhack
           </ExternalLink>
-        </p>
+        </li>
       </BoxContainer>
 
       <h3>Your Kits</h3>
@@ -172,7 +171,7 @@ export default function KeyCapDetail() {
       {notes.length > 0 ? (
         notes.map((note, index) => (
           <BoxContainer bgColor="#f9f9f9" key={index}>
-            <p>{note.text}</p>
+            <li>{note.text}</li>
             <NoteTimestamp>{note.timestamp}</NoteTimestamp>
           </BoxContainer>
         ))
@@ -198,18 +197,29 @@ const HeaderSection = styled.div`
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
+  margin-top: 10px;
 `;
 
 const HeaderImage = styled.div`
-  width: 640px;
-  height: 320px;
+  width: 340px;
+  height: 170px;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+
+  @media (min-width: 430px) {
+    width: 387px;
+    height: 195px;
+  }
+
+  @media (min-width: 600px) {
+    width: 640px;
+    height: 320px;
+  }
 `;
 
-const BoxContainer = styled.div`
+const BoxContainer = styled.ul`
   background: ${(props) => props.bgColor || "#f9f9f9"};
   padding: 15px;
   border-radius: 10px;
@@ -218,9 +228,10 @@ const BoxContainer = styled.div`
   text-align: ${(props) => props.align || "left"};
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: ${(props) => props.margin || "15px"};
+  list-style-type: none;
 `;
 
-const GridContainer = styled.div`
+const GridContainer = styled.ul`
   display: ${(props) => (props.flexMode ? "flex" : "grid")};
   flex-wrap: ${(props) => (props.flexMode ? "wrap" : "unset")};
   grid-template-columns: ${(props) =>
@@ -228,11 +239,19 @@ const GridContainer = styled.div`
   gap: 15px;
   width: auto;
   margin: 10px 0;
-  max-width: ${(props) => props.maxWidth || "600px"};
+  max-width: ${(props) => props.maxWidth || "365px"};
   padding: ${(props) => props.padding || "0"};
   border: ${(props) => (props.border ? "1px solid #ccc" : "none")};
   border-radius: ${(props) => (props.border ? "5px" : "0")};
   background-color: ${(props) => props.bgColor || "transparent"};
+
+  @media (min-width: 430px) {
+    max-width: 400px;
+  }
+
+  @media (min-width: 600px) {
+    max-width: 600px;
+  }
 `;
 
 const StyledInput = styled.input`
@@ -255,7 +274,7 @@ const ExternalLink = styled.a`
   }
 `;
 
-const KitCard = styled.div`
+const KitCard = styled.li`
   background: white;
   border-radius: 10px;
   padding: 10px;
@@ -312,15 +331,18 @@ const RemoveColorButton = styled(BaseButton)`
   }
 `;
 
-const CloseButton = styled(BaseButton)`
+const StyledLink = styled(Link)`
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 5px;
+  right: 5px;
+  text-decoration: none;
+  color: white;
   background-color: #ff4d4d;
   border-radius: 50%;
   font-size: 24px;
   height: 40px;
   width: 40px;
+  z-index: 1000;
 
   &:hover {
     background-color: rgb(162, 24, 24);

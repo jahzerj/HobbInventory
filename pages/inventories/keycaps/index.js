@@ -71,7 +71,7 @@ export default function Keycaps() {
   );
 }
 
-const StyledContainer = styled.div`
+const StyledContainer = styled.ul`
   display: flex;
   flex-direction: column;
   align-items: center;

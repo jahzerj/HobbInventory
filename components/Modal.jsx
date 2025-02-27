@@ -116,7 +116,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
           }
           disabled={!selectedKeycapObj}
         >
-          Add KeycapS
+          Add Keycaps
         </AddButton>
       </div>
     </>,
