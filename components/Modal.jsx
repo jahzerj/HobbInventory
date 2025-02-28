@@ -39,8 +39,8 @@ export default function Modal({ open, onClose, onAddKeycap }) {
 
   return createPortal(
     <>
-      <OverlayDiv />
-      <ModalHolder>
+      <Overlay />
+      <ModalWrapper>
         <h2>Select a Keycap Set</h2>
 
         {/* Dropdown: Select Keycap Set */}
@@ -64,9 +64,9 @@ export default function Modal({ open, onClose, onAddKeycap }) {
         {kitsAvailable?.length > 0 ? (
           <>
             <h3>Available Kits</h3>
-            <CheckboxContainer>
+            <KitList>
               {kitsAvailable.map((kit) => (
-                <CheckboxLabel key={kit._id || kit.name}>
+                <KitItem key={kit.name}>
                   <input
                     type="checkbox"
                     value={kit.name}
@@ -87,9 +87,9 @@ export default function Modal({ open, onClose, onAddKeycap }) {
                     />
                   )}
                   {kit.name}
-                </CheckboxLabel>
+                </KitItem>
               ))}
-            </CheckboxContainer>
+            </KitList>
           </>
         ) : selectedKeycap ? (
           <p>No kits available for this set.</p>
@@ -120,12 +120,13 @@ export default function Modal({ open, onClose, onAddKeycap }) {
         >
           Add Keycaps
         </AddButton>
-      </ModalHolder>
+      </ModalWrapper>
     </>,
     document.getElementById("portal")
   );
 }
-const ModalHolder = styled.div`
+
+const ModalWrapper = styled.section`
   position: fixed;
   top: 50%;
   left: 50%;
@@ -136,9 +137,10 @@ const ModalHolder = styled.div`
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
 `;
-
-const OverlayDiv = styled.div`
+const Overlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -172,6 +174,19 @@ const CheckboxLabel = styled.label`
   cursor: pointer;
 `;
 
+const KitList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const KitItem = styled.li`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0px;
+`;
+
 const CancelButton = styled.button`
   padding: 10px 15px;
   border: none;
@@ -180,8 +195,10 @@ const CancelButton = styled.button`
   border-radius: 5px;
   font-size: 16px;
   margin-top: 15px;
-  width: 50%;
+  width: 49%;
   text-align: center;
+  cursor: pointer;
+  margin-right: 2px;
 `;
 const AddButton = styled.button`
   padding: 10px 15px;
@@ -191,7 +208,8 @@ const AddButton = styled.button`
   border-radius: 5px;
   font-size: 16px;
   margin-top: 15px;
-  width: 50%;
+  width: 49%;
   text-align: center;
+  cursor: pointer;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `;

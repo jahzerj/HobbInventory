@@ -28,6 +28,7 @@ const nextConfig = {
       "switchmod.net",
       "mekibo.com",
       "media.biipmk.com",
+      "i.postimg.cc",
     ],
   },
 };
