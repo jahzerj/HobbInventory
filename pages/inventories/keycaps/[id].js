@@ -72,8 +72,8 @@ export default function KeyCapDetail() {
     return <p>Loading...</p>;
   }
 
-  const kitsAvailable =
-    userKeycap?.selectedKits ?? keycaps.kits?.map((kit) => kit.name) ?? [];
+  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
+  const selectedKits = userKeycap?.selectedKits ?? [];
 
   return (
     <DetailPageContainer>
@@ -112,20 +112,27 @@ export default function KeyCapDetail() {
       </BoxContainer>
 
       <h3>Your Kits</h3>
-      {kitsAvailable.length > 0 ? (
+      {selectedKits.length > 0 ? (
         <GridContainer>
-          {kitsAvailable.map((kitName) => (
-            <KitCard key={kitName}>
-              <Image
-                src={kitName.pic}
-                alt={kitName}
-                width={100}
-                height={100}
-                objectFit="cover"
-              />
-              <p>{kitName}</p>
-            </KitCard>
-          ))}
+          {kitsAvailable
+            .filter((kit) => selectedKits.includes(kit.name)) // ✅ Show only selected kits
+            .map((kit) => (
+              <KitCard key={kit.name}>
+                {kit.pic ? (
+                  <Image
+                    src={kit.pic}
+                    alt={kit.name}
+                    layout="intrinsic"
+                    width={100}
+                    height={100}
+                    objectFit="cover"
+                  />
+                ) : (
+                  <p>No image available</p>
+                )}
+                <p>{kit.name}</p>
+              </KitCard>
+            ))}
         </GridContainer>
       ) : (
         <p>No kits selected.</p>
