@@ -16,9 +16,11 @@ export default function KeyCapDetail() {
     id ? `/api/inventories/keycaps/${id}` : null
   );
 
-  const { data: userKeycaps, error: userKeycapError } = useSWR(
-    id ? `/api/inventories/userkeycaps?userId=guest_user` : null
-  );
+  const {
+    data: userKeycaps,
+    error: userKeycapError,
+    mutate,
+  } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
   const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
   const selectedColors = userKeycap?.selectedColors ?? [];
@@ -26,20 +28,24 @@ export default function KeyCapDetail() {
   const [editableColors, setEditableColors] = useState(selectedColors);
   const isEditMode = false;
 
-  const handleColorSelect = (event) => {
-    if (!isEditMode) return;
-
+  const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
 
-    if (editableColors.includes(selectedColor)) {
-      setEditableColors((prevColors) =>
-        prevColors.filter((existingColor) => existingColor !== selectedColor)
-      );
-      return;
-    }
-    if (editableColors.length < 4) {
-      setEditableColors((prevColors) => [...prevColors, selectedColor]);
-    }
+    if (selectedColors.includes(selectedColor)) return;
+
+    const updatedColors = [...selectedColors, selectedColor];
+
+    await fetch("/api/inventories/userkeycaps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        keycapSetId: id,
+        selectedKits: userKeycap.selectedKits,
+        selectedColors: updatedColors,
+      }),
+    });
+    mutate();
   };
 
   const handleRemoveColor = (color) => {
@@ -152,7 +158,7 @@ export default function KeyCapDetail() {
           -- Choose up to 4 colors --
         </option>
         {colorOptions
-          .filter((color) => !selectedColors.includes(color.name)) // ✅ Only show unselected colors
+          .filter((color) => !selectedColors.includes(color.name))
           .map((color) => (
             <option key={color.name} value={color.name}>
               {color.name} {color.emoji}
@@ -162,8 +168,8 @@ export default function KeyCapDetail() {
 
       <h3> Selected Colors</h3>
       <ColorsContainer>
-        {(isEditMode ? editableColors : selectedColors).length > 0
-          ? (isEditMode ? editableColors : selectedColors).map((color) => {
+        {selectedColors.length > 0
+          ? selectedColors.map((color) => {
               const colorData = colorOptions.find(
                 (option) => option.name === color
               );
