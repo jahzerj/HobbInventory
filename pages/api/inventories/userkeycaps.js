@@ -17,24 +17,24 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { keycapSetId, selectedKits } = req.body;
+      const { keycapSetId, selectedKits, selectedColors } = req.body;
 
       if (!keycapSetId || !selectedKits) {
         res
           .status(400)
-          .json({ message: "Keycap ID and selected kits is required." });
+          .json({ message: "Keycap ID and selected kits are required." });
         return;
       }
 
       const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
         { userId, keycapSetId },
-        { keycapSetId, selectedKits },
+        { keycapSetId, selectedKits, selectedColors },
         { new: true, upsert: true }
       );
 
       res
         .status(200)
-        .json({ message: "Keycap selected updated.", updatedKeycaps });
+        .json({ message: "Keycap selection updated.", updatedKeycaps });
       return;
     }
   } catch (error) {

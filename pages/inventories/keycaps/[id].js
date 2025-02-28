@@ -16,33 +16,36 @@ export default function KeyCapDetail() {
     id ? `/api/inventories/keycaps/${id}` : null
   );
 
-  const [selectedColors, setSelectedColors] = useLocalStorageState(
-    `colors-${id}`,
-    { defaultValue: [] }
-  );
-
   const { data: userKeycaps, error: userKeycapError } = useSWR(
     id ? `/api/inventories/userkeycaps?userId=guest_user` : null
   );
 
   const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
+  const selectedColors = userKeycap?.selectedColors ?? [];
+
+  const [editableColors, setEditableColors] = useState(selectedColors);
+  const isEditMode = false;
 
   const handleColorSelect = (event) => {
+    if (!isEditMode) return;
+
     const selectedColor = event.target.value;
 
-    if (selectedColors.includes(selectedColor)) {
-      setSelectedColors((prevColors) =>
+    if (editableColors.includes(selectedColor)) {
+      setEditableColors((prevColors) =>
         prevColors.filter((existingColor) => existingColor !== selectedColor)
       );
       return;
     }
-    if (selectedColors.length < 4) {
-      setSelectedColors((prevColors) => [...prevColors, selectedColor]);
+    if (editableColors.length < 4) {
+      setEditableColors((prevColors) => [...prevColors, selectedColor]);
     }
   };
 
   const handleRemoveColor = (color) => {
-    setSelectedColors((prevColors) =>
+    if (!isEditMode) return;
+
+    setEditableColors((prevColors) =>
       prevColors.filter((existingColor) => existingColor !== color)
     );
   };
@@ -148,27 +151,31 @@ export default function KeyCapDetail() {
         <option value="" disabled>
           -- Choose up to 4 colors --
         </option>
-        {colorOptions.map((color) => (
-          <option key={color.name} value={color.name}>
-            {color.name}
-            {color.emoji}
-          </option>
-        ))}
+        {colorOptions
+          .filter((color) => !selectedColors.includes(color.name)) // ✅ Only show unselected colors
+          .map((color) => (
+            <option key={color.name} value={color.name}>
+              {color.name} {color.emoji}
+            </option>
+          ))}
       </StyledInput>
 
+      <h3> Selected Colors</h3>
       <ColorsContainer>
-        {selectedColors.length > 0
-          ? selectedColors.map((color) => {
+        {(isEditMode ? editableColors : selectedColors).length > 0
+          ? (isEditMode ? editableColors : selectedColors).map((color) => {
               const colorData = colorOptions.find(
                 (option) => option.name === color
               );
               return (
-                <SelectedColor key={color} bgColor={colorData?.name}>
+                <SelectedColorLi key={color} bgColor={colorData?.name}>
                   {colorData?.emoji} {color}
-                  <RemoveColorButton onClick={() => handleRemoveColor(color)}>
-                    x
-                  </RemoveColorButton>
-                </SelectedColor>
+                  {isEditMode && (
+                    <RemoveColorButton onClick={() => handleRemoveColor(color)}>
+                      x
+                    </RemoveColorButton>
+                  )}
+                </SelectedColorLi>
               );
             })
           : "No colors selected"}
@@ -333,7 +340,7 @@ const ColorsContainer = styled.ul`
   }
 `;
 
-const SelectedColor = styled.li`
+const SelectedColorLi = styled.li`
   background-color: #f9f9f9;
   color: black;
   padding: 5px 10px;
