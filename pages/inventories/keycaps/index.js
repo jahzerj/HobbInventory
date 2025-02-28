@@ -23,21 +23,26 @@ export default function Keycaps() {
   }, [data]);
 
   //Function for adding keycap ID to the userKeycaps array
-  const handleAddKeycap = async (keycapId) => {
+  const handleAddKeycap = async (keycapId, selectedKits) => {
     if (!userKeycaps.includes(keycapId)) {
       const updatedKeycaps = [...userKeycaps, keycapId];
       setUserKeycaps(updatedKeycaps);
 
-      //Save the update in DB
+      //Save update in DB
       const response = await fetch("/api/inventories/userkeycaps", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keycapId }),
+        body: JSON.stringify({
+          userId: "guest_user",
+          keycapSetId: keycapId,
+          selectedKits,
+        }),
       });
+
       if (response.ok) {
         mutate();
       } else {
-        console.log("Failed to add keycap:", await response.json());
+        console.error("Failed to add keycap:", await response.json());
       }
     }
   };

@@ -5,23 +5,28 @@ import Image from "next/image";
 export default function InventoryCard({ data }) {
   const router = useRouter();
 
+  console.log("Inventory Data:", data);
   return data.map((keycap) => (
     <StyledCard
       key={keycap._id}
-      onClick={() => router.push(`/inventories/keycaps/${keycap._id}`)}
+      onClick={() =>
+        router.push(`/inventories/keycaps/${keycap.keycapSetId._id}`)
+      }
     >
-      <h3>{keycap.name}</h3>
-      {keycap.render_pics?.length > 0 && (
+      <h3>{keycap.keycapSetId?.name}</h3>
+      {keycap.keycapSetId?.render_pics?.length > 0 ? (
         <ImageWrapper>
           <Image
-            src={keycap.render_pics[0]}
-            alt={keycap.name}
+            src={keycap.keycapSetId.render_pics[0]}
+            alt={keycap.keycapSetId.name}
             layout="responsive"
             objectFit="cover"
             width={320}
             height={180}
           />
         </ImageWrapper>
+      ) : (
+        <p> No Image available</p>
       )}
     </StyledCard>
   ));
@@ -59,4 +64,3 @@ const ImageWrapper = styled.div`
     width: 90%;
   }
 `;
-

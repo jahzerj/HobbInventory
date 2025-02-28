@@ -12,7 +12,7 @@ export default function KeyCapDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data: keycaps, error } = useSWR(
+  const { data: keycaps, error: keycapError } = useSWR(
     id ? `/api/inventories/keycaps/${id}` : null
   );
 
@@ -20,6 +20,12 @@ export default function KeyCapDetail() {
     `colors-${id}`,
     { defaultValue: [] }
   );
+
+  const { data: userKeycaps, error: userKeycapError } = useSWR(
+    id ? `/api/inventories/userkeycaps?userId=guest_user` : null
+  );
+
+  const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
 
   const handleColorSelect = (event) => {
     const selectedColor = event.target.value;
@@ -58,10 +64,16 @@ export default function KeyCapDetail() {
     setNewNote(""); //clear input field
   };
 
-  if (error) return <p>Error loading keycap details.</p>;
-  if (!keycaps) return <p>Loading...</p>;
+  if (keycapError || userKeycapError) {
+    return <p>Error loading keycap details.</p>;
+  }
 
-  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
+  if (!keycaps || !userKeycaps) {
+    return <p>Loading...</p>;
+  }
+
+  const kitsAvailable =
+    userKeycap?.selectedKits ?? keycaps.kits?.map((kit) => kit.name) ?? [];
 
   return (
     <DetailPageContainer>
@@ -99,7 +111,7 @@ export default function KeyCapDetail() {
         </li>
       </BoxContainer>
 
-      <h3>Your Kits</h3>
+      {/* <h3>Your Kits</h3>
       {kitsAvailable.length > 0 ? (
         <GridContainer>
           {kitsAvailable.map((kit) => (
@@ -119,6 +131,18 @@ export default function KeyCapDetail() {
         </GridContainer>
       ) : (
         <p>No kits available for this keycap set.</p>
+      )} */}
+      <h3>Your Kits</h3>
+      {kitsAvailable.length > 0 ? (
+        <GridContainer>
+          {kitsAvailable.map((kitName) => (
+            <KitCard key={kitName}>
+              <p>{kitName}</p>
+            </KitCard>
+          ))}
+        </GridContainer>
+      ) : (
+        <p>No kits selected.</p>
       )}
 
       <h3>Choose 4 Colors</h3>

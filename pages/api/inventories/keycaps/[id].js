@@ -1,5 +1,4 @@
 import dbConnect from "@/db/connect";
-import dbConnectn from "@/db/connect";
 import Keycapset from "@/db/models/Keycapset";
 
 export default async function handler(req, res) {

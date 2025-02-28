@@ -113,7 +113,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
           onClick={() => {
             if (!selectedKeycap) return;
 
-            onAddKeycap(selectedKeycapObj._id);
+            onAddKeycap(selectedKeycapObj._id, selectedKits);
             onClose();
           }}
           disabled={!selectedKeycapObj}
