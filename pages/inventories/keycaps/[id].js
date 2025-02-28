@@ -111,32 +111,18 @@ export default function KeyCapDetail() {
         </li>
       </BoxContainer>
 
-      {/* <h3>Your Kits</h3>
-      {kitsAvailable.length > 0 ? (
-        <GridContainer>
-          {kitsAvailable.map((kit) => (
-            <KitCard key={kit.name}>
-              {kit.pic && (
-                <Image
-                  src={kit.pic}
-                  alt={kit.name}
-                  width={100}
-                  height={100}
-                  objectFit="cover"
-                />
-              )}
-              <p>{kit.name}</p>
-            </KitCard>
-          ))}
-        </GridContainer>
-      ) : (
-        <p>No kits available for this keycap set.</p>
-      )} */}
       <h3>Your Kits</h3>
       {kitsAvailable.length > 0 ? (
         <GridContainer>
           {kitsAvailable.map((kitName) => (
             <KitCard key={kitName}>
+              <Image
+                src={kitName.pic}
+                alt={kitName}
+                width={100}
+                height={100}
+                objectFit="cover"
+              />
               <p>{kitName}</p>
             </KitCard>
           ))}
@@ -330,7 +316,7 @@ const ColorsContainer = styled.ul`
   flex-wrap: wrap;
   gap: 15px;
   width: auto;
-  margin 10px 0;
+  margin: 10px 0;
   max-width: 365px;
   border: 1px solid #ccc;
   border-radius: 5px;
