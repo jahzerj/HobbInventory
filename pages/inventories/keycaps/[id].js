@@ -25,8 +25,12 @@ export default function KeyCapDetail() {
   const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
   const selectedColors = userKeycap?.selectedColors ?? [];
 
-  const [editableColors, setEditableColors] = useState(selectedColors);
-  const isEditMode = false;
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedKits, setEditedKits] = useState(userKeycap?.selecetedKits || []);
+  const [editedColors, setEditedColors] = useState(
+    userKeycap?.selectedColors || []
+  );
+  const [editedNotes, setEditedNotes] = useState(userKeycap?.notes || []);
 
   const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
@@ -53,7 +57,7 @@ export default function KeyCapDetail() {
   const handleRemoveColor = (color) => {
     if (!isEditMode) return;
 
-    setEditableColors((prevColors) =>
+    setEditedColors((prevColors) =>
       prevColors.filter((existingColor) => existingColor !== color)
     );
   };
@@ -107,6 +111,23 @@ export default function KeyCapDetail() {
     mutate();
   };
 
+  const handleSaveChanges = async () => {
+    await fetch("/api/inventories/userkeycapsd", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        keycapSetId: id,
+        selectedKits: editedKits,
+        selectedColors: editedColors,
+        notes: editedNotes,
+      }),
+    });
+
+    mutate();
+    setIsEditMode(false);
+  };
+
   if (keycapError || userKeycapError) {
     return <p>Error loading keycap details.</p>;
   }
@@ -121,6 +142,10 @@ export default function KeyCapDetail() {
   return (
     <DetailPageContainer>
       <StyledLink href="/inventories/keycaps">×</StyledLink>
+
+      <BaseButton onClick={() => setIsEditMode(!isEditMode)}>
+        {isEditMode ? "❌ Cancel Edit" : "✏️ Edit Keycap Set"}
+      </BaseButton>
 
       <HeaderSection>
         <h1>{keycaps.name}</h1>
@@ -262,6 +287,18 @@ export default function KeyCapDetail() {
           <p> No notes yet.</p>
         )}
       </NotesContainer>
+
+      {isEditMode && (
+        <div>
+          <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
+            {" "}
+            ✅ Confirm Edits
+          </BaseButton>
+          <BaseButton bgColor="#ff4d4d" onClick={() => setIsEditMode(false)}>
+            ❌ Cancel
+          </BaseButton>
+        </div>
+      )}
     </DetailPageContainer>
   );
 }
