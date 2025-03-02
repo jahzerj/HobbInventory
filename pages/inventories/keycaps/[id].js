@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
-import useLocalStorageState from "use-local-storage-state";
 import { useState } from "react";
 import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
@@ -26,18 +25,24 @@ export default function KeyCapDetail() {
   const selectedColors = userKeycap?.selectedColors ?? [];
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedKits, setEditedKits] = useState(userKeycap?.selecetedKits || []);
-  const [editedColors, setEditedColors] = useState(
-    userKeycap?.selectedColors || []
-  );
+  const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
+  const [editedColors, setEditedColors] = useState([...selectedColors]);
   const [editedNotes, setEditedNotes] = useState(userKeycap?.notes || []);
 
   const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
 
-    if (selectedColors.includes(selectedColor)) return;
-    if (selectedColors.length >= 4)
-      return alert("You can only selected up to 4 colors.");
+    if (isEditMode) {
+      if (editedColors.includes(selectedColor)) return;
+      if (editedColors.length >= 4)
+        return alert("You can only select up to 4 colors.");
+
+      setEditedColors((prevColors) => [...prevColors, selectedColor]);
+    } else {
+      if (selectedColors.includes(selectedColor)) return;
+      if (selectedColors.length >= 4)
+        return alert("You can only selected up to 4 colors.");
+    }
 
     const updatedColors = [...selectedColors, selectedColor];
 
@@ -112,7 +117,7 @@ export default function KeyCapDetail() {
   };
 
   const handleSaveChanges = async () => {
-    await fetch("/api/inventories/userkeycapsd", {
+    await fetch("/api/inventories/userkeycaps", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -123,8 +128,14 @@ export default function KeyCapDetail() {
         notes: editedNotes,
       }),
     });
-
     mutate();
+    setIsEditMode(false);
+  };
+
+  const handleCancelEdits = () => {
+    setEditedColors([...selectedColors]);
+    setEditedKits([...selectedKits]);
+    setEditedNotes([...notes]);
     setIsEditMode(false);
   };
 
@@ -275,8 +286,8 @@ export default function KeyCapDetail() {
 
       <h3> Selected Colors</h3>
       <ColorsContainer>
-        {selectedColors.length > 0
-          ? selectedColors.map((color) => {
+        {(isEditMode ? editedColors : selectedColors).length > 0
+          ? (isEditMode ? editedColors : selectedColors).map((color) => {
               const colorData = colorOptions.find(
                 (option) => option.name === color
               );
@@ -341,7 +352,7 @@ export default function KeyCapDetail() {
             {" "}
             ✅ Confirm Edits
           </BaseButton>
-          <BaseButton bgColor="#ff4d4d" onClick={() => setIsEditMode(false)}>
+          <BaseButton bgColor="#ff4d4d" onClick={handleCancelEdits}>
             ❌ Cancel
           </BaseButton>
         </div>
