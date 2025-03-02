@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { keycapSetId, selectedKits, selectedColors } = req.body;
+      const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
 
       if (!keycapSetId || !selectedKits) {
         res
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
       const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
         { userId, keycapSetId },
-        { keycapSetId, selectedKits, selectedColors },
+        { keycapSetId, selectedKits, selectedColors, notes },
         { new: true, upsert: true }
       );
 

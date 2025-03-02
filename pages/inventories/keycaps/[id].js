@@ -32,6 +32,8 @@ export default function KeyCapDetail() {
     const selectedColor = event.target.value;
 
     if (selectedColors.includes(selectedColor)) return;
+    if (selectedColors.length >= 4)
+      return alert("You can only selected up to 4 colors.");
 
     const updatedColors = [...selectedColors, selectedColor];
 
@@ -56,21 +58,53 @@ export default function KeyCapDetail() {
     );
   };
 
-  const [notes, setNotes] = useLocalStorageState(`notes-${id}`, {
-    defaultValue: [],
-  });
+  const notes = userKeycap?.notes ?? [];
+
   const [newNote, setNewNote] = useState("");
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (newNote.trim() === "") return; //no empty notes please
     if (newNote.length > 100)
       return alert("Note must be 100 characters or less.");
 
-    const timestamp = new Date().toLocaleString(); //get date and time for note
+    const timestamp = new Date().toLocaleString();
 
-    setNotes([...notes, { text: newNote, timestamp }]); //add new note to notes array
+    const updatedNotes = [...notes, { id: nanoid(), text: newNote, timestamp }];
 
-    setNewNote(""); //clear input field
+    await fetch("/api/inventories/userkeycaps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        keycapSetId: id,
+        selectedKits: userKeycap.selectedKits,
+        selectedColors: userKeycap.selectedColors,
+        notes: updatedNotes,
+      }),
+    });
+
+    mutate();
+    setNewNote("");
+  };
+
+  const handleRemoveNote = async (noteId) => {
+    if (!isEditMode) return;
+
+    const updatedNotes = notes.filter((note) => note.id !== noteId);
+
+    await fetch("/api/inventories/userkeycaps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        keycapSetId: id,
+        selectedKits: userKeycap.selectedKits,
+        selectedColors: userKeycap.selectedColors,
+        notes: updatedNotes,
+      }),
+    });
+
+    mutate();
   };
 
   if (keycapError || userKeycapError) {
@@ -135,6 +169,7 @@ export default function KeyCapDetail() {
                     width={100}
                     height={100}
                     objectFit="cover"
+                    priority
                   />
                 ) : (
                   <p>No image available</p>
@@ -202,9 +237,25 @@ export default function KeyCapDetail() {
       <NotesContainer>
         {notes.length > 0 ? (
           notes.map((note) => (
-            <NoteItem key={nanoid()}>
+            <NoteItem key={note.id}>
               <span>{note.text}</span>
-              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+              <NoteTimestamp>
+                {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}{" "}
+                {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                })}
+              </NoteTimestamp>
+              {isEditMode && (
+                <RemoveNoteButton onClick={() => handleRemoveNote(note.id)}>
+                  x
+                </RemoveNoteButton>
+              )}
             </NoteItem>
           ))
         ) : (
@@ -378,6 +429,18 @@ const BaseButton = styled.button`
 `;
 
 const RemoveColorButton = styled(BaseButton)`
+  background-color: #f9f9f9;
+  color: black;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 0;
+
+  &:hover {
+    background-color: #ff4d4d;
+  }
+`;
+
+const RemoveNoteButton = styled(BaseButton)`
   background-color: #f9f9f9;
   color: black;
   font-size: 14px;

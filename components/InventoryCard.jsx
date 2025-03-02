@@ -23,6 +23,7 @@ export default function InventoryCard({ data }) {
             objectFit="cover"
             width={320}
             height={180}
+            priority
           />
         </ImageWrapper>
       ) : (

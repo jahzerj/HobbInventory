@@ -17,6 +17,7 @@ const nextConfig = {
     domains: [
       "i.imgur.com",
       "novelkeys.com",
+      "cannonkeys.com",
       "cdn.shopify.com",
       "massdrop-s3.imgix.net",
       "i.ibb.co",

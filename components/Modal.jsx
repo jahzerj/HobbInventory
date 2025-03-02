@@ -84,6 +84,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
                         marginRight: "10px",
                         borderRadius: "5px",
                       }}
+                      priority
                     />
                   )}
                   {kit.name}
