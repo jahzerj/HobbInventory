@@ -23,18 +23,11 @@ export default function KeyCapDetail() {
 
   const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
   const selectedColors = userKeycap?.selectedColors ?? [];
+  const notes = userKeycap?.notes ?? [];
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
-  const [editedNotes, setEditedNotes] = useState(
-    userKeycap?.notes?.map((note) => ({
-      id: note.id || nanoid(),
-      text: note.text,
-      timestamp: note.timestamp,
-    })) || []
-  );
-  const [editingNoteId, setEditingNoteId] = useState(null);
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -89,8 +82,6 @@ export default function KeyCapDetail() {
     );
   };
 
-  const notes = userKeycap?.notes ?? [];
-
   const [newNote, setNewNote] = useState("");
 
   const handleAddNote = () => {
@@ -101,12 +92,6 @@ export default function KeyCapDetail() {
 
     const timestamp = new Date().toLocaleString();
     const newNoteObj = { id: nanoid(), text: newNote, timestamp };
-
-    if (isEditMode) {
-      setEditedNotes((prevNotes) => [...notes, newNoteObj]);
-      setNewNote("");
-      return;
-    }
 
     //Notes addition outside of edit mode
     const updatedNotes = [...notes, newNoteObj];
@@ -125,30 +110,6 @@ export default function KeyCapDetail() {
       mutate();
       setNewNote("");
     });
-  };
-
-  const handleRemoveNote = (noteId) => {
-    if (!isEditMode) return;
-
-    setEditedNotes((prevNotes) => [
-      ...prevNotes.filter((note) => note.id !== noteId),
-    ]);
-  };
-
-  const handleEditNote = (noteId, newText) => {
-    if (!isEditMode) return;
-    if (newText.trim() === "") return;
-    if (newText.length > 100) {
-      return alert("Note must be 100 characters or less.");
-    }
-
-    setEditedNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note.id === noteId ? { ...note, text: newText } : note
-      )
-    );
-
-    setEditingNoteId(null);
   };
 
   const handleSaveChanges = async () => {
@@ -170,8 +131,6 @@ export default function KeyCapDetail() {
   const handleCancelEdits = () => {
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
-    setEditedNotes([...userKeycap?.notes]);
-    setEditingNoteId(null);
     setIsEditMode(false);
   };
 
@@ -198,7 +157,6 @@ export default function KeyCapDetail() {
             handleCancelEdits();
           } else {
             setIsEditMode(true);
-            setEditedNotes([...notes]);
             setEditedColors([...selectedColors]);
             setEditedKits(userKeycap?.selectedKits || []);
           }
@@ -217,7 +175,7 @@ export default function KeyCapDetail() {
               width={640}
               height={320}
               //fix this later!!!!!!!!!!!!!!!!!!!!!
-              objectFit="cover"
+              // objectFit="cover"
             />
           </HeaderImage>
         )}
@@ -365,69 +323,16 @@ export default function KeyCapDetail() {
       </BaseButton>
 
       <NotesContainer>
-        {(isEditMode ? editedNotes : notes).map((note) => (
-          <NoteItem key={note.id}>
-            {isEditMode && editingNoteId === note.id ? (
-              <div style={{ display: "flex", gap: "10px", width: "100%" }}>
-                <StyledInput
-                  type="text"
-                  value={editedNotes.find((n) => n.id === note.id)?.text || ""}
-                  onChange={(event) => {
-                    const newText = event.target.value;
-                    setEditedNotes((prevNotes) => {
-                      const updatedNotes = prevNotes.map((n) =>
-                        n.id === note.id ? { ...n, text: newText } : n
-                      );
-                      return [...updatedNotes];
-                    });
-                  }}
-                  maxLength={100}
-                />
-                <BaseButton
-                  onClick={() =>
-                    handleEditNotes(
-                      note.id,
-                      editedNotes.find((n) => n.id === note.id)?.text || ""
-                    )
-                  }
-                  bgColor="#28a745"
-                >
-                  ✅ Save
-                </BaseButton>
-                <BaseButton
-                  onClick={() => setEditingNoteId(null)}
-                  bgColor="#ff4d4d"
-                >
-                  ❌ Cancel
-                </BaseButton>
-              </div>
-            ) : (
-              <>
-                <span>{note.text}</span>
-                <NoteTimestamp>{note.timestamp}</NoteTimestamp>
-                {isEditMode && (
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <BaseButton
-                      onClick={() => {
-                        console.log("Clicked edit for note ID:", note.id); // Debugging
-                        setEditingNoteId((prevId) =>
-                          prevId === note.id ? null : note.id
-                        );
-                      }}
-                      bgColor="#007bff"
-                      style={{ padding: "4px 8px" }}
-                    >
-                      ✏️
-                    </BaseButton>
-                    <RemoveNoteButton onClick={() => handleRemoveNote(note.id)}>
-                      x
-                    </RemoveNoteButton>
-                  </div>
-                )}
-              </>
-            )}
-          </NoteItem>
-        ))}
+        {notes.length > 0 ? (
+          notes.map((note) => (
+            <NoteItem key={nanoid()}>
+              <span>{note.text}</span>
+              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+            </NoteItem>
+          ))
+        ) : (
+          <p> No notes yet.</p>
+        )}
       </NotesContainer>
 
       {isEditMode && (

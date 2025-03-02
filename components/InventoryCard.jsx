@@ -5,7 +5,6 @@ import Image from "next/image";
 export default function InventoryCard({ data }) {
   const router = useRouter();
 
-  console.log("Inventory Data:", data);
   return data.map((keycap) => (
     <StyledCard
       key={keycap._id}
