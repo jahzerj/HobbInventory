@@ -28,6 +28,9 @@ export default function KeyCapDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
+  const [editedNotes, setEditedNotes] = useState([...notes]);
+  const [editNoteId, setEditNoteId] = useState(null);
+  const [editNoteTexts, setEditNoteTexts] = useState({});
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -93,7 +96,6 @@ export default function KeyCapDetail() {
     const timestamp = new Date().toLocaleString();
     const newNoteObj = { id: nanoid(), text: newNote, timestamp };
 
-    //Notes addition outside of edit mode
     const updatedNotes = [...notes, newNoteObj];
 
     fetch("/api/inventories/userkeycaps", {
@@ -110,6 +112,25 @@ export default function KeyCapDetail() {
       mutate();
       setNewNote("");
     });
+  };
+
+  const handleEditNote = (noteId, currentText) => {
+    setEditNoteId(noteId); //Set the note being edited
+    setEditNoteTexts((prev) => ({ ...prev, [noteId]: currentText })); // Pre-fill the input field with current text
+  };
+
+  const handleSaveEditedNote = () => {
+    if (!editNoteId) return;
+
+    setEditedNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === editNoteId
+          ? { ...note, text: editNoteTexts[editNoteId] } // ✅ Correctly updates only the selected note
+          : note
+      )
+    );
+
+    setEditNoteId(null); // ✅ Close edit mode
   };
 
   const handleSaveChanges = async () => {
@@ -150,7 +171,6 @@ export default function KeyCapDetail() {
       {isEditMode ? null : (
         <StyledLink href="/inventories/keycaps">×</StyledLink>
       )}
-
       <BaseButton
         onClick={() => {
           if (isEditMode) {
@@ -159,12 +179,12 @@ export default function KeyCapDetail() {
             setIsEditMode(true);
             setEditedColors([...selectedColors]);
             setEditedKits(userKeycap?.selectedKits || []);
+            setEditedNotes([...notes]);
           }
         }}
       >
         {isEditMode ? "❌ Cancel Edit" : "✏️ Edit Keycap Set"}
       </BaseButton>
-
       <HeaderSection>
         <h1>{keycaps.name}</h1>
         {keycaps.render_pics?.length > 0 && (
@@ -180,7 +200,6 @@ export default function KeyCapDetail() {
           </HeaderImage>
         )}
       </HeaderSection>
-
       <BoxContainer>
         <li>
           <strong>Manufacturer:</strong> {keycaps.keycapstype}
@@ -198,9 +217,7 @@ export default function KeyCapDetail() {
           </ExternalLink>
         </li>
       </BoxContainer>
-
       <h3>Your Kits</h3>
-
       {isEditMode ? (
         <GridContainer>
           {kitsAvailable.map((kit) => {
@@ -265,7 +282,6 @@ export default function KeyCapDetail() {
       ) : (
         <p>No kits selected.</p>
       )}
-
       <h3>Choose 4 Colors</h3>
       <StyledInput
         as="select"
@@ -288,7 +304,6 @@ export default function KeyCapDetail() {
             </option>
           ))}
       </StyledInput>
-
       <h3> Selected Colors</h3>
       <ColorsContainer>
         {(isEditMode ? editedColors : selectedColors).length > 0
@@ -323,6 +338,44 @@ export default function KeyCapDetail() {
       </BaseButton>
 
       <NotesContainer>
+        {editedNotes.map((note) => (
+          <NoteItem key={note.id}>
+            {editNoteId === note.id ? (
+              <>
+                <StyledInput
+                  type="text"
+                  maxLength={100}
+                  value={editNoteTexts[note.id] || ""}
+                  onChange={(event) =>
+                    setEditNoteTexts((prev) => ({
+                      ...prev,
+                      [note.id]: event.target.value,
+                    }))
+                  }
+                />
+                <BaseButton onClick={handleSaveEditedNote}>💾 Save</BaseButton>
+                <BaseButton onClick={() => setEditNoteId(null)}>
+                  ❌ Cancel
+                </BaseButton>
+              </>
+            ) : (
+              <>
+                <span>{note.text}</span>
+                <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+                {isEditMode && (
+                  <BaseButton
+                    onClick={() => handleEditNote(note.id, note.text)}
+                  >
+                    ✏️ Edit
+                  </BaseButton>
+                )}
+              </>
+            )}
+          </NoteItem>
+        ))}
+      </NotesContainer>
+
+      {/* <NotesContainer>
         {notes.length > 0 ? (
           notes.map((note) => (
             <NoteItem key={nanoid()}>
@@ -333,8 +386,7 @@ export default function KeyCapDetail() {
         ) : (
           <p> No notes yet.</p>
         )}
-      </NotesContainer>
-
+      </NotesContainer> */}
       {isEditMode && (
         <div>
           <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
