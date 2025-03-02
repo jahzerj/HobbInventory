@@ -27,7 +27,13 @@ export default function KeyCapDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
-  const [editedNotes, setEditedNotes] = useState(userKeycap?.notes || []);
+  const [editedNotes, setEditedNotes] = useState(
+    userKeycap?.notes?.map((note) => ({
+      id: note.id || nanoid(),
+      text: note.text,
+      timestamp: note.timestamp,
+    })) || []
+  );
   const [editingNoteId, setEditingNoteId] = useState(null);
 
   const handleKitSelection = (kitName) => {
@@ -121,7 +127,7 @@ export default function KeyCapDetail() {
     });
   };
 
-  const handleRemoveNote = async (noteId) => {
+  const handleRemoveNote = (noteId) => {
     if (!isEditMode) return;
 
     setEditedNotes((prevNotes) =>
@@ -367,19 +373,18 @@ export default function KeyCapDetail() {
                     value={
                       editedNotes.find((n) => n.id === note.id)?.text || ""
                     }
-                    onChange={(event) => {
-                      setEditedNotes((prevNotes) =>
-                        prevNotes.map((n) =>
-                          n.id === note.id
-                            ? { ...n, text: event.target.value }
-                            : n
-                        )
-                      );
-                    }}
+                    onChange={(event) =>
+                      handleEditNote(note.id, event.target.value)
+                    }
                     maxLength={100}
                   />
                   <BaseButton
-                    onClick={() => setEditingNoteId(null)}
+                    onClick={() =>
+                      handleEditNote(
+                        note.id,
+                        editedNotes.find((n) => n.id === note.id)?.text
+                      )
+                    }
                     bgColor="#28a745"
                   >
                     ✅ Save
@@ -412,11 +417,9 @@ export default function KeyCapDetail() {
                     <div style={{ display: "flex", gap: "5px" }}>
                       <BaseButton
                         onClick={() => {
-                          if (editingNoteId === note.id) {
-                            setEditingNoteId(null);
-                          } else {
-                            setEditingNoteId(note.id);
-                          }
+                          setEditingNoteId((prevId) =>
+                            prevId === note.id ? null : note.id
+                          );
                         }}
                         bgColor="#007bff"
                         style={{ padding: "4px 8px" }}
