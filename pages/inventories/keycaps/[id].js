@@ -26,22 +26,37 @@ export default function KeyCapDetail() {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
-  const [editedColors, setEditedColors] = useState([...selectedColors]);
+  const [editedColors, setEditedColors] = useState(selectedColors || []);
   const [editedNotes, setEditedNotes] = useState(userKeycap?.notes || []);
+
+  const handleKitSelection = (kitName) => {
+    if (!isEditMode) return;
+
+    setEditedKits((prevKits) => {
+      if (prevKits.includes(kitName)) {
+        return prevKits.filter((kit) => kit !== kitName);
+      } else {
+        return [...prevKits, kitName];
+      }
+    });
+  };
 
   const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
 
     if (isEditMode) {
       if (editedColors.includes(selectedColor)) return;
-      if (editedColors.length >= 4)
+      if (editedColors.length >= 4) {
         return alert("You can only select up to 4 colors.");
-
+      }
       setEditedColors((prevColors) => [...prevColors, selectedColor]);
-    } else {
-      if (selectedColors.includes(selectedColor)) return;
-      if (selectedColors.length >= 4)
-        return alert("You can only selected up to 4 colors.");
+      return;
+    }
+
+    //Handle non-edit mode color selection
+    if (selectedColors.includes(selectedColor)) return;
+    if (selectedColors.length >= 4) {
+      return alert("You can only selected up to 4 colors.");
     }
 
     const updatedColors = [...selectedColors, selectedColor];
@@ -134,7 +149,7 @@ export default function KeyCapDetail() {
 
   const handleCancelEdits = () => {
     setEditedColors([...selectedColors]);
-    setEditedKits([...selectedKits]);
+    setEditedKits(userKeycap?.selectedKits || []);
     setEditedNotes([...notes]);
     setIsEditMode(false);
   };
@@ -204,21 +219,9 @@ export default function KeyCapDetail() {
               <KitCard key={kit.name}>
                 <input
                   type="checkbox"
-                  checked={
-                    editedKits.includes(kit.name) ||
-                    selectedKits.includes(kit.name)
-                  }
-                  onChange={() =>
-                    setEditedKits((prevKits) =>
-                      prevKits.includes(kit.name)
-                        ? prevKits.filter(
-                            (selectedKit) => selectedKit !== kit.name
-                          )
-                        : [...prevKits, kit.name]
-                    )
-                  }
+                  checked={isCurrentlySelected}
+                  onChange={() => handleKitSelection(kit.name)}
                 />
-
                 {kit.pic ? (
                   <Image
                     src={kit.pic}
@@ -232,8 +235,14 @@ export default function KeyCapDetail() {
                 ) : (
                   <p>No image available</p>
                 )}
-
                 <p>{kit.name}</p>
+                {wasPreviouslySelected !== isCurrentlySelected && (
+                  <small>
+                    {isCurrentlySelected
+                      ? "(Will be added"
+                      : "(Will be removed)"}
+                  </small>
+                )}
               </KitCard>
             );
           })}
@@ -276,7 +285,11 @@ export default function KeyCapDetail() {
           -- Choose up to 4 colors --
         </option>
         {colorOptions
-          .filter((color) => !selectedColors.includes(color.name))
+          .filter((color) =>
+            !isEditMode
+              ? !selectedColors.includes(color.name)
+              : !editedColors.includes(color.name)
+          )
           .map((color) => (
             <option key={color.name} value={color.name}>
               {color.name} {color.emoji}

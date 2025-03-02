@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    if (req.method === "POST") {
+    if (req.method === "POST" || req.method === "PUT") {
       const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
 
       if (!keycapSetId || !selectedKits) {
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         { userId, keycapSetId },
         { keycapSetId, selectedKits, selectedColors, notes },
         { new: true, upsert: true }
-      );
+      ).populate("keycapSetId");
 
       res
         .status(200)
