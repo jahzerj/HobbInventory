@@ -141,7 +141,9 @@ export default function KeyCapDetail() {
 
   return (
     <DetailPageContainer>
-      <StyledLink href="/inventories/keycaps">×</StyledLink>
+      {isEditMode ? null : (
+        <StyledLink href="/inventories/keycaps">×</StyledLink>
+      )}
 
       <BaseButton onClick={() => setIsEditMode(!isEditMode)}>
         {isEditMode ? "❌ Cancel Edit" : "✏️ Edit Keycap Set"}
@@ -180,10 +182,55 @@ export default function KeyCapDetail() {
       </BoxContainer>
 
       <h3>Your Kits</h3>
-      {selectedKits.length > 0 ? (
+
+      {isEditMode ? (
+        <GridContainer>
+          {kitsAvailable.map((kit) => {
+            const wasPreviouslySelected = selectedKits.includes(kit.name);
+            const isCurrentlySelected = editedKits.includes(kit.name);
+
+            return (
+              <KitCard key={kit.name}>
+                <input
+                  type="checkbox"
+                  checked={
+                    editedKits.includes(kit.name) ||
+                    selectedKits.includes(kit.name)
+                  }
+                  onChange={() =>
+                    setEditedKits((prevKits) =>
+                      prevKits.includes(kit.name)
+                        ? prevKits.filter(
+                            (selectedKit) => selectedKit !== kit.name
+                          )
+                        : [...prevKits, kit.name]
+                    )
+                  }
+                />
+
+                {kit.pic ? (
+                  <Image
+                    src={kit.pic}
+                    alt={kit.name}
+                    layout="intrinsic"
+                    width={100}
+                    height={100}
+                    objectFit="cover"
+                    priority
+                  />
+                ) : (
+                  <p>No image available</p>
+                )}
+
+                <p>{kit.name}</p>
+              </KitCard>
+            );
+          })}
+        </GridContainer>
+      ) : selectedKits.length > 0 ? (
         <GridContainer>
           {kitsAvailable
-            .filter((kit) => selectedKits.includes(kit.name)) // ✅ Show only selected kits
+            .filter((kit) => selectedKits.includes(kit.name))
             .map((kit) => (
               <KitCard key={kit.name}>
                 {kit.pic ? (
