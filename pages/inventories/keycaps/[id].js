@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
 import { nanoid } from "nanoid";
@@ -22,15 +22,24 @@ export default function KeyCapDetail() {
   } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
   const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
+
   const selectedColors = userKeycap?.selectedColors ?? [];
   const notes = userKeycap?.notes ?? [];
 
   const [isEditMode, setIsEditMode] = useState(false);
+
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
-  const [editedNotes, setEditedNotes] = useState([...notes]);
+
+  const [editedNotes, setEditedNotes] = useState([]);
   const [editNoteId, setEditNoteId] = useState(null);
-  const [editNoteTexts, setEditNoteTexts] = useState({});
+  const [editNoteText, setEditNoteText] = useState("");
+
+  useEffect(() => {
+    if (userKeycap?.notes) {
+      setEditedNotes(userKeycap.notes);
+    }
+  }, [userKeycap?.notes]);
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -93,8 +102,9 @@ export default function KeyCapDetail() {
       return alert("Note must be 100 characters or less.");
     }
 
-    const timestamp = new Date().toLocaleString();
-    const newNoteObj = { id: nanoid(), text: newNote, timestamp };
+    const newId = nanoid();
+    const timestamp = new Date();
+    const newNoteObj = { _id: newId, text: newNote, timestamp: timestamp };
 
     const updatedNotes = [...notes, newNoteObj];
 
@@ -115,22 +125,29 @@ export default function KeyCapDetail() {
   };
 
   const handleEditNote = (noteId, currentText) => {
+    console.log("Editing note:", noteId, currentText);
     setEditNoteId(noteId); //Set the note being edited
-    setEditNoteTexts((prev) => ({ ...prev, [noteId]: currentText })); // Pre-fill the input field with current text
+    setEditNoteText(currentText); // Only store the current note being edited
   };
 
   const handleSaveEditedNote = () => {
-    if (!editNoteId) return;
+    if (!editNoteId || editNoteText.trim() === "") return;
 
     setEditedNotes((prevNotes) =>
       prevNotes.map((note) =>
-        note.id === editNoteId
-          ? { ...note, text: editNoteTexts[editNoteId] } // ✅ Correctly updates only the selected note
-          : note
+        note._id === editNoteId ? { ...note, text: editNoteText } : note
       )
     );
 
     setEditNoteId(null); // ✅ Close edit mode
+    setEditNoteText(""); // Clear the edit texts state
+  };
+
+  const handleDeleteNote = (noteId) => {
+    if (!isEditMode) return;
+
+    const updatedNotes = editedNotes.filter((note) => note._id !== noteId);
+    setEditedNotes(updatedNotes);
   };
 
   const handleSaveChanges = async () => {
@@ -338,23 +355,23 @@ export default function KeyCapDetail() {
       </BaseButton>
 
       <NotesContainer>
-        {editedNotes.map((note) => (
-          <NoteItem key={note.id}>
-            {editNoteId === note.id ? (
+        {(isEditMode ? editedNotes : notes).map((note) => (
+          <NoteItem key={note._id}>
+            {editNoteId === note._id ? (
               <>
                 <StyledInput
                   type="text"
                   maxLength={100}
-                  value={editNoteTexts[note.id] || ""}
-                  onChange={(event) =>
-                    setEditNoteTexts((prev) => ({
-                      ...prev,
-                      [note.id]: event.target.value,
-                    }))
-                  }
+                  value={editNoteText}
+                  onChange={(event) => setEditNoteText(event.target.value)}
                 />
                 <BaseButton onClick={handleSaveEditedNote}>💾 Save</BaseButton>
-                <BaseButton onClick={() => setEditNoteId(null)}>
+                <BaseButton
+                  onClick={() => {
+                    setEditNoteId(null);
+                    setEditNoteText("");
+                  }}
+                >
                   ❌ Cancel
                 </BaseButton>
               </>
@@ -363,11 +380,26 @@ export default function KeyCapDetail() {
                 <span>{note.text}</span>
                 <NoteTimestamp>{note.timestamp}</NoteTimestamp>
                 {isEditMode && (
-                  <BaseButton
-                    onClick={() => handleEditNote(note.id, note.text)}
-                  >
-                    ✏️ Edit
-                  </BaseButton>
+                  <ButtonContainer>
+                    <BaseButton
+                      onClick={() => handleEditNote(note._id, note.text)}
+                    >
+                      ✏️ Edit
+                    </BaseButton>
+                    <RemoveNoteButton
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete this note?"
+                          )
+                        ) {
+                          handleDeleteNote(note._id);
+                        }
+                      }}
+                    >
+                      🗑️ Delete
+                    </RemoveNoteButton>
+                  </ButtonContainer>
                 )}
               </>
             )}
@@ -375,18 +407,6 @@ export default function KeyCapDetail() {
         ))}
       </NotesContainer>
 
-      {/* <NotesContainer>
-        {notes.length > 0 ? (
-          notes.map((note) => (
-            <NoteItem key={nanoid()}>
-              <span>{note.text}</span>
-              <NoteTimestamp>{note.timestamp}</NoteTimestamp>
-            </NoteItem>
-          ))
-        ) : (
-          <p> No notes yet.</p>
-        )}
-      </NotesContainer> */}
       {isEditMode && (
         <div>
           <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
@@ -586,6 +606,12 @@ const RemoveNoteButton = styled(BaseButton)`
   &:hover {
     background-color: #ff4d4d;
   }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 `;
 
 const NotesContainer = styled.ul`

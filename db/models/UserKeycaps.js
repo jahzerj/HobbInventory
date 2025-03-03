@@ -14,6 +14,7 @@ const userkeycapsSchema = new Schema({
   selectedColors: [{ type: String, maxlength: 4 }],
   notes: [
     {
+      _id: { type: String, required: true },
       text: { type: String, maxlength: 100 },
       timestamp: { type: Date, default: Date.now },
     },
