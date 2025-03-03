@@ -18,8 +18,6 @@ export default function InventoryCard({ data }) {
           <Image
             src={keycap.keycapSetId.render_pics[0]}
             alt={keycap.keycapSetId.name}
-            layout="responsive"
-            objectFit="cover"
             width={320}
             height={180}
             priority

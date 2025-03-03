@@ -10,6 +10,9 @@ export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
   const userId = "guest_user";
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // isEditMode = true;
 
   //Fetch user keycaps
   const { data, error, mutate } = useSWR(
