@@ -65,7 +65,7 @@ export default function KeyCapDetail() {
       return;
     }
 
-    //Handle non-edit mode color selection
+    //non-edit mode color selection
     if (selectedColors.includes(selectedColor)) return;
     if (selectedColors.length >= 4) {
       return alert("You can only selected up to 4 colors.");
@@ -188,7 +188,7 @@ export default function KeyCapDetail() {
       {isEditMode ? null : (
         <StyledLink href="/inventories/keycaps">×</StyledLink>
       )}
-      <BaseButton
+      <EditKeycapsButton
         onClick={() => {
           if (isEditMode) {
             handleCancelEdits();
@@ -200,8 +200,8 @@ export default function KeyCapDetail() {
           }
         }}
       >
-        {isEditMode ? "❌ Cancel Edit" : "✏️ Edit Keycap Set"}
-      </BaseButton>
+        {isEditMode ? "❌ Cancel Edit" : "✏️"}
+      </EditKeycapsButton>
       <HeaderSection>
         <h1>{keycaps.name}</h1>
         {keycaps.render_pics?.length > 0 && (
@@ -209,10 +209,8 @@ export default function KeyCapDetail() {
             <Image
               src={keycaps.render_pics[0]}
               alt={keycaps.name}
-              width={640}
-              height={320}
-              //fix this later!!!!!!!!!!!!!!!!!!!!!
-              // objectFit="cover"
+              layout="fill"
+              objectFit="cover"
             />
           </HeaderImage>
         )}
@@ -378,7 +376,18 @@ export default function KeyCapDetail() {
             ) : (
               <>
                 <span>{note.text}</span>
-                <NoteTimestamp>{note.timestamp}</NoteTimestamp>
+                <NoteTimestamp>
+                  {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+                  {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hourCycle: "h23",
+                  })}
+                </NoteTimestamp>
                 {isEditMode && (
                   <ButtonContainer>
                     <BaseButton
@@ -425,7 +434,7 @@ export default function KeyCapDetail() {
 const DetailPageContainer = styled.div`
   max-width: 900px;
   margin: auto;
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -624,6 +633,9 @@ const NotesContainer = styled.ul`
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
   list-style-type: none;
+  width: 100%;
+  max-width: 400px;
+  overflow-x: hidden;
 `;
 
 const NoteItem = styled.li`
@@ -637,9 +649,21 @@ const NoteItem = styled.li`
   &:last-child {
     border-bottom: none;
   }
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  width: 100%;
 `;
 
 const NoteTimestamp = styled.span`
   font-size: 12px;
   color: #666;
+`;
+
+const EditKeycapsButton = styled(BaseButton)`
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
 `;
