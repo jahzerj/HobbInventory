@@ -44,6 +44,7 @@ const StyledCard = styled.li`
   position: relative;
   background-color: lightgrey;
   width: 80%;
+  min-width: 350px;
   border-radius: 30px;
   display: flex;
   flex-direction: column;
@@ -55,7 +56,7 @@ const StyledCard = styled.li`
   box-shadow: 10px 5px 5px grey;
   cursor: pointer;
 
-  @media (min-width: 768px) {
+  @media (min-width: 600px) {
     width: 50%;
   }
 `;

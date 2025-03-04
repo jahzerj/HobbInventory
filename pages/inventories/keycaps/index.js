@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/EditInventoryButton";
+import { AttentionSeeker } from "react-awesome-reveal";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
@@ -99,15 +100,25 @@ export default function Keycaps() {
       <StyledContainer>
         <h1>Keycap Inventory</h1>
         {data?.length ? (
-          <InventoryCard
-            data={data}
-            isEditMode={isEditMode}
-            onDelete={handleDeleteKeycap}
-          />
+          isEditMode ? (
+            <AttentionSeeker effect="shake">
+              <InventoryCard
+                data={data}
+                isEditMode={isEditMode}
+                onDelete={handleDeleteKeycap}
+              />
+            </AttentionSeeker>
+          ) : (
+            <InventoryCard
+              data={data}
+              isEditMode={isEditMode}
+              onDelete={handleDeleteKeycap}
+            />
+          )
         ) : (
           <>
-            <p> You have no keycaps in your inventory!</p>
-            <p> Click the ➕ button to add a keycap set</p>
+            <p>You have no keycaps in your inventory!</p>
+            <p>Click the ➕ button to add a keycap set</p>
           </>
         )}
       </StyledContainer>
