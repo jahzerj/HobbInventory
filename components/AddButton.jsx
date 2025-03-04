@@ -40,7 +40,7 @@ export default function AddButtton({ onOpenModal }) {
       $isExpanded={isExpanded}
       onClick={handleClick}
     >
-      {isExpanded ? "+ Add keycaps" : "+"}
+      {isExpanded ? " Add keycaps +" : "+"}
     </StyledButton>
   );
 }

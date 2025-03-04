@@ -188,30 +188,6 @@ export default function KeyCapDetail() {
 
   return (
     <>
-      <AcceptCancelEditButtonContainer
-        $innerWidth={window.innerWidth}
-        $isEditMode={isEditMode}
-      >
-        <EditButton
-          isEditMode={isEditMode}
-          onToggleEdit={() => {
-            if (isEditMode) {
-              handleCancelEdits();
-            } else {
-              setIsEditMode(true);
-              setEditedColors([...selectedColors]);
-              setEditedKits(userKeycap?.selectedKits || []);
-              setEditedNotes([...notes]);
-            }
-          }}
-        />
-        {isEditMode && (
-          <ConfirmEditButton
-            isEditMode={isEditMode}
-            onSaveChanges={handleSaveChanges}
-          />
-        )}
-      </AcceptCancelEditButtonContainer>
       <DetailPageContainer>
         {isEditMode ? null : (
           <StyledLink href="/inventories/keycaps">
@@ -436,6 +412,30 @@ export default function KeyCapDetail() {
             </NoteItem>
           ))}
         </NotesContainer>
+        <AcceptCancelEditButtonContainer
+          $innerWidth={window.innerWidth}
+          $isEditMode={isEditMode}
+        >
+          <EditButton
+            isEditMode={isEditMode}
+            onToggleEdit={() => {
+              if (isEditMode) {
+                handleCancelEdits();
+              } else {
+                setIsEditMode(true);
+                setEditedColors([...selectedColors]);
+                setEditedKits(userKeycap?.selectedKits || []);
+                setEditedNotes([...notes]);
+              }
+            }}
+          />
+          {isEditMode && (
+            <ConfirmEditButton
+              isEditMode={isEditMode}
+              onSaveChanges={handleSaveChanges}
+            />
+          )}
+        </AcceptCancelEditButtonContainer>
       </DetailPageContainer>
     </>
   );
@@ -675,12 +675,13 @@ const NoteTimestamp = styled.span`
 `;
 
 const AcceptCancelEditButtonContainer = styled.div`
-  position: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "absolute" : "fixed"};
+  position: fixed;
   bottom: 10px;
   left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "50%" : "10px"};
+    props.$innerWidth > 400 && props.$isEditMode ? "" : "20px"};
   display: flex;
   gap: 10px;
   z-index: 1000;
+  align-self: ${(props) =>
+    props.$innerWidth > 600 && props.$isEditMode ? "center" : ""};
 `;

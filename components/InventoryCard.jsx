@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "./icons/DeleteIcon";
 
-export default function InventoryCard({ data, isEditMode }) {
+export default function InventoryCard({ data, isEditMode, onDelete }) {
   const router = useRouter();
 
   return data.map((keycap) => (
@@ -14,7 +14,9 @@ export default function InventoryCard({ data, isEditMode }) {
       }
     >
       {isEditMode ? (
-        <DeleteInventoryItemButton>
+        <DeleteInventoryItemButton
+          onClick={(event) => onDelete(keycap.keycapSetId._id, event)}
+        >
           <DeleteIcon />
         </DeleteInventoryItemButton>
       ) : (

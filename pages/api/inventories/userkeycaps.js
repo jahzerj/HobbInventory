@@ -48,7 +48,10 @@ export default async function handler(req, res) {
         return;
       }
 
-      await UserKeycaps.findOneAndDelete({ userId, keycapSetId });
+      await UserKeycaps.findOneAndDelete({
+        userId: req.query.userId || "guest_user",
+        keycapSetId,
+      });
 
       res.status(200).json({ message: "Keycapset removed successfully." });
       return;

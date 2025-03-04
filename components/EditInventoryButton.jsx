@@ -7,7 +7,7 @@ export default function EditInventoryButton({ isEditMode, onToggleEdit }) {
     <StyledButton $isEditMode={isEditMode} onClick={onToggleEdit}>
       {isEditMode ? (
         <>
-          <CancelIcon /> Cancel Edits
+          <CancelIcon /> Close Edit Mode
         </>
       ) : (
         <EditButtonIcon />
