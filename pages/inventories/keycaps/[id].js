@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
 import { nanoid } from "nanoid";
+import EditButton from "@/components/EditButton";
+import CloseButtonIcon from "@/components/icons/Closebutton";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -184,12 +186,9 @@ export default function KeyCapDetail() {
   const selectedKits = userKeycap?.selectedKits ?? [];
 
   return (
-    <DetailPageContainer>
-      {isEditMode ? null : (
-        <StyledLink href="/inventories/keycaps">×</StyledLink>
-      )}
-      <EditKeycapsButton
-        onClick={() => {
+    <>
+      <EditButton
+        onToggleEdit={() => {
           if (isEditMode) {
             handleCancelEdits();
           } else {
@@ -199,235 +198,246 @@ export default function KeyCapDetail() {
             setEditedNotes([...notes]);
           }
         }}
-      >
-        {isEditMode ? "❌ Cancel Edit" : "✏️"}
-      </EditKeycapsButton>
-      <HeaderSection>
-        <h1>{keycaps.name}</h1>
-        {keycaps.render_pics?.length > 0 && (
-          <HeaderImage>
-            <Image
-              src={keycaps.render_pics[0]}
-              alt={keycaps.name}
-              layout="fill"
-              objectFit="cover"
-            />
-          </HeaderImage>
-        )}
-      </HeaderSection>
-      <BoxContainer>
-        <li>
-          <strong>Manufacturer:</strong> {keycaps.keycapstype}
-        </li>
-        <li>
-          <strong>Profile:</strong> {keycaps.profile}
-        </li>
-        <li>
-          <strong>Designer:</strong> {keycaps.designer}
-        </li>
-        <li>
-          <strong>Geekhack Thread:</strong>{" "}
-          <ExternalLink href={keycaps.link} target="_blank">
-            Visit Geekhack
-          </ExternalLink>
-        </li>
-      </BoxContainer>
-      <h3>Your Kits</h3>
-      {isEditMode ? (
-        <GridContainer>
-          {kitsAvailable.map((kit) => {
-            const wasPreviouslySelected = selectedKits.includes(kit.name);
-            const isCurrentlySelected = editedKits.includes(kit.name);
-
-            return (
-              <KitCard key={kit.name}>
-                <input
-                  type="checkbox"
-                  checked={isCurrentlySelected}
-                  onChange={() => handleKitSelection(kit.name)}
-                />
-                {kit.pic ? (
-                  <Image
-                    src={kit.pic}
-                    alt={kit.name}
-                    // layout="intrinsic"
-                    width={100}
-                    height={100}
-                    objectFit="cover"
-                    priority
-                  />
-                ) : (
-                  <p>No image available</p>
-                )}
-                <p>{kit.name}</p>
-                {wasPreviouslySelected !== isCurrentlySelected && (
-                  <small>
-                    {isCurrentlySelected
-                      ? "(Will be added"
-                      : "(Will be removed)"}
-                  </small>
-                )}
-              </KitCard>
-            );
-          })}
-        </GridContainer>
-      ) : selectedKits.length > 0 ? (
-        <GridContainer>
-          {kitsAvailable
-            .filter((kit) => selectedKits.includes(kit.name))
-            .map((kit) => (
-              <KitCard key={kit.name}>
-                {kit.pic ? (
-                  <Image
-                    src={kit.pic}
-                    alt={kit.name}
-                    // layout="intrinsic"
-                    width={100}
-                    height={100}
-                    objectFit="cover"
-                    priority
-                  />
-                ) : (
-                  <p>No image available</p>
-                )}
-                <p>{kit.name}</p>
-              </KitCard>
-            ))}
-        </GridContainer>
-      ) : (
-        <p>No kits selected.</p>
-      )}
-      <h3>Choose 4 Colors</h3>
-      <StyledInput
-        as="select"
-        onChange={handleColorSelect}
-        value=""
-        maxWidth="400px"
-      >
-        <option value="" disabled>
-          -- Choose up to 4 colors --
-        </option>
-        {colorOptions
-          .filter((color) =>
-            !isEditMode
-              ? !selectedColors.includes(color.name)
-              : !editedColors.includes(color.name)
-          )
-          .map((color) => (
-            <option key={color.name} value={color.name}>
-              {color.name} {color.emoji}
-            </option>
-          ))}
-      </StyledInput>
-      <h3> Selected Colors</h3>
-      <ColorsContainer>
-        {(isEditMode ? editedColors : selectedColors).length > 0
-          ? (isEditMode ? editedColors : selectedColors).map((color) => {
-              const colorData = colorOptions.find(
-                (option) => option.name === color
-              );
-              return (
-                <SelectedColorLi key={color} bgColor={colorData?.name}>
-                  {colorData?.emoji} {color}
-                  {isEditMode && (
-                    <RemoveColorButton onClick={() => handleRemoveColor(color)}>
-                      x
-                    </RemoveColorButton>
-                  )}
-                </SelectedColorLi>
-              );
-            })
-          : "No colors selected"}
-      </ColorsContainer>
-
-      <h3>Notes</h3>
-      <StyledInput
-        type="text"
-        maxLength={100}
-        placeholder="Write a note (max 100 chars)..."
-        value={newNote}
-        onChange={(event) => setNewNote(event.target.value)}
       />
-      <BaseButton bgColor="#28a745" onClick={handleAddNote}>
-        Submit Note
-      </BaseButton>
+      <DetailPageContainer>
+        {isEditMode ? null : (
+          <StyledLink href="/inventories/keycaps">
+            <CloseButtonIcon />
+          </StyledLink>
+        )}
 
-      <NotesContainer>
-        {(isEditMode ? editedNotes : notes).map((note) => (
-          <NoteItem key={note._id}>
-            {editNoteId === note._id ? (
-              <>
-                <StyledInput
-                  type="text"
-                  maxLength={100}
-                  value={editNoteText}
-                  onChange={(event) => setEditNoteText(event.target.value)}
-                />
-                <BaseButton onClick={handleSaveEditedNote}>💾 Save</BaseButton>
-                <BaseButton
-                  onClick={() => {
-                    setEditNoteId(null);
-                    setEditNoteText("");
-                  }}
-                >
-                  ❌ Cancel
-                </BaseButton>
-              </>
-            ) : (
-              <>
-                <span>{note.text}</span>
-                <NoteTimestamp>
-                  {new Date(note.timestamp).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })}{" "}
-                  {new Date(note.timestamp).toLocaleTimeString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hourCycle: "h23",
-                  })}
-                </NoteTimestamp>
-                {isEditMode && (
-                  <ButtonContainer>
-                    <BaseButton
-                      onClick={() => handleEditNote(note._id, note.text)}
-                    >
-                      ✏️ Edit
-                    </BaseButton>
-                    <RemoveNoteButton
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this note?"
-                          )
-                        ) {
-                          handleDeleteNote(note._id);
-                        }
-                      }}
-                    >
-                      🗑️ Delete
-                    </RemoveNoteButton>
-                  </ButtonContainer>
-                )}
-              </>
-            )}
-          </NoteItem>
-        ))}
-      </NotesContainer>
+        <HeaderSection>
+          <h1>{keycaps.name}</h1>
+          {keycaps.render_pics?.length > 0 && (
+            <HeaderImage>
+              <Image
+                src={keycaps.render_pics[0]}
+                alt={keycaps.name}
+                layout="fill"
+                objectFit="cover"
+              />
+            </HeaderImage>
+          )}
+        </HeaderSection>
+        <BoxContainer>
+          <li>
+            <strong>Manufacturer:</strong> {keycaps.keycapstype}
+          </li>
+          <li>
+            <strong>Profile:</strong> {keycaps.profile}
+          </li>
+          <li>
+            <strong>Designer:</strong> {keycaps.designer}
+          </li>
+          <li>
+            <strong>Geekhack Thread:</strong>{" "}
+            <ExternalLink href={keycaps.link} target="_blank">
+              Visit Geekhack
+            </ExternalLink>
+          </li>
+        </BoxContainer>
+        <h3>Your Kits</h3>
+        {isEditMode ? (
+          <GridContainer>
+            {kitsAvailable.map((kit) => {
+              const wasPreviouslySelected = selectedKits.includes(kit.name);
+              const isCurrentlySelected = editedKits.includes(kit.name);
 
-      {isEditMode && (
-        <div>
-          <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
-            {" "}
-            ✅ Confirm Edits
-          </BaseButton>
-          <BaseButton bgColor="#ff4d4d" onClick={handleCancelEdits}>
-            ❌ Cancel
-          </BaseButton>
-        </div>
-      )}
-    </DetailPageContainer>
+              return (
+                <KitCard key={kit.name}>
+                  <input
+                    type="checkbox"
+                    checked={isCurrentlySelected}
+                    onChange={() => handleKitSelection(kit.name)}
+                  />
+                  {kit.pic ? (
+                    <Image
+                      src={kit.pic}
+                      alt={kit.name}
+                      // layout="intrinsic"
+                      width={100}
+                      height={100}
+                      objectFit="cover"
+                      priority
+                    />
+                  ) : (
+                    <p>No image available</p>
+                  )}
+                  <p>{kit.name}</p>
+                  {wasPreviouslySelected !== isCurrentlySelected && (
+                    <small>
+                      {isCurrentlySelected
+                        ? "(Will be added"
+                        : "(Will be removed)"}
+                    </small>
+                  )}
+                </KitCard>
+              );
+            })}
+          </GridContainer>
+        ) : selectedKits.length > 0 ? (
+          <GridContainer>
+            {kitsAvailable
+              .filter((kit) => selectedKits.includes(kit.name))
+              .map((kit) => (
+                <KitCard key={kit.name}>
+                  {kit.pic ? (
+                    <Image
+                      src={kit.pic}
+                      alt={kit.name}
+                      // layout="intrinsic"
+                      width={100}
+                      height={100}
+                      objectFit="cover"
+                      priority
+                    />
+                  ) : (
+                    <p>No image available</p>
+                  )}
+                  <p>{kit.name}</p>
+                </KitCard>
+              ))}
+          </GridContainer>
+        ) : (
+          <p>No kits selected.</p>
+        )}
+        <h3>Choose 4 Colors</h3>
+        <StyledInput
+          as="select"
+          onChange={handleColorSelect}
+          value=""
+          maxWidth="400px"
+        >
+          <option value="" disabled>
+            -- Choose up to 4 colors --
+          </option>
+          {colorOptions
+            .filter((color) =>
+              !isEditMode
+                ? !selectedColors.includes(color.name)
+                : !editedColors.includes(color.name)
+            )
+            .map((color) => (
+              <option key={color.name} value={color.name}>
+                {color.name} {color.emoji}
+              </option>
+            ))}
+        </StyledInput>
+        <h3> Selected Colors</h3>
+        <ColorsContainer>
+          {(isEditMode ? editedColors : selectedColors).length > 0
+            ? (isEditMode ? editedColors : selectedColors).map((color) => {
+                const colorData = colorOptions.find(
+                  (option) => option.name === color
+                );
+                return (
+                  <SelectedColorLi key={color} bgColor={colorData?.name}>
+                    {colorData?.emoji} {color}
+                    {isEditMode && (
+                      <RemoveColorButton
+                        onClick={() => handleRemoveColor(color)}
+                      >
+                        x
+                      </RemoveColorButton>
+                    )}
+                  </SelectedColorLi>
+                );
+              })
+            : "No colors selected"}
+        </ColorsContainer>
+
+        <h3>Notes</h3>
+        <StyledInput
+          type="text"
+          maxLength={100}
+          placeholder="Write a note (max 100 chars)..."
+          value={newNote}
+          onChange={(event) => setNewNote(event.target.value)}
+        />
+        <BaseButton bgColor="#28a745" onClick={handleAddNote}>
+          Submit Note
+        </BaseButton>
+
+        <NotesContainer>
+          {(isEditMode ? editedNotes : notes).map((note) => (
+            <NoteItem key={note._id}>
+              {editNoteId === note._id ? (
+                <>
+                  <StyledInput
+                    type="text"
+                    maxLength={100}
+                    value={editNoteText}
+                    onChange={(event) => setEditNoteText(event.target.value)}
+                  />
+                  <BaseButton onClick={handleSaveEditedNote}>
+                    💾 Save
+                  </BaseButton>
+                  <BaseButton
+                    onClick={() => {
+                      setEditNoteId(null);
+                      setEditNoteText("");
+                    }}
+                  >
+                    ❌ Cancel
+                  </BaseButton>
+                </>
+              ) : (
+                <>
+                  <span>{note.text}</span>
+                  <NoteTimestamp>
+                    {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}{" "}
+                    {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hourCycle: "h23",
+                    })}
+                  </NoteTimestamp>
+                  {isEditMode && (
+                    <ButtonContainer>
+                      <BaseButton
+                        onClick={() => handleEditNote(note._id, note.text)}
+                      >
+                        ✏️ Edit
+                      </BaseButton>
+                      <RemoveNoteButton
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this note?"
+                            )
+                          ) {
+                            handleDeleteNote(note._id);
+                          }
+                        }}
+                      >
+                        🗑️ Delete
+                      </RemoveNoteButton>
+                    </ButtonContainer>
+                  )}
+                </>
+              )}
+            </NoteItem>
+          ))}
+        </NotesContainer>
+
+        {isEditMode && (
+          <ContainerAcceptCancleEdits>
+            <BaseButton bgColor="#ff4d4d" onClick={handleCancelEdits}>
+              ❌ Cancel
+            </BaseButton>
+
+            <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
+              {" "}
+              ✅ Confirm Edits
+            </BaseButton>
+          </ContainerAcceptCancleEdits>
+        )}
+      </DetailPageContainer>
+    </>
   );
 }
 
@@ -448,9 +458,11 @@ const StyledLink = styled(Link)`
   color: white;
   background-color: #ff4d4d;
   border-radius: 50%;
+  display: flex;
+  justify-content: center;
   font-size: 24px;
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   z-index: 1000;
 
   &:hover {
@@ -666,4 +678,9 @@ const EditKeycapsButton = styled(BaseButton)`
   bottom: 10px;
   left: 10px;
   z-index: 1000;
+`;
+
+const ContainerAcceptCancleEdits = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
