@@ -190,7 +190,7 @@ export default function KeyCapDetail() {
     <>
       <AcceptCancelEditButtonContainer
         $innerWidth={window.innerWidth}
-        isEditMode={isEditMode}
+        $isEditMode={isEditMode}
       >
         <EditButton
           isEditMode={isEditMode}
