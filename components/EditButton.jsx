@@ -1,71 +1,39 @@
-import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
+import EditButtonIcon from "./icons/EditButtonIcon";
+import CancelIcon from "./icons/CancelIcon";
 
 export default function EditButton({ isEditMode, onToggleEdit }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const buttonRef = useRef(null);
-
-  //Handle click outside the collapse the button
-
-  useEffect(() => {
-    const handleCloseExpandedButton = (event) => {
-      if (buttonRef.current && !buttonRef.current.contains(event.target)) {
-        setIsExpanded(false);
-      }
-    };
-
-    if (isExpanded) {
-      window.addEventListener("click", handleCloseExpandedButton);
-    }
-
-    return () => {
-      window.removeEventListener("click", handleCloseExpandedButton);
-    };
-  }, [isExpanded]);
-
-  //Button click behaivor
-
-  const handleClick = () => {
-    if (window.innerWidth > 768) {
-      onToggleEdit(); // large screens modal opens
-    } else {
-      isExpanded ? onToggleEdit() : setIsExpanded(true);
-    }
-  };
-
   return (
-    <StyledButton
-      ref={buttonRef}
-      $isExpanded={isExpanded}
-      onClick={handleClick}
-    >
-      {isEditMode ? "❌ Cancel Edit" : isExpanded ? "✏️ Edit Keycaps" : "✏️"}
+    <StyledButton $isEditMode={isEditMode} onClick={onToggleEdit}>
+      {isEditMode ? (
+        <>
+          <CancelIcon /> Cancel Edits
+        </>
+      ) : (
+        <EditButtonIcon />
+      )}
     </StyledButton>
   );
 }
 
 const StyledButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  left 20px;
-  z-index: 1000;
-  background-color: #007bff;
+  background-color: ${(props) => (props.$isEditMode ? "#ff4d4d" : "#007bff")};
   color: white;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${(props) => (props.$isExpanded ? "16px" : "24px")};
+  font-size: 16px;
   font-weight: bold;
-  border-radius: ${(props) => (props.$isExpanded ? "8px" : "50%")};
-  width: ${(props) => (props.$isExpanded ? "160px" : "50px")};
+  border-radius: ${(props) => (props.$isEditMode ? "8px" : "50%")};
+  width: ${(props) => (props.$isEditMode ? "auto" : "50px")};
   height: 50px;
   transition: all 0.3s ease-in-out;
   white-space: nowrap;
-  padding: ${(props) => (props.$isExpanded ? "0 15px" : "0")};
+  padding: ${(props) => (props.$isEditMode ? "0 15px" : "0")};
 
   &:hover {
-    background-color: #0056b3;
+    ${(props) => (props.$isEditMode ? "rgb(162, 24, 24)" : "#0056b3")};
   }
 `;

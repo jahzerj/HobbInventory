@@ -7,7 +7,8 @@ import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
 import { nanoid } from "nanoid";
 import EditButton from "@/components/EditButton";
-import CloseButtonIcon from "@/components/icons/Closebutton";
+import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
+import ConfirmEditButton from "@/components/ConfirmEditButton";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -187,18 +188,30 @@ export default function KeyCapDetail() {
 
   return (
     <>
-      <EditButton
-        onToggleEdit={() => {
-          if (isEditMode) {
-            handleCancelEdits();
-          } else {
-            setIsEditMode(true);
-            setEditedColors([...selectedColors]);
-            setEditedKits(userKeycap?.selectedKits || []);
-            setEditedNotes([...notes]);
-          }
-        }}
-      />
+      <AcceptCancelEditButtonContainer
+        $innerWidth={window.innerWidth}
+        isEditMode={isEditMode}
+      >
+        <EditButton
+          isEditMode={isEditMode}
+          onToggleEdit={() => {
+            if (isEditMode) {
+              handleCancelEdits();
+            } else {
+              setIsEditMode(true);
+              setEditedColors([...selectedColors]);
+              setEditedKits(userKeycap?.selectedKits || []);
+              setEditedNotes([...notes]);
+            }
+          }}
+        />
+        {isEditMode && (
+          <ConfirmEditButton
+            isEditMode={isEditMode}
+            onSaveChanges={handleSaveChanges}
+          />
+        )}
+      </AcceptCancelEditButtonContainer>
       <DetailPageContainer>
         {isEditMode ? null : (
           <StyledLink href="/inventories/keycaps">
@@ -213,8 +226,8 @@ export default function KeyCapDetail() {
               <Image
                 src={keycaps.render_pics[0]}
                 alt={keycaps.name}
-                layout="fill"
-                objectFit="cover"
+                fill={true}
+                priority
               />
             </HeaderImage>
           )}
@@ -254,10 +267,8 @@ export default function KeyCapDetail() {
                     <Image
                       src={kit.pic}
                       alt={kit.name}
-                      // layout="intrinsic"
-                      width={100}
-                      height={100}
-                      objectFit="cover"
+                      width={116}
+                      height={67}
                       priority
                     />
                   ) : (
@@ -285,10 +296,8 @@ export default function KeyCapDetail() {
                     <Image
                       src={kit.pic}
                       alt={kit.name}
-                      // layout="intrinsic"
-                      width={100}
-                      height={100}
-                      objectFit="cover"
+                      width={116}
+                      height={67}
                       priority
                     />
                   ) : (
@@ -306,7 +315,7 @@ export default function KeyCapDetail() {
           as="select"
           onChange={handleColorSelect}
           value=""
-          maxWidth="400px"
+          $maxWidth="400px"
         >
           <option value="" disabled>
             -- Choose up to 4 colors --
@@ -331,7 +340,7 @@ export default function KeyCapDetail() {
                   (option) => option.name === color
                 );
                 return (
-                  <SelectedColorLi key={color} bgColor={colorData?.name}>
+                  <SelectedColorLi key={color} $bgColor={colorData?.name}>
                     {colorData?.emoji} {color}
                     {isEditMode && (
                       <RemoveColorButton
@@ -354,7 +363,7 @@ export default function KeyCapDetail() {
           value={newNote}
           onChange={(event) => setNewNote(event.target.value)}
         />
-        <BaseButton bgColor="#28a745" onClick={handleAddNote}>
+        <BaseButton $bgColor="#28a745" onClick={handleAddNote}>
           Submit Note
         </BaseButton>
 
@@ -423,19 +432,6 @@ export default function KeyCapDetail() {
             </NoteItem>
           ))}
         </NotesContainer>
-
-        {isEditMode && (
-          <ContainerAcceptCancleEdits>
-            <BaseButton bgColor="#ff4d4d" onClick={handleCancelEdits}>
-              ❌ Cancel
-            </BaseButton>
-
-            <BaseButton bgColor="#28a745" onClick={handleSaveChanges}>
-              {" "}
-              ✅ Confirm Edits
-            </BaseButton>
-          </ContainerAcceptCancleEdits>
-        )}
       </DetailPageContainer>
     </>
   );
@@ -449,6 +445,7 @@ const DetailPageContainer = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
+  padding-bottom: 60px;
 `;
 const StyledLink = styled(Link)`
   position: fixed;
@@ -498,11 +495,11 @@ const HeaderImage = styled.div`
 `;
 
 const BoxContainer = styled.ul`
-  background: ${(props) => props.bgColor || "#f9f9f9"};
+  background: ${(props) => props.$bgColor || "#f9f9f9"};
   padding: 15px;
   border-radius: 10px;
   width: 100%;
-  max-width: ${(props) => props.maxWidth || "600px"};
+  max-width: ${(props) => props.$maxWidth || "600px"};
   text-align: ${(props) => props.align || "left"};
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: ${(props) => props.margin || "15px"};
@@ -549,12 +546,12 @@ const KitCard = styled.li`
 
 const StyledInput = styled.input`
   width: 100%;
-  max-width: ${(props) => props.maxWidth || "600px"};
+  max-width: ${(props) => props.$maxWidth || "600px"};
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  background-color: ${(props) => props.bgColor || "#f9f9f9"};
+  background-color: ${(props) => props.$bgColor || "#f9f9f9"};
 `;
 
 const ColorsContainer = styled.ul`
@@ -580,7 +577,7 @@ const SelectedColorLi = styled.li`
   padding: 5px 10px;
   border-radius: 5px;
   font-weight: bold;
-  border: 2px solid ${(props) => props.bgColor || "black"};
+  border: 2px solid ${(props) => props.$bgColor || "black"};
   display: flex;
   align-items: center;
   gap: 5px;
@@ -589,7 +586,7 @@ const SelectedColorLi = styled.li`
 const BaseButton = styled.button`
   margin-top: ${(props) => props.margin || "10px"};
   padding: 8px 15px;
-  background-color: ${(props) => props.bgColor || "#28a745"};
+  background-color: ${(props) => props.$bgColor || "#28a745"};
   color: white;
   border: none;
   border-radius: 5px;
@@ -673,14 +670,13 @@ const NoteTimestamp = styled.span`
   color: #666;
 `;
 
-const EditKeycapsButton = styled(BaseButton)`
-  position: fixed;
+const AcceptCancelEditButtonContainer = styled.div`
+  position: ${(props) =>
+    props.$innerWidth > 400 && props.$isEditMode ? "absolute" : "fixed"};
   bottom: 10px;
-  left: 10px;
-  z-index: 1000;
-`;
-
-const ContainerAcceptCancleEdits = styled.div`
+  left: ${(props) =>
+    props.$innerWidth > 400 && props.$isEditMode ? "50%" : "10px"};
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
+  z-index: 1000;
 `;
