@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
+import AddIcon from "./icons/AddIcon";
 
 export default function AddButtton({ onOpenModal }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,7 +48,7 @@ export default function AddButtton({ onOpenModal }) {
 const StyledButton = styled.button`
   position: fixed;
   bottom: 10px;
-  left: 10px;
+  right: 10px;
   z-index: 1000;
   background-color: #007bff;
   color: white;

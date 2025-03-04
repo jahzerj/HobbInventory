@@ -5,14 +5,13 @@ import Modal from "@/components/Modal";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
+import EditInventoryButton from "@/components/EditInventoryButton";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
-
-  // isEditMode = true;
 
   //Fetch user keycaps
   const { data, error, mutate } = useSWR(
@@ -66,7 +65,9 @@ export default function Keycaps() {
       <StyledContainer>
         <h1>Keycap Inventory</h1>
         {data?.length ? (
-          <InventoryCard data={data} />
+          <InventoryCard data={data} isEditMode={isEditMode}>
+            
+          </InventoryCard>
         ) : (
           <>
             <p> You have no keycaps in your inventory!</p>
@@ -75,7 +76,16 @@ export default function Keycaps() {
         )}
       </StyledContainer>
       <AddButton onOpenModal={() => setIsOpen(true)} />
-      <button> Words </button>
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => {
+          if (isEditMode) {
+            setIsEditMode(false);
+          } else {
+            setIsEditMode(true);
+          }
+        }}
+      />
     </>
   );
 }
@@ -85,3 +95,12 @@ const StyledContainer = styled.ul`
   flex-direction: column;
   align-items: center;
 `;
+
+
+
+// window.confirm(
+//   "Are you sure you want to delete this note?"
+// )
+
+
+

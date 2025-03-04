@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import DeleteIcon from "./icons/DeleteIcon";
 
-export default function InventoryCard({ data }) {
+export default function InventoryCard({ data, isEditMode }) {
   const router = useRouter();
 
   return data.map((keycap) => (
@@ -12,6 +13,13 @@ export default function InventoryCard({ data }) {
         router.push(`/inventories/keycaps/${keycap.keycapSetId._id}`)
       }
     >
+      {isEditMode ? (
+        <DeleteInventoryItemButton>
+          <DeleteIcon />
+        </DeleteInventoryItemButton>
+      ) : (
+        ""
+      )}
       <h3>{keycap.keycapSetId?.name}</h3>
       {keycap.keycapSetId?.render_pics?.length > 0 ? (
         <ImageWrapper>
@@ -31,6 +39,7 @@ export default function InventoryCard({ data }) {
 }
 
 const StyledCard = styled.li`
+  position: relative;
   background-color: lightgrey;
   width: 80%;
   border-radius: 30px;
@@ -60,5 +69,21 @@ const ImageWrapper = styled.div`
 
   @media (max-width: 320px) {
     width: 90%;
+  }
+`;
+
+const DeleteInventoryItemButton = styled.button`
+  display: flex;
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  color: white;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(162, 24, 24);
   }
 `;
