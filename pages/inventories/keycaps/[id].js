@@ -220,7 +220,11 @@ export default function KeyCapDetail() {
         )}
 
         <HeaderSection>
-          <h1>{keycaps.name}</h1>
+          {isEditMode ? (
+            <h1>Editing {keycaps.name}</h1>
+          ) : (
+            <h1>{keycaps.name}</h1>
+          )}
           {keycaps.render_pics?.length > 0 && (
             <HeaderImage>
               <Image
