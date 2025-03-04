@@ -75,6 +75,7 @@ export default function Keycaps() {
         )}
       </StyledContainer>
       <AddButton onOpenModal={() => setIsOpen(true)} />
+      <button> Words </button>
     </>
   );
 }
