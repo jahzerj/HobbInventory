@@ -6,37 +6,35 @@ export default async function handler(req, res) {
   await dbConnect();
 
   try {
+    const userId = req.query.userId || "guest_user"; // Use guest ID if none is provided
+
     if (req.method === "GET") {
-      const userId = req.query.userId || "guest_user"; // Use guest ID if none is provided
-      const userKeycaps = await UserKeycaps.findOne({ userId }).populate(
-        "keycaps"
+      const userKeycaps = await UserKeycaps.find({ userId }).populate(
+        "keycapSetId"
       );
-
-      if (!userKeycaps) {
-        res.status(200).json({ keycaps: [] });
-        return;
-      }
-
-      res.status(200).json(userKeycaps.keycaps);
+      res.status(200).json(userKeycaps);
       return;
     }
-    if (req.method === "POST") {
-      const { keycapId } = req.body;
-      if (!keycapId) {
-        res.status(400).json({ message: "Keycap ID is required." });
+
+    if (req.method === "POST" || req.method === "PUT") {
+      const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
+
+      if (!keycapSetId || !selectedKits) {
+        res
+          .status(400)
+          .json({ message: "Keycap ID and selected kits are required." });
         return;
       }
 
-      const userId = req.body.userId || "guest_user";
-      const userKeycaps = await UserKeycaps.findOneAndUpdate(
-        { userId }, //Search for this userId
-        { $addToSet: { keycaps: keycapId } }, //Add keycap if it's not already there
-        { new: true, upsert: true } // Create new document if none exists
-      );
+      const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
+        { userId, keycapSetId },
+        { keycapSetId, selectedKits, selectedColors, notes },
+        { new: true, upsert: true }
+      ).populate("keycapSetId");
 
       res
         .status(200)
-        .json({ message: "Keycap added successfully.", userKeycaps });
+        .json({ message: "Keycap selection updated.", updatedKeycaps });
       return;
     }
   } catch (error) {

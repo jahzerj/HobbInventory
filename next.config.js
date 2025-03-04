@@ -17,9 +17,11 @@ const nextConfig = {
     domains: [
       "i.imgur.com",
       "novelkeys.com",
+      "cannonkeys.com",
       "cdn.shopify.com",
       "massdrop-s3.imgix.net",
       "i.ibb.co",
+      "imgur.com",
       "media.discordapp.net",
       "cdn.discordapp.com",
       "omnitype.com",
@@ -29,6 +31,8 @@ const nextConfig = {
       "mekibo.com",
       "media.biipmk.com",
       "i.postimg.cc",
+      "spaceholdings.net",
+      "oblotzky.industries",
     ],
   },
 };
