@@ -16,6 +16,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
       {isEditMode ? (
         <DeleteInventoryItemButton
           onClick={(event) => onDelete(keycap.keycapSetId._id, event)}
+          aria-label="Delete Keycap Button"
         >
           <DeleteIcon />
         </DeleteInventoryItemButton>

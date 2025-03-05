@@ -53,8 +53,6 @@ export default function Keycaps() {
   const handleDeleteKeycap = async (keycapSetId, event) => {
     event.stopPropagation();
 
-    console.log("Keycap:", userKeycaps);
-
     const confirmDelete = window.confirm(
       "Are you sure you want to remove this keycapset?\n\n" +
         "This will permanently remove:\n" +
@@ -69,7 +67,6 @@ export default function Keycaps() {
     setUserKeycaps((prevKeycaps) =>
       prevKeycaps.filter((id) => id !== keycapSetId)
     );
-    console.log("keycapsetId: ", keycapSetId);
 
     const response = await fetch("/api/inventories/userkeycaps", {
       method: "DELETE",
@@ -125,13 +122,7 @@ export default function Keycaps() {
       <AddButton onOpenModal={() => setIsOpen(true)} />
       <EditInventoryButton
         isEditMode={isEditMode}
-        onToggleEdit={() => {
-          if (isEditMode) {
-            setIsEditMode(false);
-          } else {
-            setIsEditMode(true);
-          }
-        }}
+        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
       />
     </>
   );

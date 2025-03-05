@@ -10,7 +10,7 @@ export default function EditInventoryButton({ isEditMode, onToggleEdit }) {
           <CancelIcon /> Close Edit Mode
         </>
       ) : (
-        <EditButtonIcon />
+        <EditButtonIcon aria-label="Edit Button" />
       )}
     </StyledButton>
   );
@@ -38,6 +38,7 @@ const StyledButton = styled.button`
   padding: ${(props) => (props.$isEditMode ? "0 15px" : "0")};
 
   &:hover {
-    ${(props) => (props.$isEditMode ? "rgb(162, 24, 24)" : "#0056b3")};
+    background-color: ${(props) =>
+      props.$isEditMode ? "rgb(162, 24, 24)" : "#0056b3"};
   }
 `;

@@ -37,6 +37,13 @@ export default function KeyCapDetail() {
   const [editedNotes, setEditedNotes] = useState([]);
   const [editNoteId, setEditNoteId] = useState(null);
   const [editNoteText, setEditNoteText] = useState("");
+  const [innerWidth, setInnerWidth] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setInnerWidth(window.innerWidth);
+    }
+  }, []);
 
   useEffect(() => {
     if (userKeycap?.notes) {
@@ -190,7 +197,10 @@ export default function KeyCapDetail() {
     <>
       <DetailPageContainer>
         {isEditMode ? null : (
-          <StyledLink href="/inventories/keycaps">
+          <StyledLink
+            href="/inventories/keycaps"
+            aria-label="Close Details Page"
+          >
             <CloseButtonIcon />
           </StyledLink>
         )}
@@ -348,72 +358,76 @@ export default function KeyCapDetail() {
         </BaseButton>
 
         <NotesContainer>
-          {(isEditMode ? editedNotes : notes).map((note) => (
-            <NoteItem key={note._id}>
-              {editNoteId === note._id ? (
-                <>
-                  <StyledInput
-                    type="text"
-                    maxLength={100}
-                    value={editNoteText}
-                    onChange={(event) => setEditNoteText(event.target.value)}
-                  />
-                  <BaseButton onClick={handleSaveEditedNote}>
-                    💾 Save
-                  </BaseButton>
-                  <BaseButton
-                    onClick={() => {
-                      setEditNoteId(null);
-                      setEditNoteText("");
-                    }}
-                  >
-                    ❌ Cancel
-                  </BaseButton>
-                </>
-              ) : (
-                <>
-                  <span>{note.text}</span>
-                  <NoteTimestamp>
-                    {new Date(note.timestamp).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}{" "}
-                    {new Date(note.timestamp).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hourCycle: "h23",
-                    })}
-                  </NoteTimestamp>
-                  {isEditMode && (
-                    <ButtonContainer>
-                      <BaseButton
-                        onClick={() => handleEditNote(note._id, note.text)}
-                      >
-                        ✏️ Edit
-                      </BaseButton>
-                      <RemoveNoteButton
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to delete this note?"
-                            )
-                          ) {
-                            handleDeleteNote(note._id);
-                          }
-                        }}
-                      >
-                        🗑️ Delete
-                      </RemoveNoteButton>
-                    </ButtonContainer>
-                  )}
-                </>
-              )}
-            </NoteItem>
-          ))}
+          {notes.length === 0 && editedNotes.length === 0 ? (
+            <p> &lt; No notes yet!&gt; </p>
+          ) : (
+            (isEditMode ? editedNotes : notes).map((note) => (
+              <NoteItem key={note._id}>
+                {editNoteId === note._id ? (
+                  <>
+                    <StyledInput
+                      type="text"
+                      maxLength={100}
+                      value={editNoteText}
+                      onChange={(event) => setEditNoteText(event.target.value)}
+                    />
+                    <BaseButton onClick={handleSaveEditedNote}>
+                      💾 Save
+                    </BaseButton>
+                    <BaseButton
+                      onClick={() => {
+                        setEditNoteId(null);
+                        setEditNoteText("");
+                      }}
+                    >
+                      ❌ Cancel
+                    </BaseButton>
+                  </>
+                ) : (
+                  <>
+                    <span>{note.text}</span>
+                    <NoteTimestamp>
+                      {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}{" "}
+                      {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hourCycle: "h23",
+                      })}
+                    </NoteTimestamp>
+                    {isEditMode && (
+                      <ButtonContainer>
+                        <BaseButton
+                          onClick={() => handleEditNote(note._id, note.text)}
+                        >
+                          ✏️ Edit
+                        </BaseButton>
+                        <RemoveNoteButton
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this note?"
+                              )
+                            ) {
+                              handleDeleteNote(note._id);
+                            }
+                          }}
+                        >
+                          🗑️ Delete
+                        </RemoveNoteButton>
+                      </ButtonContainer>
+                    )}
+                  </>
+                )}
+              </NoteItem>
+            ))
+          )}
         </NotesContainer>
         <AcceptCancelEditButtonContainer
-          $innerWidth={window.innerWidth}
+          $innerWidth={innerWidth}
           $isEditMode={isEditMode}
         >
           <EditButton

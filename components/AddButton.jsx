@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import AddIcon from "./icons/AddIcon";
 
 export default function AddButtton({ onOpenModal }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -39,6 +38,7 @@ export default function AddButtton({ onOpenModal }) {
       ref={buttonRef}
       $isExpanded={isExpanded}
       onClick={handleClick}
+      aria-label="Add Keycaps Button"
     >
       {isExpanded ? " Add keycaps +" : "+"}
     </StyledButton>
