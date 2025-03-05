@@ -1,41 +1,226 @@
 import { createPortal } from "react-dom";
-import useSWR from "swr";
-import { useState, useEffect } from "react";
-// import Image from "next/image";
+import { useState } from "react";
 import styled from "styled-components";
 
-export default function Modal({ open, onClose, onAddKeycap }) {
-  const { data: switches, error } = useSWR("/api/inventories/switches");
-  // const [selectedKeycap, setSelectedKeycap] = useState("");
-  // const [selectedKits, setSelectedKits] = useState([]);
+export default function Modal({ open, onClose, onAddSwitch }) {
+  const [switchData, setSwitchData] = useState({
+    name: "",
+    manufacturer: "",
+    image: "",
+    quantity: 1,
+    switchType: "",
+    factoryLubed: false,
+    springWeight: "",
+    topMaterial: "",
+    bottomMaterial: "",
+    stemMaterial: "",
+    isLubed: false,
+    isFilmed: false,
+    notes: [],
+  });
+
+  const [noteText, setNoteText] = useState("");
 
   if (!open) return null;
-  if (error) return <p>Error loading keycaps...</p>;
-  if (!switches) return <p> Loading keycaps...</p>;
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setSwitchData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleAddNote = () => {
+    if (noteText.trim() === "") return;
+
+    setSwitchData((prevData) => ({
+      ...prevData,
+      notes: [...prevData.notes, { text: noteText, timestamp: new Date() }],
+    }));
+
+    setNoteText("");
+  };
+
+  const handleSubmit = () => {
+    if (
+      !switchData.name ||
+      !switchData.manufacturer ||
+      !switchData.image ||
+      !switchData.switchType
+    ) {
+      alert(
+        "Please fill out all required fields: Name, Manufacturer, Image, and Switch Type."
+      );
+      return;
+    }
+
+    onAddSwitch(switchData);
+    onClose();
+    setSwitchData({
+      name: "",
+      manufacturer: "",
+      image: "",
+      quantity: 1,
+      switchType: "",
+      factoryLubed: false,
+      springWeight: "",
+      topMaterial: "",
+      bottomMaterial: "",
+      stemMaterial: "",
+      isLubed: false,
+      isFilmed: false,
+      notes: [],
+    });
+  };
 
   return createPortal(
     <>
       <Overlay />
       <ModalWrapper>
-        <h2>Add your Switch's Information</h2>
+        <h2>Add your Switch&apos;s Information</h2>
 
-        
+        <Input
+          type="text"
+          name="name"
+          placeholder="Switch Name *"
+          value={switchData.name}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="text"
+          name="manufacturer"
+          placeholder="Manufacturer *"
+          value={switchData.manufacturer}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="url"
+          name="image"
+          placeholder="Image URL *"
+          value={switchData.image}
+          onChange={handleChange}
+          required
+        />
 
-        
-        {/*preivew section for the added switch */}
-        <CancelButton onClick={onClose}>Cancel</CancelButton>
-        <AddButton
-          onClick={() => {
-            if (!selectedKeycap) return;
-
-            onAddKeycap(selectedKeycapObj._id, selectedKits);
-            onClose();
-          }}
-          // disabled={!selectedKeycapObj}
-          // Add a collection of required inputs !requiredInputs = > disabled
+        <Select
+          name="switchType"
+          value={switchData.switchType}
+          onChange={handleChange}
         >
-          Add Keycaps
-        </AddButton>
+          <option value="">Select Switch Type *</option>
+          <option value="Linear">Linear</option>
+          <option value="Tactile">Tactile</option>
+          <option value="Clicky">Clicky</option>
+        </Select>
+
+        <Input
+          type="number"
+          name="quantity"
+          placeholder="Quantity"
+          value={switchData.quantity}
+          onChange={handleChange}
+        />
+
+        <CheckboxContainer>
+          <label>
+            <input
+              type="checkbox"
+              name="factoryLubed"
+              checked={switchData.factoryLubed}
+              onChange={handleChange}
+            />
+            Factory Lubed
+          </label>
+        </CheckboxContainer>
+
+        <Input
+          type="text"
+          name="springWeight"
+          placeholder="Spring Weight"
+          value={switchData.springWeight}
+          onChange={handleChange}
+        />
+        <Input
+          type="text"
+          name="topMaterial"
+          placeholder="Top Housing Material"
+          value={switchData.topMaterial}
+          onChange={handleChange}
+        />
+        <Input
+          type="text"
+          name="bottomMaterial"
+          placeholder="Bottom Housing Material"
+          value={switchData.bottomMaterial}
+          onChange={handleChange}
+        />
+        <Input
+          type="text"
+          name="stemMaterial"
+          placeholder="Stem Material"
+          value={switchData.stemMaterial}
+          onChange={handleChange}
+        />
+
+        <CheckboxContainer>
+          <label>
+            <input
+              type="checkbox"
+              name="isLubed"
+              checked={switchData.isLubed}
+              onChange={handleChange}
+            />
+            Hand Lubed
+          </label>
+        </CheckboxContainer>
+        <CheckboxContainer>
+          <label>
+            <input
+              type="checkbox"
+              name="isFilmed"
+              checked={switchData.isFilmed}
+              onChange={handleChange}
+            />
+            Filmed
+          </label>
+        </CheckboxContainer>
+
+        <TextArea
+          name="notesText"
+          placeholder="Add a note..."
+          value={noteText}
+          onChange={(event) => setNoteText(event.target.value)}
+        />
+        <AddButton onClick={handleAddNote}> Add Note</AddButton>
+
+        <h4>User Notes</h4>
+        <NotesContainer>
+          {switchData.notes.map((note, index) => (
+            <NoteItem key={index}>
+              {" "}
+              {note.text} ({new Date(note.timestamp).toLocaleDateString()})
+            </NoteItem>
+          ))}
+        </NotesContainer>
+
+        <ButtonContainer>
+          <CancelButton onClick={onClose}>Cancel</CancelButton>
+          <AddButton
+            onClick={handleSubmit}
+            disabled={
+              !switchData.name ||
+              !switchData.manufacturer ||
+              !switchData.image ||
+              !switchData.switchType
+            }
+          >
+            Add Switch
+          </AddButton>
+        </ButtonContainer>
       </ModalWrapper>
     </>,
     document.getElementById("portal")
@@ -91,4 +276,70 @@ const AddButton = styled.button`
   text-align: center;
   cursor: pointer;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const NotesContainer = styled.ul`
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  list-style-type: none;
+  width: 100%;
+  max-width: 400px;
+  overflow-x: hidden;
+`;
+
+const NoteItem = styled.li`
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 5px;
+  &:last-child {
+    border-bottom: none;
+  }
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  width: 100%;
 `;
