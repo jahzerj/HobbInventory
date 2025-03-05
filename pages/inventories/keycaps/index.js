@@ -86,7 +86,7 @@ export default function Keycaps() {
 
   return (
     <>
-      <Link href="/">Back to Hub</Link>
+      <Link href="/"> ← Back to Hub</Link>
 
       <Modal
         open={isOpen}

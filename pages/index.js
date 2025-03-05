@@ -34,10 +34,6 @@ export default function InventoryHub() {
           <Emoji>⌨️</Emoji> Keyboard Kits (🚧 Coming Soon)
         </CategoryCard>
       </CategorySection>
-
-      <StyledLink href="/inventories/keycaps">
-        Go to Keycap Inventory
-      </StyledLink>
     </Container>
   );
 }

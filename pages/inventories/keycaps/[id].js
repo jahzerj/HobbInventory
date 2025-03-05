@@ -471,7 +471,7 @@ const StyledLink = styled(Link)`
   right: 5px;
   text-decoration: none;
   color: white;
-  background-color: #ff4d4d;
+  background-color: lightgrey;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -481,7 +481,7 @@ const StyledLink = styled(Link)`
   z-index: 1000;
 
   &:hover {
-    background-color: rgb(162, 24, 24);
+    background-color: darkgrey;
   }
 `;
 
