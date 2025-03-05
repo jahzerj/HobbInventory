@@ -37,6 +37,25 @@ export default async function handler(req, res) {
         .json({ message: "Keycap selection updated.", updatedKeycaps });
       return;
     }
+
+    if (req.method === "DELETE") {
+      const { keycapSetId } = req.body;
+
+      if (!keycapSetId) {
+        res
+          .status(400)
+          .json({ message: "Keycap ID is required for deletion." });
+        return;
+      }
+
+      await UserKeycaps.findOneAndDelete({
+        userId: req.query.userId || "guest_user",
+        keycapSetId,
+      });
+
+      res.status(200).json({ message: "Keycapset removed successfully." });
+      return;
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error." });

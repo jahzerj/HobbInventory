@@ -38,8 +38,9 @@ export default function AddButtton({ onOpenModal }) {
       ref={buttonRef}
       $isExpanded={isExpanded}
       onClick={handleClick}
+      aria-label="Add Keycaps Button"
     >
-      {isExpanded ? "+ Add keycaps" : "+"}
+      {isExpanded ? " Add keycaps +" : "+"}
     </StyledButton>
   );
 }
@@ -47,7 +48,7 @@ export default function AddButtton({ onOpenModal }) {
 const StyledButton = styled.button`
   position: fixed;
   bottom: 10px;
-  left: 10px;
+  right: 10px;
   z-index: 1000;
   background-color: #007bff;
   color: white;

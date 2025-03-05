@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import DeleteIcon from "./icons/DeleteIcon";
 
-export default function InventoryCard({ data }) {
+export default function InventoryCard({ data, isEditMode, onDelete }) {
   const router = useRouter();
 
   return data.map((keycap) => (
@@ -12,6 +13,16 @@ export default function InventoryCard({ data }) {
         router.push(`/inventories/keycaps/${keycap.keycapSetId._id}`)
       }
     >
+      {isEditMode ? (
+        <DeleteInventoryItemButton
+          onClick={(event) => onDelete(keycap.keycapSetId._id, event)}
+          aria-label="Delete Keycap Button"
+        >
+          <DeleteIcon />
+        </DeleteInventoryItemButton>
+      ) : (
+        ""
+      )}
       <h3>{keycap.keycapSetId?.name}</h3>
       {keycap.keycapSetId?.render_pics?.length > 0 ? (
         <ImageWrapper>
@@ -31,8 +42,10 @@ export default function InventoryCard({ data }) {
 }
 
 const StyledCard = styled.li`
+  position: relative;
   background-color: lightgrey;
   width: 80%;
+  min-width: 350px;
   border-radius: 30px;
   display: flex;
   flex-direction: column;
@@ -44,7 +57,7 @@ const StyledCard = styled.li`
   box-shadow: 10px 5px 5px grey;
   cursor: pointer;
 
-  @media (min-width: 768px) {
+  @media (min-width: 600px) {
     width: 50%;
   }
 `;
@@ -60,5 +73,21 @@ const ImageWrapper = styled.div`
 
   @media (max-width: 320px) {
     width: 90%;
+  }
+`;
+
+const DeleteInventoryItemButton = styled.button`
+  display: flex;
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  color: white;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(162, 24, 24);
   }
 `;

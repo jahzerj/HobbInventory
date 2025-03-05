@@ -5,14 +5,14 @@ import Modal from "@/components/Modal";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
+import EditInventoryButton from "@/components/EditInventoryButton";
+import { AttentionSeeker } from "react-awesome-reveal";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
-
-  // isEditMode = true;
 
   //Fetch user keycaps
   const { data, error, mutate } = useSWR(
@@ -50,12 +50,43 @@ export default function Keycaps() {
     }
   };
 
+  const handleDeleteKeycap = async (keycapSetId, event) => {
+    event.stopPropagation();
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to remove this keycapset?\n\n" +
+        "This will permanently remove:\n" +
+        "• This keycapset\n" +
+        "• Selected kits\n" +
+        "• Selected colors\n" +
+        "• Any personal notes that you have added"
+    );
+    if (!confirmDelete) return;
+
+    // Remove from UI
+    setUserKeycaps((prevKeycaps) =>
+      prevKeycaps.filter((id) => id !== keycapSetId)
+    );
+
+    const response = await fetch("/api/inventories/userkeycaps", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, keycapSetId }),
+    });
+
+    if (response.ok) {
+      mutate();
+    } else {
+      console.error("Failed to delete keycap:", await response.json());
+    }
+  };
+
   if (error) return <p> Error loading keycaps...</p>;
   if (!data) return <p> Loading keycaps....</p>;
 
   return (
     <>
-      <Link href="/">Back to Hub</Link>
+      <Link href="/"> ← Back to Hub</Link>
 
       <Modal
         open={isOpen}
@@ -66,15 +97,33 @@ export default function Keycaps() {
       <StyledContainer>
         <h1>Keycap Inventory</h1>
         {data?.length ? (
-          <InventoryCard data={data} />
+          isEditMode ? (
+            <AttentionSeeker effect="shake">
+              <InventoryCard
+                data={data}
+                isEditMode={isEditMode}
+                onDelete={handleDeleteKeycap}
+              />
+            </AttentionSeeker>
+          ) : (
+            <InventoryCard
+              data={data}
+              isEditMode={isEditMode}
+              onDelete={handleDeleteKeycap}
+            />
+          )
         ) : (
           <>
-            <p> You have no keycaps in your inventory!</p>
-            <p> Click the ➕ button to add a keycap set</p>
+            <p>You have no keycaps in your inventory!</p>
+            <p>Click the ➕ button to add a keycap set</p>
           </>
         )}
       </StyledContainer>
       <AddButton onOpenModal={() => setIsOpen(true)} />
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+      />
     </>
   );
 }

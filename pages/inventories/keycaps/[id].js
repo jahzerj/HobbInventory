@@ -37,6 +37,13 @@ export default function KeyCapDetail() {
   const [editedNotes, setEditedNotes] = useState([]);
   const [editNoteId, setEditNoteId] = useState(null);
   const [editNoteText, setEditNoteText] = useState("");
+  const [innerWidth, setInnerWidth] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setInnerWidth(window.innerWidth);
+    }
+  }, []);
 
   useEffect(() => {
     if (userKeycap?.notes) {
@@ -188,33 +195,12 @@ export default function KeyCapDetail() {
 
   return (
     <>
-      <AcceptCancelEditButtonContainer
-        $innerWidth={window.innerWidth}
-        $isEditMode={isEditMode}
-      >
-        <EditButton
-          isEditMode={isEditMode}
-          onToggleEdit={() => {
-            if (isEditMode) {
-              handleCancelEdits();
-            } else {
-              setIsEditMode(true);
-              setEditedColors([...selectedColors]);
-              setEditedKits(userKeycap?.selectedKits || []);
-              setEditedNotes([...notes]);
-            }
-          }}
-        />
-        {isEditMode && (
-          <ConfirmEditButton
-            isEditMode={isEditMode}
-            onSaveChanges={handleSaveChanges}
-          />
-        )}
-      </AcceptCancelEditButtonContainer>
       <DetailPageContainer>
         {isEditMode ? null : (
-          <StyledLink href="/inventories/keycaps">
+          <StyledLink
+            href="/inventories/keycaps"
+            aria-label="Close Details Page"
+          >
             <CloseButtonIcon />
           </StyledLink>
         )}
@@ -372,70 +358,98 @@ export default function KeyCapDetail() {
         </BaseButton>
 
         <NotesContainer>
-          {(isEditMode ? editedNotes : notes).map((note) => (
-            <NoteItem key={note._id}>
-              {editNoteId === note._id ? (
-                <>
-                  <StyledInput
-                    type="text"
-                    maxLength={100}
-                    value={editNoteText}
-                    onChange={(event) => setEditNoteText(event.target.value)}
-                  />
-                  <BaseButton onClick={handleSaveEditedNote}>
-                    💾 Save
-                  </BaseButton>
-                  <BaseButton
-                    onClick={() => {
-                      setEditNoteId(null);
-                      setEditNoteText("");
-                    }}
-                  >
-                    ❌ Cancel
-                  </BaseButton>
-                </>
-              ) : (
-                <>
-                  <span>{note.text}</span>
-                  <NoteTimestamp>
-                    {new Date(note.timestamp).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}{" "}
-                    {new Date(note.timestamp).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hourCycle: "h23",
-                    })}
-                  </NoteTimestamp>
-                  {isEditMode && (
-                    <ButtonContainer>
-                      <BaseButton
-                        onClick={() => handleEditNote(note._id, note.text)}
-                      >
-                        ✏️ Edit
-                      </BaseButton>
-                      <RemoveNoteButton
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to delete this note?"
-                            )
-                          ) {
-                            handleDeleteNote(note._id);
-                          }
-                        }}
-                      >
-                        🗑️ Delete
-                      </RemoveNoteButton>
-                    </ButtonContainer>
-                  )}
-                </>
-              )}
-            </NoteItem>
-          ))}
+          {notes.length === 0 && editedNotes.length === 0 ? (
+            <p> &lt; No notes yet!&gt; </p>
+          ) : (
+            (isEditMode ? editedNotes : notes).map((note) => (
+              <NoteItem key={note._id}>
+                {editNoteId === note._id ? (
+                  <>
+                    <StyledInput
+                      type="text"
+                      maxLength={100}
+                      value={editNoteText}
+                      onChange={(event) => setEditNoteText(event.target.value)}
+                    />
+                    <BaseButton onClick={handleSaveEditedNote}>
+                      💾 Save
+                    </BaseButton>
+                    <BaseButton
+                      onClick={() => {
+                        setEditNoteId(null);
+                        setEditNoteText("");
+                      }}
+                    >
+                      ❌ Cancel
+                    </BaseButton>
+                  </>
+                ) : (
+                  <>
+                    <span>{note.text}</span>
+                    <NoteTimestamp>
+                      {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}{" "}
+                      {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hourCycle: "h23",
+                      })}
+                    </NoteTimestamp>
+                    {isEditMode && (
+                      <ButtonContainer>
+                        <BaseButton
+                          onClick={() => handleEditNote(note._id, note.text)}
+                        >
+                          ✏️ Edit
+                        </BaseButton>
+                        <RemoveNoteButton
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this note?"
+                              )
+                            ) {
+                              handleDeleteNote(note._id);
+                            }
+                          }}
+                        >
+                          🗑️ Delete
+                        </RemoveNoteButton>
+                      </ButtonContainer>
+                    )}
+                  </>
+                )}
+              </NoteItem>
+            ))
+          )}
         </NotesContainer>
+        <AcceptCancelEditButtonContainer
+          $innerWidth={innerWidth}
+          $isEditMode={isEditMode}
+        >
+          <EditButton
+            isEditMode={isEditMode}
+            onToggleEdit={() => {
+              if (isEditMode) {
+                handleCancelEdits();
+              } else {
+                setIsEditMode(true);
+                setEditedColors([...selectedColors]);
+                setEditedKits(userKeycap?.selectedKits || []);
+                setEditedNotes([...notes]);
+              }
+            }}
+          />
+          {isEditMode && (
+            <ConfirmEditButton
+              isEditMode={isEditMode}
+              onSaveChanges={handleSaveChanges}
+            />
+          )}
+        </AcceptCancelEditButtonContainer>
       </DetailPageContainer>
     </>
   );
@@ -457,7 +471,7 @@ const StyledLink = styled(Link)`
   right: 5px;
   text-decoration: none;
   color: white;
-  background-color: #ff4d4d;
+  background-color: lightgrey;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -467,7 +481,7 @@ const StyledLink = styled(Link)`
   z-index: 1000;
 
   &:hover {
-    background-color: rgb(162, 24, 24);
+    background-color: darkgrey;
   }
 `;
 
@@ -675,12 +689,13 @@ const NoteTimestamp = styled.span`
 `;
 
 const AcceptCancelEditButtonContainer = styled.div`
-  position: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "absolute" : "fixed"};
+  position: fixed;
   bottom: 10px;
   left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "50%" : "10px"};
+    props.$innerWidth > 400 && props.$isEditMode ? "" : "20px"};
   display: flex;
   gap: 10px;
   z-index: 1000;
+  align-self: ${(props) =>
+    props.$innerWidth > 600 && props.$isEditMode ? "center" : ""};
 `;
