@@ -1,11 +1,11 @@
-import InventoryCard from "@/components/InventoryCard";
+import InventoryCard from "@/components/KeycapComponents/InventoryCard";
 import Link from "next/link";
-import AddButton from "@/components/AddButton";
-import Modal from "@/components/Modal";
+import AddButton from "@/components/KeycapComponents/AddButton";
+import Modal from "@/components/KeycapComponents/Modal";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/EditInventoryButton";
+import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 import { AttentionSeeker } from "react-awesome-reveal";
 
 export default function Keycaps() {

@@ -1,22 +1,26 @@
 import styled from "styled-components";
-import EditButtonIcon from "./icons/EditButtonIcon";
-import CancelIcon from "./icons/CancelIcon";
+import EditButtonIcon from "../icons/EditButtonIcon";
+import CancelIcon from "../icons/CancelIcon";
 
-export default function EditButton({ isEditMode, onToggleEdit }) {
+export default function EditInventoryButton({ isEditMode, onToggleEdit }) {
   return (
     <StyledButton $isEditMode={isEditMode} onClick={onToggleEdit}>
       {isEditMode ? (
         <>
-          <CancelIcon /> Cancel Edits
+          <CancelIcon /> Close Edit Mode
         </>
       ) : (
-        <EditButtonIcon />
+        <EditButtonIcon aria-label="Edit Button" />
       )}
     </StyledButton>
   );
 }
 
 const StyledButton = styled.button`
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
   background-color: ${(props) => (props.$isEditMode ? "#ff4d4d" : "#007bff")};
   color: white;
   border: none;
@@ -34,6 +38,7 @@ const StyledButton = styled.button`
   padding: ${(props) => (props.$isEditMode ? "0 15px" : "0")};
 
   &:hover {
-    ${(props) => (props.$isEditMode ? "rgb(162, 24, 24)" : "#0056b3")};
+    background-color: ${(props) =>
+      props.$isEditMode ? "rgb(162, 24, 24)" : "#0056b3"};
   }
 `;

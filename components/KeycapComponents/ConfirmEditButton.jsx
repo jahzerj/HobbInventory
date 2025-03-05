@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import ConfirmEditIcon from "./icons/ConfirmEditIcon";
+import ConfirmEditIcon from "../icons/ConfirmEditIcon";
 
 export default function ConfirmEditButton({ isEditMode, onSaveChanges }) {
   return (

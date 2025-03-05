@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
 import Link from "next/link";
 import { nanoid } from "nanoid";
-import EditButton from "@/components/EditButton";
+import EditButton from "@/components/KeycapComponents/EditButton";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/ConfirmEditButton";
+import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
 
 export default function KeyCapDetail() {
   const router = useRouter();

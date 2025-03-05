@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import DeleteIcon from "./icons/DeleteIcon";
+import DeleteIcon from "../icons/DeleteIcon";
 
 export default function InventoryCard({ data, isEditMode, onDelete }) {
   const router = useRouter();
