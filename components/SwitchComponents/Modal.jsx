@@ -1,8 +1,12 @@
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import styled from "styled-components";
+import Image from "next/image";
+import { nanoid } from "nanoid";
 
 export default function Modal({ open, onClose, onAddSwitch }) {
+  const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
+    useState(false);
   const [switchData, setSwitchData] = useState({
     name: "",
     manufacturer: "",
@@ -75,11 +79,17 @@ export default function Modal({ open, onClose, onAddSwitch }) {
     });
   };
 
+  const isPreviewVisible =
+    switchData.name &&
+    switchData.manufacturer &&
+    switchData.image &&
+    switchData.switchType;
+
   return createPortal(
     <>
       <Overlay />
       <ModalWrapper>
-        <h2>Add your Switch&apos;s Information</h2>
+        <Title>Add your Switch&apos;s Information</Title>
 
         <Input
           type="text"
@@ -117,95 +127,132 @@ export default function Modal({ open, onClose, onAddSwitch }) {
           <option value="Clicky">Clicky</option>
         </Select>
 
-        <Input
-          type="number"
-          name="quantity"
-          placeholder="Quantity"
-          value={switchData.quantity}
-          onChange={handleChange}
-        />
+        {isPreviewVisible && (
+          <>
+            <h3>Preview</h3>
+            <PreviewContainer>
+              <SwitchCard>
+                <Image
+                  src={switchData.image}
+                  alt={switchData.name}
+                  width={100}
+                  height={100}
+                />
+                <p>{switchData.manufacturer}</p>
+                <p>
+                  <strong>{switchData.name}</strong>
+                </p>
+              </SwitchCard>
+            </PreviewContainer>
+          </>
+        )}
 
-        <CheckboxContainer>
-          <label>
-            <input
-              type="checkbox"
-              name="factoryLubed"
-              checked={switchData.factoryLubed}
+        <ToggleAdditionalFieldsButton
+          onClick={() =>
+            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible)
+          }
+        >
+          {isAdditionalFieldsVisible
+            ? "Hide Additional Information"
+            : "Add Additional Information"}
+        </ToggleAdditionalFieldsButton>
+        {isAdditionalFieldsVisible && (
+          <AdditionalFieldsContainer>
+            <label htmlFor="quantity">Quantity</label>
+            <Input
+              type="number"
+              name="quantity"
+              placeholder="Quantity"
+              value={switchData.quantity}
               onChange={handleChange}
             />
-            Factory Lubed
-          </label>
-        </CheckboxContainer>
 
-        <Input
-          type="text"
-          name="springWeight"
-          placeholder="Spring Weight"
-          value={switchData.springWeight}
-          onChange={handleChange}
-        />
-        <Input
-          type="text"
-          name="topMaterial"
-          placeholder="Top Housing Material"
-          value={switchData.topMaterial}
-          onChange={handleChange}
-        />
-        <Input
-          type="text"
-          name="bottomMaterial"
-          placeholder="Bottom Housing Material"
-          value={switchData.bottomMaterial}
-          onChange={handleChange}
-        />
-        <Input
-          type="text"
-          name="stemMaterial"
-          placeholder="Stem Material"
-          value={switchData.stemMaterial}
-          onChange={handleChange}
-        />
-
-        <CheckboxContainer>
-          <label>
-            <input
-              type="checkbox"
-              name="isLubed"
-              checked={switchData.isLubed}
+            <Input
+              type="text"
+              name="springWeight"
+              placeholder="Spring Weight"
+              value={switchData.springWeight}
               onChange={handleChange}
             />
-            Hand Lubed
-          </label>
-        </CheckboxContainer>
-        <CheckboxContainer>
-          <label>
-            <input
-              type="checkbox"
-              name="isFilmed"
-              checked={switchData.isFilmed}
+            <Input
+              type="text"
+              name="topMaterial"
+              placeholder="Top Housing Material"
+              value={switchData.topMaterial}
               onChange={handleChange}
             />
-            Filmed
-          </label>
-        </CheckboxContainer>
+            <Input
+              type="text"
+              name="bottomMaterial"
+              placeholder="Bottom Housing Material"
+              value={switchData.bottomMaterial}
+              onChange={handleChange}
+            />
+            <Input
+              type="text"
+              name="stemMaterial"
+              placeholder="Stem Material"
+              value={switchData.stemMaterial}
+              onChange={handleChange}
+            />
+            <CheckboxContainer>
+              <label>
+                <input
+                  type="checkbox"
+                  name="factoryLubed"
+                  checked={switchData.factoryLubed}
+                  onChange={handleChange}
+                />
+                Factory Lubed
+              </label>
+            </CheckboxContainer>
 
-        <TextArea
-          name="notesText"
-          placeholder="Add a note..."
-          value={noteText}
-          onChange={(event) => setNoteText(event.target.value)}
-        />
-        <AddButton onClick={handleAddNote}> Add Note</AddButton>
+            <CheckboxContainer>
+              <label>
+                <input
+                  type="checkbox"
+                  name="isLubed"
+                  checked={switchData.isLubed}
+                  onChange={handleChange}
+                />
+                Hand Lubed
+              </label>
+            </CheckboxContainer>
+            <CheckboxContainer>
+              <label>
+                <input
+                  type="checkbox"
+                  name="isFilmed"
+                  checked={switchData.isFilmed}
+                  onChange={handleChange}
+                />
+                Filmed
+              </label>
+            </CheckboxContainer>
 
-        <h4>User Notes</h4>
-        <NotesContainer>
-          {switchData.notes.map((note, index) => (
-            <NoteItem key={index}>
-              {" "}
-              {note.text} ({new Date(note.timestamp).toLocaleDateString()})
-            </NoteItem>
-          ))}
-        </NotesContainer>
+            <TextArea
+              name="notesText"
+              placeholder="Add a note..."
+              value={noteText}
+              onChange={(event) => setNoteText(event.target.value)}
+            />
+            <AddButton onClick={handleAddNote}> Add Note</AddButton>
+
+            <h4>User Notes</h4>
+            <NotesContainer>
+              {switchData.notes.length > 0 ? (
+                switchData.notes.map((note) => (
+                  <NoteItem key={nanoid()}>
+                    {note.text} ({new Date(note.timestamp).toLocaleDateString()}
+                    )
+                  </NoteItem>
+                ))
+              ) : (
+                <p>No notes for this switch.</p>
+              )}
+            </NotesContainer>
+          </AdditionalFieldsContainer>
+        )}
 
         <ButtonContainer>
           <CancelButton onClick={onClose}>Cancel</CancelButton>
@@ -342,4 +389,52 @@ const NoteItem = styled.li`
   overflow-wrap: break-word;
   max-width: 100%;
   width: 100%;
+`;
+
+const PreviewContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  text-align: center;
+`;
+
+const SwitchCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
+
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+  }
+`;
+
+const AdditionalFieldsContainer = styled.div`
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+`;
+const ToggleAdditionalFieldsButton = styled.button`
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  margin: 10px 0;
+`;
+
+const Title = styled.h2`
+  text-align: center;
 `;
