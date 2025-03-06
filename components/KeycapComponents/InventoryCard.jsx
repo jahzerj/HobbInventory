@@ -6,29 +6,27 @@ import DeleteIcon from "../icons/DeleteIcon";
 export default function InventoryCard({ data, isEditMode, onDelete }) {
   const router = useRouter();
 
-  return data.map((keycap) => (
+  return data.map((keycapObj) => (
     <StyledCard
-      key={keycap._id}
+      key={keycapObj._id}
       onClick={() =>
-        router.push(`/inventories/keycaps/${keycap.keycapSetId._id}`)
+        router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`)
       }
     >
       {isEditMode ? (
         <DeleteInventoryItemButton
-          onClick={(event) => onDelete(keycap.keycapSetId._id, event)}
+          onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
           aria-label="Delete Keycap Button"
         >
           <DeleteIcon />
         </DeleteInventoryItemButton>
-      ) : (
-        ""
-      )}
-      <h3>{keycap.keycapSetId?.name}</h3>
-      {keycap.keycapSetId?.render_pics?.length > 0 ? (
+      ) : null}
+      <h3>{keycapObj.keycapSetId?.name}</h3>
+      {keycapObj.keycapSetId?.render_pics?.length > 0 ? (
         <ImageWrapper>
           <Image
-            src={keycap.keycapSetId.render_pics[0]}
-            alt={keycap.keycapSetId.name}
+            src={keycapObj.keycapSetId.render_pics[0]}
+            alt={keycapObj.keycapSetId.name}
             width={320}
             height={180}
             priority

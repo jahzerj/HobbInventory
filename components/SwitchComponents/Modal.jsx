@@ -148,9 +148,21 @@ export default function Modal({ open, onClose, onAddSwitch }) {
         )}
 
         <ToggleAdditionalFieldsButton
-          onClick={() =>
-            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible)
-          }
+          onClick={() => {
+            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
+            setSwitchData((prevData) => ({
+              ...prevData,
+              quantity: 1,
+              factoryLubed: false,
+              springWeight: "",
+              topMaterial: "",
+              bottomMaterial: "",
+              stemMaterial: "",
+              isLubed: false,
+              isFilmed: false,
+              notes: [],
+            }));
+          }}
         >
           {isAdditionalFieldsVisible
             ? "Hide Additional Information"

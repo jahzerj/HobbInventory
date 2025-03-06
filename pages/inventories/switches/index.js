@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { useState } from "react";
 import Modal from "@/components/SwitchComponents/Modal";
 import useSWR from "swr";
-import Image from "next/image";
 import { nanoid } from "nanoid";
 import SwitchInventoryCard from "@/components/SwitchComponents/SwitchInventoryCard";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
@@ -13,6 +12,8 @@ export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
+  const [userSwitches, setUserSwitches] = useState([]);
+
   const {
     data: switches,
     error,
@@ -46,6 +47,33 @@ export default function Switches() {
     }
   };
 
+  const handleDeleteSwitch = async (switchId) => {
+    if (!switchId) return;
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to remove this switch?\n\n" +
+        "This will permanently remove this switch and any personal data you have recoreded for it"
+    );
+    if (!confirmDelete) return;
+
+    //Remove from UI
+    setUserSwitches((prevSwitches) =>
+      prevSwitches.filter((switchItem) => switchItem._id !== switchId)
+    );
+
+    const response = await fetch("/api/inventories/userswitches", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, switchId }),
+    });
+
+    if (response.ok) {
+      mutate();
+    } else {
+      console.error("Failed to delete keycap:", await response.json());
+    }
+  };
+
   if (error) return <p>Error loading switches</p>;
   if (!switches) return <p>Loading...</p>;
 
@@ -61,7 +89,11 @@ export default function Switches() {
       <Container>
         <h1>Switches Inventory</h1>
         <SwitchGrid>
-          <SwitchInventoryCard switches={switches} />
+          <SwitchInventoryCard
+            switches={switches}
+            isEditMode={isEditMode}
+            onDelete={handleDeleteSwitch}
+          />
         </SwitchGrid>
       </Container>
 
