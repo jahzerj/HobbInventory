@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-export default function AddButtton({ onOpenModal }) {
+export default function AddButtton({ onOpenModal, isEditMode }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const buttonRef = useRef(null);
 
@@ -26,6 +26,8 @@ export default function AddButtton({ onOpenModal }) {
   //Button click behaivor
 
   const handleClick = () => {
+    if (isEditMode) return;
+
     if (window.innerWidth > 768) {
       onOpenModal(); // large screens modal opens
     } else {
@@ -39,6 +41,7 @@ export default function AddButtton({ onOpenModal }) {
       $isExpanded={isExpanded}
       onClick={handleClick}
       aria-label="Add Keycaps Button"
+      $isEditMode={isEditMode}
     >
       {isExpanded ? " Add keycaps +" : "+"}
     </StyledButton>
@@ -50,10 +53,10 @@ const StyledButton = styled.button`
   bottom: 10px;
   right: 10px;
   z-index: 1000;
-  background-color: #007bff;
+  background-color: ${(props) => (props.$isEditMode ? "#ccc" : "#007bff")};
+  cursor: ${(props) => (props.$isEditMode ? "not-allowed" : "pointer")};
   color: white;
   border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,6 +70,6 @@ const StyledButton = styled.button`
   padding: ${(props) => (props.$isExpanded ? "0 15px" : "0")};
 
   &:hover {
-    background-color: #0056b3;
+    background-color: ${(props) => (props.$isEditMode ? "#ccc" : "#0056b3")};
   }
 `;

@@ -119,7 +119,10 @@ export default function Keycaps() {
           </>
         )}
       </StyledContainer>
-      <AddButton onOpenModal={() => setIsOpen(true)} />
+      <AddButton
+        onOpenModal={() => setIsOpen(true)}
+        isEditMode={isEditMode}
+      />
       <EditInventoryButton
         isEditMode={isEditMode}
         onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}

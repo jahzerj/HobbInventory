@@ -6,10 +6,13 @@ import Modal from "@/components/SwitchComponents/Modal";
 import useSWR from "swr";
 import Image from "next/image";
 import { nanoid } from "nanoid";
+import SwitchInventoryCard from "@/components/SwitchComponents/SwitchInventoryCard";
+import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 
 export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
+  const [isEditMode, setIsEditMode] = useState(false);
   const {
     data: switches,
     error,
@@ -58,30 +61,15 @@ export default function Switches() {
       <Container>
         <h1>Switches Inventory</h1>
         <SwitchGrid>
-          {switches.length > 0 ? (
-            switches.map((switchObj) => (
-              <SwitchCard key={switchObj._id}>
-                <SwitchTypeLabel>{switchObj.switchType}</SwitchTypeLabel>
-                <StyledSwitchImage
-                  src={switchObj.image}
-                  alt={switchObj.name}
-                  width={100}
-                  height={100}
-                  priority
-                />
-                <p>{switchObj.manufacturer}</p>
-                <p>
-                  <strong>{switchObj.name}</strong>
-                </p>
-              </SwitchCard>
-            ))
-          ) : (
-            <p> No Switches added yet.</p>
-          )}
+          <SwitchInventoryCard switches={switches} />
         </SwitchGrid>
       </Container>
 
-      <AddButtton onOpenModal={() => setIsOpen(true)} />
+      <AddButtton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+      />
     </>
   );
 }
@@ -95,34 +83,4 @@ const SwitchGrid = styled.ul`
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
-`;
-
-const SwitchCard = styled.li`
-  display: flex;
-  flex-direction: column;
-  background-color: lightgrey;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 10px 5px 5px grey;
-  text-align: center;
-  width: 100%;
-  max-width: 200px;
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-  }
-`;
-
-const StyledSwitchImage = styled(Image)`
-  border: solid 1px black;
-`;
-
-const SwitchTypeLabel = styled.p`
-  font-size: 14px;
-  font-weight: bold;
-  color: #555;
-  margin-top: 5px;
 `;
