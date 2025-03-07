@@ -51,7 +51,7 @@ export default function Switches() {
 
     const confirmDelete = window.confirm(
       "Are you sure you want to remove this switch?\n\n" +
-        "This will permanently remove this switch and any personal data you have recoreded for it"
+        "This will permanently remove this switch and any personal data you have recorded for it"
     );
     if (!confirmDelete) return;
 
