@@ -7,6 +7,7 @@ import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
 import EditButton from "@/components/KeycapComponents/EditButton";
 import useSWR from "swr";
 import Image from "next/image";
+import { nanoid } from "nanoid";
 
 export default function SwitchDetail() {
   const router = useRouter();
@@ -23,14 +24,46 @@ export default function SwitchDetail() {
   } = useSWR(id ? `/api/inventories/userswitches?userId=guest_user` : null);
 
   const userSwitch = userSwitches?.find((item) => item.switchId === id);
+  const notes = mxswitch?.notes ?? [];
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [innerWidth, setInnerWidth] = useState(0);
+  const [editedNotes, setEditedNotes] = useState([]);
+  const [editNoteId, setEditNoteId] = useState(null);
+  const [editNoteText, setEditNoteText] = useState("");
+  const [newNote, setNewNote] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInnerWidth(window.innerWidth);
     }
   }, []);
+
+  const handleAddNote = () => {
+    if (newNote.trim() === "") return; //no empty notes please
+    if (newNote.length > 100) {
+      return alert("Note must be 100 characters or less.");
+    }
+
+    const newId = nanoid();
+    const timestamp = new Date();
+    const newNoteObj = { _id: newId, text: newNote, timestamp: timestamp };
+
+    const updatedNotes = [...notes, newNoteObj];
+
+    fetch("/api/inventories/userswitches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        switchId: mxswitch?._id,
+        notes: updatedNotes,
+      }),
+    }).then(() => {
+      mutate();
+      setNewNote("");
+    });
+  };
 
   const handleSaveChanges = async () => {
     setIsEditMode(false);
@@ -111,6 +144,88 @@ export default function SwitchDetail() {
             <strong>Filmed:</strong> {mxswitch.isFilmed}
           </li>
         </BoxContainer>
+
+        <h3>Notes</h3>
+        <StyledInput
+          type="text"
+          maxLength={100}
+          placeholder="Write a note (max 100 chars)..."
+          value={newNote}
+          onChange={(event) => setNewNote(event.target.value)}
+        />
+        <BaseButton $bgColor="#28a745" onClick={handleAddNote}>
+          Submit Note
+        </BaseButton>
+
+        <NotesContainer>
+          {notes.length === 0 && editedNotes.length === 0 ? (
+            <p> &lt; No notes yet!&gt; </p>
+          ) : (
+            (isEditMode ? editedNotes : notes).map((note) => (
+              <NoteItem key={note._id}>
+                {editNoteId === note._id ? (
+                  <>
+                    <StyledInput
+                      type="text"
+                      maxLength={100}
+                      value={editNoteText}
+                      onChange={(event) => setEditNoteText(event.target.value)}
+                    />
+                    <BaseButton onClick={handleSaveEditedNote}>
+                      💾 Save
+                    </BaseButton>
+                    <BaseButton
+                      onClick={() => {
+                        setEditNoteId(null);
+                        setEditNoteText("");
+                      }}
+                    >
+                      ❌ Cancel
+                    </BaseButton>
+                  </>
+                ) : (
+                  <>
+                    <span>{note.text}</span>
+                    <NoteTimestamp>
+                      {new Date(note.timestamp).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}{" "}
+                      {new Date(note.timestamp).toLocaleTimeString("en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hourCycle: "h23",
+                      })}
+                    </NoteTimestamp>
+                    {isEditMode && (
+                      <ButtonContainer>
+                        <BaseButton
+                          onClick={() => handleEditNote(note._id, note.text)}
+                        >
+                          ✏️ Edit
+                        </BaseButton>
+                        <RemoveNoteButton
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this note?"
+                              )
+                            ) {
+                              handleDeleteNote(note._id);
+                            }
+                          }}
+                        >
+                          🗑️ Delete
+                        </RemoveNoteButton>
+                      </ButtonContainer>
+                    )}
+                  </>
+                )}
+              </NoteItem>
+            ))
+          )}
+        </NotesContainer>
 
         <AcceptCancelEditButtonContainer
           $innerWidth={innerWidth}
@@ -210,4 +325,86 @@ const BoxContainer = styled.ul`
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
   list-style-type: none;
+`;
+
+const NotesContainer = styled.ul`
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  text-align: left;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  list-style-type: none;
+  overflow-x: hidden;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  max-width: ${(props) => props.$maxWidth || "600px"};
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: ${(props) => props.$bgColor || "#f9f9f9"};
+`;
+
+const NoteItem = styled.li`
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 5px;
+  &:last-child {
+    border-bottom: none;
+  }
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  width: 100%;
+`;
+
+const BaseButton = styled.button`
+  margin-top: ${(props) => props.margin || "10px"};
+  padding: 8px 15px;
+  background-color: ${(props) => props.$bgColor || "#28a745"};
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: ${(props) => props.fontSize || "16px"};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${(props) => props.hoverColor || "#218838"};
+  }
+`;
+const NoteTimestamp = styled.span`
+  font-size: 12px;
+  color: #666;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const RemoveNoteButton = styled(BaseButton)`
+  background-color: #f9f9f9;
+  color: black;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 0;
+
+  &:hover {
+    background-color: #ff4d4d;
+  }
 `;

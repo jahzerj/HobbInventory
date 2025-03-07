@@ -23,7 +23,7 @@ export default function SwitchInventoryCard({
             <DeleteIcon />
           </DeleteInventoryItemButton>
         )}
-        <SwitchTypeLabel>{switchObj.switchType}</SwitchTypeLabel>
+        <SwitchTypeLabel>{switchObj.switchType[0]}</SwitchTypeLabel>
         <StyledSwitchImage
           src={switchObj.image}
           alt={switchObj.name}
@@ -54,6 +54,7 @@ const SwitchCard = styled.li`
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 10px;
+  padding-top: 25px;
   box-shadow: 10px 5px 5px grey;
   text-align: center;
   width: 100%;
@@ -63,17 +64,24 @@ const SwitchCard = styled.li`
     height: auto;
     border-radius: 5px;
   }
+  &:hover {
+    scale: 1.05;
+  }
 `;
 
-const StyledSwitchImage = styled(Image)`
-  border: solid 1px black;
-`;
+const StyledSwitchImage = styled(Image)``;
 
 const SwitchTypeLabel = styled.p`
-  font-size: 14px;
+  position: absolute;
+  top: 0px;
+  left: 3px;
+  font-size: 10px;
   font-weight: bold;
-  color: #555;
+  color: black;
   margin-top: 5px;
+  border: solid 1px black;
+  border-radius: 50%;
+  width: 15px;
 `;
 
 const DeleteInventoryItemButton = styled.button`
