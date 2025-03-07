@@ -33,6 +33,9 @@ const nextConfig = {
       "i.postimg.cc",
       "spaceholdings.net",
       "oblotzky.industries",
+      "keygem.com",
+      "rndkbd.com",
+      "res.cloudinary.com",
     ],
   },
 };

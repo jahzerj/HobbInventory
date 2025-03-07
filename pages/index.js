@@ -24,12 +24,14 @@ export default function InventoryHub() {
       <CategorySection>
         <CategoryLink href="/inventories/keycaps">
           <CategoryCard>
-            <Emoji>🖮</Emoji> Keycaps
+            <Emoji>🪙</Emoji> Keycaps
           </CategoryCard>
         </CategoryLink>
-        <CategoryCard disabled>
-          <Emoji>🎛️</Emoji> Switches (🚧 Coming Soon)
-        </CategoryCard>
+        <CategoryLink href="/inventories/switches">
+          <CategoryCard>
+            <Emoji>🎛️</Emoji> Switches
+          </CategoryCard>
+        </CategoryLink>
         <CategoryCard disabled>
           <Emoji>⌨️</Emoji> Keyboard Kits (🚧 Coming Soon)
         </CategoryCard>
