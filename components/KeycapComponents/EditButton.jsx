@@ -27,8 +27,8 @@ const StyledButton = styled.button`
   font-size: 16px;
   font-weight: bold;
   border-radius: ${(props) => (props.$isEditMode ? "8px" : "50%")};
-  width: ${(props) => (props.$isEditMode ? "auto" : "50px")};
-  height: 50px;
+  width: ${(props) => (props.$isEditMode ? "auto" : "45px")};
+  height: 45px;
   transition: all 0.3s ease-in-out;
   white-space: nowrap;
   padding: ${(props) => (props.$isEditMode ? "0 15px" : "0")};

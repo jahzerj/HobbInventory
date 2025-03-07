@@ -476,8 +476,8 @@ const StyledLink = styled(Link)`
   display: flex;
   justify-content: center;
   font-size: 24px;
-  height: 50px;
-  width: 50px;
+  height: 45px;
+  width: 45px;
   z-index: 1000;
 
   &:hover {
@@ -692,7 +692,7 @@ const AcceptCancelEditButtonContainer = styled.div`
   position: fixed;
   bottom: 10px;
   left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "" : "20px"};
+    props.$innerWidth > 400 && props.$isEditMode ? "" : "10px"};
   display: flex;
   gap: 10px;
   z-index: 1000;

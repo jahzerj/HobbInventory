@@ -24,7 +24,7 @@ export default function InventoryHub() {
       <CategorySection>
         <CategoryLink href="/inventories/keycaps">
           <CategoryCard>
-            <Emoji>🪙</Emoji> Keycaps
+            <Emoji>🗝️</Emoji> Keycaps
           </CategoryCard>
         </CategoryLink>
         <CategoryLink href="/inventories/switches">
@@ -33,7 +33,8 @@ export default function InventoryHub() {
           </CategoryCard>
         </CategoryLink>
         <CategoryCard disabled>
-          <Emoji>⌨️</Emoji> Keyboard Kits (🚧 Coming Soon)
+          <Emoji>⌨️</Emoji> Keyboard Kits <br />
+          (🚧 Coming Soon)
         </CategoryCard>
       </CategorySection>
     </Container>
@@ -90,7 +91,7 @@ const CategoryLink = styled(Link)`
 `;
 
 const CategoryCard = styled.div`
-  background: ${({ disabled }) => (disabled ? "#ddd" : "#007bff")};
+  background: ${({ disabled }) => (disabled ? "darkgrey" : "#007bff")};
   color: white;
   padding: 12px;
   border-radius: 8px;
@@ -102,7 +103,7 @@ const CategoryCard = styled.div`
     disabled ? "none" : "2px 2px 5px rgba(0, 0, 0, 0.2)"};
 
   &:hover {
-    background: ${({ disabled }) => (disabled ? "#ddd" : "#0056b3")};
+    background: ${({ disabled }) => (disabled ? "#darkgrey" : "#0056b3")};
   }
 `;
 

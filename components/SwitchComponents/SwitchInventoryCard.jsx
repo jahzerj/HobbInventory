@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
 
@@ -7,9 +8,13 @@ export default function SwitchInventoryCard({
   isEditMode,
   onDelete,
 }) {
+  const router = useRouter();
   return switches.length > 0 ? (
     switches.map((switchObj) => (
-      <SwitchCard key={switchObj._id}>
+      <SwitchCard
+        key={switchObj._id}
+        onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
+      >
         {isEditMode && (
           <DeleteInventoryItemButton
             onClick={(event) => onDelete(switchObj._id, event)}
