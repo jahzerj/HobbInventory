@@ -10,14 +10,14 @@ export default function SwitchInventoryCard({
   return switches.length > 0 ? (
     switches.map((switchObj) => (
       <SwitchCard key={switchObj._id}>
-        {isEditMode ? (
+        {isEditMode && (
           <DeleteInventoryItemButton
             onClick={(event) => onDelete(switchObj._id, event)}
             aria-label="Delete Switch Button"
           >
             <DeleteIcon />
           </DeleteInventoryItemButton>
-        ) : null}
+        )}
         <SwitchTypeLabel>{switchObj.switchType}</SwitchTypeLabel>
         <StyledSwitchImage
           src={switchObj.image}

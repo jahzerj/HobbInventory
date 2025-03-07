@@ -12,7 +12,6 @@ export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
-  const [userSwitches, setUserSwitches] = useState([]);
 
   const {
     data: switches,
@@ -55,11 +54,6 @@ export default function Switches() {
         "This will permanently remove this switch and any personal data you have recoreded for it"
     );
     if (!confirmDelete) return;
-
-    //Remove from UI
-    setUserSwitches((prevSwitches) =>
-      prevSwitches.filter((switchItem) => switchItem._id !== switchId)
-    );
 
     const response = await fetch("/api/inventories/userswitches", {
       method: "DELETE",

@@ -13,14 +13,14 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
         router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`)
       }
     >
-      {isEditMode ? (
+      {isEditMode && (
         <DeleteInventoryItemButton
           onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
           aria-label="Delete Keycap Button"
         >
           <DeleteIcon />
         </DeleteInventoryItemButton>
-      ) : null}
+      )}
       <h3>{keycapObj.keycapSetId?.name}</h3>
       {keycapObj.keycapSetId?.render_pics?.length > 0 ? (
         <ImageWrapper>
