@@ -30,6 +30,16 @@ export default function Modal({ open, onClose, onAddSwitch }) {
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
+    if (name === "image") {
+      const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
+      if (!urlRegex.test(value) && value !== "") {
+        alert(
+          "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp"
+        );
+        return;
+      }
+    }
+
     setSwitchData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
@@ -113,6 +123,7 @@ export default function Modal({ open, onClose, onAddSwitch }) {
           placeholder="Image URL *"
           value={switchData.image}
           onChange={handleChange}
+          pattern="https?://.*"
           required
         />
 
@@ -148,9 +159,21 @@ export default function Modal({ open, onClose, onAddSwitch }) {
         )}
 
         <ToggleAdditionalFieldsButton
-          onClick={() =>
-            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible)
-          }
+          onClick={() => {
+            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
+            setSwitchData((prevData) => ({
+              ...prevData,
+              quantity: 1,
+              factoryLubed: false,
+              springWeight: "",
+              topMaterial: "",
+              bottomMaterial: "",
+              stemMaterial: "",
+              isLubed: false,
+              isFilmed: false,
+              notes: [],
+            }));
+          }}
         >
           {isAdditionalFieldsVisible
             ? "Hide Additional Information"

@@ -115,11 +115,11 @@ export default function Keycaps() {
         ) : (
           <>
             <p>You have no keycaps in your inventory!</p>
-            <p>Click the ➕ button to add a keycap set</p>
+            <p>Click the ➕ button to add a keycap set to your inventory</p>
           </>
         )}
       </StyledContainer>
-      <AddButton onOpenModal={() => setIsOpen(true)} />
+      <AddButton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
       <EditInventoryButton
         isEditMode={isEditMode}
         onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
