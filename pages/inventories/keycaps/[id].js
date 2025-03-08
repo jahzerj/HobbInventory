@@ -135,7 +135,6 @@ export default function KeyCapDetail() {
   };
 
   const handleEditNote = (noteId, currentText) => {
-    console.log("Editing note:", noteId, currentText);
     setEditNoteId(noteId); //Set the note being edited
     setEditNoteText(currentText); // Only store the current note being edited
   };
@@ -177,6 +176,7 @@ export default function KeyCapDetail() {
   };
 
   const handleCancelEdits = () => {
+    setEditNoteId(null);
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
     setIsEditMode(false);

@@ -26,17 +26,45 @@ export default function SwitchDetail() {
   const userSwitch = userSwitches?.find((item) => item._id === id);
   const notes = userSwitch?.notes ?? [];
 
-  console.log("userSwitches data:", userSwitches);
-  console.log("mxswitch data:", mxswitch);
-  console.log("found userSwitch:", userSwitch);
-  console.log("notes array:", notes);
-
   const [isEditMode, setIsEditMode] = useState(false);
   const [innerWidth, setInnerWidth] = useState(0);
   const [editedNotes, setEditedNotes] = useState([]);
   const [editNoteId, setEditNoteId] = useState(null);
   const [editNoteText, setEditNoteText] = useState("");
   const [newNote, setNewNote] = useState("");
+
+  const [editedName, setEditedName] = useState(mxswitch?.name || "");
+  const [editedManufacturer, setEditedManufacturer] = useState(
+    mxswitch?.manufacturer || ""
+  );
+  const [editedImage, setEditedImage] = useState(mxswitch?.image || "");
+  const [editedSwitchType, setEditedSwitchType] = useState(
+    mxswitch?.switchType || ""
+  );
+  const [editedQuantity, setEditedQuantity] = useState(
+    mxswitch?.quantity || ""
+  );
+  const [editedSpringWeight, setEditedSpringWeight] = useState(
+    mxswitch?.springWeight || ""
+  );
+  const [editedTopMaterial, setEditedTopMaterial] = useState(
+    mxswitch?.topMaterial || ""
+  );
+  const [editedBottomMaterial, setEditedBottomMaterial] = useState(
+    mxswitch?.bottomMaterial || ""
+  );
+  const [editedStemMaterial, setEditedStemMaterial] = useState(
+    mxswitch?.stemMaterial || ""
+  );
+  const [editedFactoryLubed, setEditedFactoryLubed] = useState(
+    mxswitch?.factoryLubed || false
+  );
+  const [editedIsLubed, setEditedIsLubed] = useState(
+    mxswitch?.isLubed || false
+  );
+  const [editedIsFilmed, setEditedIsFilmed] = useState(
+    mxswitch?.isFilmed || false
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -84,12 +112,89 @@ export default function SwitchDetail() {
       });
   };
 
+  const handleEditNote = (noteId, currentText) => {
+    setEditNoteId(noteId);
+    setEditNoteText(currentText);
+  };
+
+  const handleSaveEditedNote = () => {
+    if (!editNoteId || editNoteText.trim() === "") return;
+
+    setEditedNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note._id === editNoteId ? { ...note, text: editNoteText } : note
+      )
+    );
+
+    setEditNoteId(null); // ✅ Close edit mode
+    setEditNoteText(""); // Clear the edit texts state
+  };
+
+  const handleDeleteNote = (noteId) => {
+    if (!isEditMode) return;
+
+    const updatedNotes = editedNotes.filter((note) => note._id !== noteId);
+    setEditedNotes(updatedNotes);
+  };
+
   const handleSaveChanges = async () => {
-    setIsEditMode(false);
+    if (
+      !editedName ||
+      !editedManufacturer ||
+      !editedImage ||
+      !editedSwitchType
+    ) {
+      alert("Name, Manufacturer, Switch Type, and Image are required.");
+      return;
+    }
+
+    try {
+      await fetch("/api/inventories/userswitches", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          switchId: id,
+          name: editedName,
+          manufacturer: editedManufacturer,
+          image: editedImage,
+          switchType: editedSwitchType,
+          quantity: editedQuantity,
+          springWeight: editedSpringWeight,
+          topMaterial: editedTopMaterial,
+          bottomMaterial: editedBottomMaterial,
+          stemMaterial: editedStemMaterial,
+          factoryLubed: editedFactoryLubed,
+          isLubed: editedIsLubed,
+          isFilmed: editedIsFilmed,
+          notes: editedNotes,
+        }),
+      });
+
+      mutate();
+      setIsEditMode(false);
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      alert("Failed to save changes. Please try again.");
+    }
   };
 
   const handleCancelEdits = () => {
     setIsEditMode(false);
+    setEditNoteId(null);
+    setEditedName(mxswitch?.name || "");
+    setEditedManufacturer(mxswitch?.manufacturer || "");
+    setEditedImage(mxswitch?.image || "");
+    setEditedSwitchType(mxswitch?.switchType || "");
+    setEditedQuantity(mxswitch?.quantity || "");
+    setEditedSpringWeight(mxswitch?.springWeight || "");
+    setEditedTopMaterial(mxswitch?.topMaterial || "");
+    setEditedBottomMaterial(mxswitch?.bottomMaterial || "");
+    setEditedStemMaterial(mxswitch?.stemMaterial || "");
+    setEditedFactoryLubed(mxswitch?.factoryLubed || false);
+    setEditedIsLubed(mxswitch?.isLubed || false);
+    setEditedIsFilmed(mxswitch?.isFilmed || false);
+    setEditedNotes([...notes]);
   };
 
   if (switchError || userSwitchesError) {
@@ -220,7 +325,7 @@ export default function SwitchDetail() {
                     {isEditMode && (
                       <ButtonContainer>
                         <BaseButton
-                        // onClick={() => handleEditNote(note._id, note.text)}
+                          onClick={() => handleEditNote(note._id, note.text)}
                         >
                           ✏️ Edit
                         </BaseButton>
@@ -256,11 +361,9 @@ export default function SwitchDetail() {
               if (isEditMode) {
                 handleCancelEdits();
               } else {
-                setIsEditMode(true);
-                // setEditedColors([...selectedColors]);
-                // setEditedKits(userKeycap?.selectedKits || []);
-                // setEditedNotes([...notes]);
+                setEditedNotes([...notes]);
               }
+              setIsEditMode(!isEditMode);
             }}
           />
           {isEditMode && (
