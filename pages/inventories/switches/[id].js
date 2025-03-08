@@ -23,8 +23,13 @@ export default function SwitchDetail() {
     mutate,
   } = useSWR(id ? `/api/inventories/userswitches?userId=guest_user` : null);
 
-  const userSwitch = userSwitches?.find((item) => item.switchId === id);
-  const notes = mxswitch?.notes ?? [];
+  const userSwitch = userSwitches?.find((item) => item._id === id);
+  const notes = userSwitch?.notes ?? [];
+
+  console.log("userSwitches data:", userSwitches);
+  console.log("mxswitch data:", mxswitch);
+  console.log("found userSwitch:", userSwitch);
+  console.log("notes array:", notes);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [innerWidth, setInnerWidth] = useState(0);
@@ -38,6 +43,11 @@ export default function SwitchDetail() {
       setInnerWidth(window.innerWidth);
     }
   }, []);
+  useEffect(() => {
+    if (userSwitch) {
+      setEditedNotes(userSwitch.notes);
+    }
+  }, [userSwitch?.notes]);
 
   const handleAddNote = () => {
     if (newNote.trim() === "") return; //no empty notes please
@@ -59,10 +69,19 @@ export default function SwitchDetail() {
         switchId: id,
         notes: updatedNotes,
       }),
-    }).then(() => {
-      mutate();
-      setNewNote("");
-    });
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to add note");
+        return response.json();
+      })
+      .then(() => {
+        mutate();
+        setNewNote("");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Failed to add note. Please try again.");
+      });
   };
 
   const handleSaveChanges = async () => {
