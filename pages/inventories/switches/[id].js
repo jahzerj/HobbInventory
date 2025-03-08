@@ -56,7 +56,7 @@ export default function SwitchDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        switchId: mxswitch?._id,
+        switchId: id,
         notes: updatedNotes,
       }),
     }).then(() => {
@@ -201,7 +201,7 @@ export default function SwitchDetail() {
                     {isEditMode && (
                       <ButtonContainer>
                         <BaseButton
-                          onClick={() => handleEditNote(note._id, note.text)}
+                        // onClick={() => handleEditNote(note._id, note.text)}
                         >
                           ✏️ Edit
                         </BaseButton>
