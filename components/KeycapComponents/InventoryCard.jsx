@@ -3,37 +3,53 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
 import { useState } from "react";
+import useSWR from "swr";
 
 export default function InventoryCard({ data, isEditMode, onDelete }) {
   const router = useRouter();
+  const { data: keycapsData } = useSWR("/api/inventories/keycaps");
 
   const [imageIndexes, setImageIndexes] = useState({});
 
   const handleNextImage = (keycapId, totalImages) => {
-    setImageIndexes((prevIndexes) => ({
-      ...prevIndexes,
-      [keycapId]:
+    setImageIndexes((prevIndexes) => {
+      const newIndex =
         prevIndexes[keycapId] === totalImages - 1
           ? 0
-          : prevIndexes[keycapId] + 1,
-    }));
+          : (prevIndexes[keycapId] || 0) + 1;
+      return {
+        ...prevIndexes,
+        [keycapId]: newIndex,
+      };
+    });
   };
 
   const handlePrevImage = (keycapId, totalImages) => {
-    setImageIndexes((prevIndexes) => ({
-      ...prevIndexes,
-      [keycapId]:
+    setImageIndexes((prevIndexes) => {
+      const newIndex =
         prevIndexes[keycapId] === 0
           ? totalImages - 1
-          : prevIndexes[keycapId] - 1,
-    }));
+          : (prevIndexes[keycapId] || 0) - 1;
+      return {
+        ...prevIndexes,
+        [keycapId]: newIndex,
+      };
+    });
   };
 
   return data.map((keycapObj) => {
     const selectedKits = keycapObj.selectedKits ?? [];
-    const selectedKitImages = keycapObj.keycapSetId?.kits
-      ?.filter((kit) => selectedKits.includes(kit.name)) // ✅ Only show selected kits
-      ?.map((kit) => kit.pic || "/no-image-available.jpg"); // ✅ Ensure placeholder
+
+    // Find the matching keycapset from keycapsData
+    const fullKeycapData = keycapsData?.find(
+      (keycap) => keycap._id === keycapObj.keycapSetId._id
+    );
+
+    // Get kit images using the full keycap data (same as Modal)
+    const selectedKitImages =
+      fullKeycapData?.kits?.[0]?.price_list
+        ?.filter((kit) => selectedKits.includes(kit.name))
+        ?.map((kit) => kit.pic || "/no_image_available.jpg") ?? [];
 
     //retrieve current image for this specific keycapObj
     const currentImageIndex = imageIndexes[keycapObj._id] || 0;
@@ -56,14 +72,16 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
         <h3>{keycapObj.keycapSetId?.name}</h3>
         {selectedKitImages.length > 0 ? (
           <ImageCarousel>
-            <button
+            <CarouselButton
+              className="prev"
               onClick={(event) => {
+                event.preventDefault();
                 event.stopPropagation();
                 handlePrevImage(keycapObj._id, selectedKitImages.length);
               }}
             >
-              &lt;
-            </button>
+              ←
+            </CarouselButton>
             <ImageWrapper>
               <Image
                 src={selectedKitImages[currentImageIndex]}
@@ -73,14 +91,16 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
                 priority
               />
             </ImageWrapper>
-            <button
+            <CarouselButton
+              className="next"
               onClick={(event) => {
+                event.preventDefault();
                 event.stopPropagation();
                 handleNextImage(keycapObj._id, selectedKitImages.length);
               }}
             >
-              &gt;
-            </button>
+              →
+            </CarouselButton>
           </ImageCarousel>
         ) : (
           <p> No Image available</p>
@@ -132,13 +152,39 @@ const ImageWrapper = styled.div`
 const ImageCarousel = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  width: 100%;
+  position: relative;
+`;
 
-  button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
+const CarouselButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  &.prev {
+    left: 10px;
+  }
+
+  &.next {
+    right: 10px;
   }
 `;
 
