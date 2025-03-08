@@ -247,7 +247,11 @@ export default function KeyCapDetail() {
               const isCurrentlySelected = editedKits.includes(kit.name);
 
               return (
-                <KitCard key={kit.name}>
+                <KitCard
+                  key={kit.name}
+                  $isEditMode={isEditMode}
+                  $isSelected={isCurrentlySelected}
+                >
                   <input
                     type="checkbox"
                     checked={isCurrentlySelected}
@@ -268,7 +272,7 @@ export default function KeyCapDetail() {
                   {wasPreviouslySelected !== isCurrentlySelected && (
                     <small>
                       {isCurrentlySelected
-                        ? "(Will be added"
+                        ? "(Will be added)"
                         : "(Will be removed)"}
                     </small>
                   )}
@@ -481,7 +485,7 @@ const StyledLink = styled(Link)`
   z-index: 1000;
 
   &:hover {
-    background-color: darkgrey;
+    background-color: darkblue;
   }
 `;
 
@@ -553,6 +557,7 @@ const GridContainer = styled.ul`
 `;
 
 const KitCard = styled.li`
+  position: relative;
   background: white;
   border-radius: 10px;
   padding: 10px;
@@ -560,6 +565,26 @@ const KitCard = styled.li`
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: ${(props) => (props.$isEditMode ? "pointer" : "default")};
+  opacity: ${(props) =>
+    props.$isEditMode && !props.$isSelected ? "0.33" : "1"};
+  transition: opacity 0.2s ease-in-out;
+
+  &:hover {
+    opacity: ${(props) => (props.$isEditMode ? "0.8" : "1")};
+  }
+
+  input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    margin: 0;
+    z-index: 1;
+  }
 `;
 
 const StyledInput = styled.input`

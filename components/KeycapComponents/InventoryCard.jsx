@@ -13,10 +13,8 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
 
   const handleNextImage = (keycapId, totalImages) => {
     setImageIndexes((prevIndexes) => {
-      const newIndex =
-        prevIndexes[keycapId] === totalImages - 1
-          ? 0
-          : (prevIndexes[keycapId] || 0) + 1;
+      const currentIndex = prevIndexes[keycapId] ?? 0;
+      const newIndex = (currentIndex + 1) % totalImages;
       return {
         ...prevIndexes,
         [keycapId]: newIndex,
@@ -26,10 +24,8 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
 
   const handlePrevImage = (keycapId, totalImages) => {
     setImageIndexes((prevIndexes) => {
-      const newIndex =
-        prevIndexes[keycapId] === 0
-          ? totalImages - 1
-          : (prevIndexes[keycapId] || 0) - 1;
+      const currentIndex = prevIndexes[keycapId] ?? 0;
+      const newIndex = (currentIndex - 1 + totalImages) % totalImages;
       return {
         ...prevIndexes,
         [keycapId]: newIndex,
