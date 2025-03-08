@@ -126,8 +126,8 @@ export default function SwitchDetail() {
       )
     );
 
-    setEditNoteId(null); // ✅ Close edit mode
-    setEditNoteText(""); // Clear the edit texts state
+    setEditNoteId(null);
+    setEditNoteText("");
   };
 
   const handleDeleteNote = (noteId) => {
@@ -394,7 +394,7 @@ const StyledLink = styled(Link)`
   right: 5px;
   text-decoration: none;
   color: white;
-  background-color: lightgrey;
+  background-color: #007bff;
   border-radius: 50%;
   display: flex;
   justify-content: center;

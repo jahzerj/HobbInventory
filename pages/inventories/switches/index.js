@@ -54,7 +54,9 @@ export default function Switches() {
     }
   };
 
-  const handleDeleteSwitch = async (switchId) => {
+  const handleDeleteSwitch = async (switchId, event) => {
+    event.stopPropagation();
+
     if (!switchId) return;
 
     const confirmDelete = window.confirm(

@@ -471,7 +471,7 @@ const StyledLink = styled(Link)`
   right: 5px;
   text-decoration: none;
   color: white;
-  background-color: lightgrey;
+  background-color: #007bff;
   border-radius: 50%;
   display: flex;
   justify-content: center;
