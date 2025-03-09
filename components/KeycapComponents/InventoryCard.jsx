@@ -41,14 +41,29 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
       (keycap) => keycap._id === keycapObj.keycapSetId._id
     );
 
-    // Get kit images using the full keycap data (same as Modal)
-    const selectedKitImages =
+    // Get kit data with both image and name in the same order
+
+    const selectedKitData =
       fullKeycapData?.kits?.[0]?.price_list
         ?.filter((kit) => selectedKits.includes(kit.name))
-        ?.map((kit) => kit.pic || "/no_image_available.jpg") ?? [];
+        ?.map((kit) => ({
+          name: kit.name,
+          pic: kit.pic || "/no_image_available.jpg",
+        })) ?? [];
+
+    // const selectedKitImages = selectedKitData.map((kit) => kit.pic);
+    // const selectedKitNames = selectedKitData.map((kit) => kit.name);
 
     //retrieve current image for this specific keycapObj
     const currentImageIndex = imageIndexes[keycapObj._id] || 0;
+
+    // console.log("Debug kit alignment:", {
+    //   selectedKits,
+    //   selectedKitData,
+    //   currentImageIndex,
+    //   currentName: selectedKitNames[currentImageIndex],
+    //   currentImage: selectedKitImages[currentImageIndex],
+    // });
 
     return (
       <StyledCard
@@ -57,12 +72,12 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
           router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`)
         }
       >
-        {selectedKitImages.length > 0 ? (
+        {selectedKitData.length > 0 ? (
           <>
             <ImageWrapper>
               <Image
-                src={selectedKitImages[currentImageIndex]}
-                alt={`Kit ${currentImageIndex + 1}`}
+                src={selectedKitData[currentImageIndex].pic}
+                alt={selectedKitData[currentImageIndex].name}
                 fill
                 style={{ objectFit: "cover" }}
                 priority
@@ -75,7 +90,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  handlePrevImage(keycapObj._id, selectedKitImages.length);
+                  handlePrevImage(keycapObj._id, selectedKitData.length);
                 }}
               >
                 ←
@@ -85,15 +100,15 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  handleNextImage(keycapObj._id, selectedKitImages.length);
+                  handleNextImage(keycapObj._id, selectedKitData.length);
                 }}
               >
                 →
               </CarouselButton>
               <div>
-                <KitName>{selectedKits[currentImageIndex]}</KitName>
+                <KitName>{selectedKitData[currentImageIndex].name}</KitName>
                 <DotsContainer>
-                  {selectedKitImages.map((_, index) => (
+                  {selectedKitData.map((_, index) => (
                     <Dot
                       key={index}
                       $active={index === currentImageIndex}
@@ -156,6 +171,7 @@ const CardContent = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  border-radius: 30px;
   align-items: center;
   justify-content: space-between;
   padding: 15px;
