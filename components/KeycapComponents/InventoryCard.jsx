@@ -128,6 +128,13 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
             <DeleteIcon />
           </DeleteInventoryItemButton>
         )}
+        <ColorDotsList $isEditMode={isEditMode}>
+          {(keycapObj.selectedColors || []).map((color, index) => (
+            <ColorDotItem key={index} $color={color}>
+              •
+            </ColorDotItem>
+          ))}
+        </ColorDotsList>
       </StyledCard>
     );
   });
@@ -193,6 +200,7 @@ const ImageWrapper = styled.div`
   img {
     object-fit: cover;
   }
+  background-color: transparent;
 `;
 const KitName = styled.p`
   text-align: center;
@@ -258,4 +266,25 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
+`;
+
+const ColorDotsList = styled.li`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  gap: 5px;
+  z-index: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  ${({ $isEditMode }) =>
+    $isEditMode && `right: 60px; //move over when delete button appears`}
+`;
+
+const ColorDotItem = styled.li`
+  font-size: 2rem;
+  color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 `;
