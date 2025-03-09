@@ -51,19 +51,8 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
           pic: kit.pic || "/no_image_available.jpg",
         })) ?? [];
 
-    // const selectedKitImages = selectedKitData.map((kit) => kit.pic);
-    // const selectedKitNames = selectedKitData.map((kit) => kit.name);
-
     //retrieve current image for this specific keycapObj
     const currentImageIndex = imageIndexes[keycapObj._id] || 0;
-
-    // console.log("Debug kit alignment:", {
-    //   selectedKits,
-    //   selectedKitData,
-    //   currentImageIndex,
-    //   currentName: selectedKitNames[currentImageIndex],
-    //   currentImage: selectedKitImages[currentImageIndex],
-    // });
 
     return (
       <StyledCard
@@ -149,13 +138,15 @@ const StyledCard = styled.li`
   width: 80%;
   height: 300px;
   margin: 10px;
-  min-width: 350px;
+  min-width: 360px;
+  max-width: 600px;
+
   border-radius: 30px;
   cursor: pointer;
   overflow: hidden;
 
   @media (min-width: 600px) {
-    width: 50%;
+    width: 500px;
   }
 
   &:hover {
@@ -197,13 +188,10 @@ const ImageWrapper = styled.div`
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  border-radius: 30px;
 
   img {
     object-fit: cover;
-  }
-
-  @media (max-width: 320px) {
-    width: 90%;
   }
 `;
 const KitName = styled.p`

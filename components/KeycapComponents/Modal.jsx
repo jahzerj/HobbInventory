@@ -161,20 +161,6 @@ const DropDownSelect = styled.select`
   background-color: #f9f9f9;
 `;
 
-const CheckboxContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  cursor: pointer;
-`;
-
 const KitList = styled.ul`
   list-style-type: none;
   padding: 0;
