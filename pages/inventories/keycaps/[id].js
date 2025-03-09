@@ -216,7 +216,8 @@ export default function KeyCapDetail() {
               <Image
                 src={keycaps.render_pics[0]}
                 alt={keycaps.name}
-                fill={true}
+                fill
+                style={{ objectFit: "cover" }}
                 priority
               />
             </HeaderImage>
@@ -263,6 +264,7 @@ export default function KeyCapDetail() {
                       alt={kit.name}
                       width={116}
                       height={67}
+                      style={{ objectFit: "cover" }}
                       priority
                     />
                   ) : (

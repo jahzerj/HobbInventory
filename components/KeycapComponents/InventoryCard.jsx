@@ -67,37 +67,59 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
         )}
         <h3>{keycapObj.keycapSetId?.name}</h3>
         {selectedKitImages.length > 0 ? (
-          <ImageCarousel>
-            <CarouselButton
-              className="prev"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                handlePrevImage(keycapObj._id, selectedKitImages.length);
-              }}
-            >
-              ←
-            </CarouselButton>
-            <ImageWrapper>
-              <Image
-                src={selectedKitImages[currentImageIndex]}
-                alt={`Kit ${currentImageIndex + 1}`}
-                width={320}
-                height={180}
-                priority
-              />
-            </ImageWrapper>
-            <CarouselButton
-              className="next"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                handleNextImage(keycapObj._id, selectedKitImages.length);
-              }}
-            >
-              →
-            </CarouselButton>
-          </ImageCarousel>
+          <>
+            <ImageCarousel>
+              <CarouselButton
+                className="prev"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  handlePrevImage(keycapObj._id, selectedKitImages.length);
+                }}
+              >
+                ←
+              </CarouselButton>
+              <ImageWrapper>
+                <Image
+                  src={selectedKitImages[currentImageIndex]}
+                  alt={`Kit ${currentImageIndex + 1}`}
+                  width={320}
+                  height={180}
+                  style={{ objectFit: "cover" }}
+                  priority
+                />
+              </ImageWrapper>
+              <CarouselButton
+                className="next"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  handleNextImage(keycapObj._id, selectedKitImages.length);
+                }}
+              >
+                →
+              </CarouselButton>
+            </ImageCarousel>
+            <KitName>{selectedKits[currentImageIndex]}</KitName>
+            <DotsContainer>
+              {selectedKitImages.map((_, index) => (
+                <Dot
+                  key={index}
+                  $active={index === currentImageIndex}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setImageIndexes((prev) => ({
+                      ...prev,
+                      [keycapObj._id]: index,
+                    }));
+                  }}
+                >
+                  •
+                </Dot>
+              ))}
+            </DotsContainer>
+          </>
         ) : (
           <p> No Image available</p>
         )}
@@ -117,7 +139,7 @@ const StyledCard = styled.li`
   align-items: center;
   padding: 15px;
   margin: 10px;
-  height: 250px;
+  height: 300px;
   justify-content: space-around;
   box-shadow: 10px 5px 5px grey;
   cursor: pointer;
@@ -198,4 +220,23 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
+`;
+
+const DotsContainer = styled.div`
+  text-align: center;
+  margin-top: 5px;
+`;
+
+const Dot = styled.span`
+  font-size: 1.2rem;
+  margin: 0 3px;
+  cursor: pointer;
+  color: ${(props) => (props.$active ? "#007bff" : "#ccc")};
+`;
+
+const KitName = styled.p`
+  text-align: center;
+  font-size: 1.1rem;
+  margin-top: 5px;
+  color: #666;
 `;
