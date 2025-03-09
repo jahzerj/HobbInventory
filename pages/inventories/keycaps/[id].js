@@ -536,14 +536,14 @@ const HeaderImage = styled.div`
 `;
 
 const BoxContainer = styled.ul`
-  background: ${(props) => props.$bgColor || "#f9f9f9"};
+  background: #f9f9f9;
   padding: 15px;
   border-radius: 10px;
-  width: 100%;
-  max-width: ${(props) => props.$maxWidth || "600px"};
-  text-align: ${(props) => props.align || "left"};
+  width: 80%;
+  max-width: 430px;
+  text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: ${(props) => props.margin || "15px"};
+  margin-bottom: 15px;
   list-style-type: none;
 `;
 
@@ -563,7 +563,7 @@ const GridContainer = styled.ul`
   gap: 15px;
   width: auto;
   margin: 10px 0;
-  max-width: 365px;
+  max-width: 430px;
   background-color: transparent;
 
   @media (min-width: 430px) {
@@ -617,20 +617,17 @@ const StyledInput = styled.input`
 `;
 
 const ColorsContainer = styled.ul`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
   background-color: #f9f9f9;
   padding: 10px;
-  flex-wrap: wrap;
   gap: 15px;
   width: auto;
   margin: 10px 0;
   max-width: 365px;
   border: 1px solid #ccc;
   border-radius: 5px;
-
-  @media (min-width: 430px) {
-    max-width: 400px;
-  }
 `;
 
 const SelectedColorLi = styled.li`
@@ -642,7 +639,9 @@ const SelectedColorLi = styled.li`
   border: 2px solid ${(props) => props.$bgColor || "black"};
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  min-width: 0;
 `;
 
 const BaseButton = styled.button`
