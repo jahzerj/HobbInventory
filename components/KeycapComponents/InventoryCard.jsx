@@ -57,18 +57,19 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
           router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`)
         }
       >
-        {isEditMode && (
-          <DeleteInventoryItemButton
-            onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
-            aria-label="Delete Keycap Button"
-          >
-            <DeleteIcon />
-          </DeleteInventoryItemButton>
-        )}
-        <h3>{keycapObj.keycapSetId?.name}</h3>
         {selectedKitImages.length > 0 ? (
           <>
-            <ImageCarousel>
+            <ImageWrapper>
+              <Image
+                src={selectedKitImages[currentImageIndex]}
+                alt={`Kit ${currentImageIndex + 1}`}
+                fill
+                style={{ objectFit: "cover" }}
+                priority
+              />
+            </ImageWrapper>
+            <CardContent>
+              <CardTitle>{keycapObj.keycapSetId?.name}</CardTitle>
               <CarouselButton
                 className="prev"
                 onClick={(event) => {
@@ -79,16 +80,6 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
               >
                 ←
               </CarouselButton>
-              <ImageWrapper>
-                <Image
-                  src={selectedKitImages[currentImageIndex]}
-                  alt={`Kit ${currentImageIndex + 1}`}
-                  width={320}
-                  height={180}
-                  style={{ objectFit: "cover" }}
-                  priority
-                />
-              </ImageWrapper>
               <CarouselButton
                 className="next"
                 onClick={(event) => {
@@ -99,29 +90,39 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
               >
                 →
               </CarouselButton>
-            </ImageCarousel>
-            <KitName>{selectedKits[currentImageIndex]}</KitName>
-            <DotsContainer>
-              {selectedKitImages.map((_, index) => (
-                <Dot
-                  key={index}
-                  $active={index === currentImageIndex}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setImageIndexes((prev) => ({
-                      ...prev,
-                      [keycapObj._id]: index,
-                    }));
-                  }}
-                >
-                  •
-                </Dot>
-              ))}
-            </DotsContainer>
+              <div>
+                <KitName>{selectedKits[currentImageIndex]}</KitName>
+                <DotsContainer>
+                  {selectedKitImages.map((_, index) => (
+                    <Dot
+                      key={index}
+                      $active={index === currentImageIndex}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setImageIndexes((prev) => ({
+                          ...prev,
+                          [keycapObj._id]: index,
+                        }));
+                      }}
+                    >
+                      •
+                    </Dot>
+                  ))}
+                </DotsContainer>
+              </div>
+            </CardContent>
           </>
         ) : (
           <p> No Image available</p>
+        )}
+        {isEditMode && (
+          <DeleteInventoryItemButton
+            onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
+            aria-label="Delete Keycap Button"
+          >
+            <DeleteIcon />
+          </DeleteInventoryItemButton>
         )}
       </StyledCard>
     );
@@ -130,19 +131,13 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
 
 const StyledCard = styled.li`
   position: relative;
-  background-color: lightgrey;
   width: 80%;
+  height: 300px;
+  margin: 10px;
   min-width: 350px;
   border-radius: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  margin: 10px;
-  height: 300px;
-  justify-content: space-around;
-  box-shadow: 10px 5px 5px grey;
   cursor: pointer;
+  overflow: hidden;
 
   @media (min-width: 600px) {
     width: 50%;
@@ -153,27 +148,66 @@ const StyledCard = styled.li`
   }
 `;
 
-const ImageWrapper = styled.div`
+const CardContent = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 320px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 1;
+`;
+const CardTitle = styled.h3`
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+`;
 
-  aspect-ratio: 16 / 9;
+const ImageWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+
+  img {
+    object-fit: cover;
+  }
 
   @media (max-width: 320px) {
     width: 90%;
   }
 `;
+const KitName = styled.p`
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 5px 0;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+`;
 
-const ImageCarousel = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  position: relative;
+const DotsContainer = styled.div`
+  text-align: center;
+  margin-top: 5px;
+`;
+
+const Dot = styled.span`
+  font-size: 1.2rem;
+  margin: 0 3px;
+  cursor: pointer;
+  color: ${(props) => (props.$active ? "#007bff" : "#ccc")};
 `;
 
 const CarouselButton = styled.button`
@@ -220,23 +254,4 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
-`;
-
-const DotsContainer = styled.div`
-  text-align: center;
-  margin-top: 5px;
-`;
-
-const Dot = styled.span`
-  font-size: 1.2rem;
-  margin: 0 3px;
-  cursor: pointer;
-  color: ${(props) => (props.$active ? "#007bff" : "#ccc")};
-`;
-
-const KitName = styled.p`
-  text-align: center;
-  font-size: 1.1rem;
-  margin-top: 5px;
-  color: #666;
 `;
