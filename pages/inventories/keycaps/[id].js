@@ -9,6 +9,7 @@ import { nanoid } from "nanoid";
 import EditButton from "@/components/KeycapComponents/EditButton";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
 import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
+import KitImageModal from "@/components/KeycapComponents/KitImageModal";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function KeyCapDetail() {
   const [editNoteId, setEditNoteId] = useState(null);
   const [editNoteText, setEditNoteText] = useState("");
   const [innerWidth, setInnerWidth] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -287,7 +289,13 @@ export default function KeyCapDetail() {
             {kitsAvailable
               .filter((kit) => selectedKits.includes(kit.name))
               .map((kit) => (
-                <KitCard key={kit.name}>
+                <KitCard
+                  key={kit.name}
+                  onClick={() =>
+                    setSelectedImage({ url: kit.pic, name: kit.name })
+                  }
+                  style={{ cursor: "pointer" }}
+                >
                   {kit.pic ? (
                     <Image
                       src={kit.pic}
@@ -306,12 +314,20 @@ export default function KeyCapDetail() {
         ) : (
           <p>No kits selected.</p>
         )}
+
+        {/* Opens image modal */}
+        <KitImageModal
+          open={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+          imageUrl={selectedImage?.url}
+          kitName={selectedImage?.name}
+        />
         <h3>Choose 4 Colors</h3>
         <StyledInput
           as="select"
           onChange={handleColorSelect}
           value=""
-          $maxWidth="400px"
+          $maxWidth="430px"
         >
           <option value="" disabled>
             -- Choose up to 4 colors --
@@ -470,6 +486,7 @@ const DetailPageContainer = styled.div`
   align-items: center;
   text-align: center;
   padding-bottom: 60px;
+  background-color: #ccc;
 `;
 const StyledLink = styled(Link)`
   position: fixed;
@@ -590,8 +607,8 @@ const KitCard = styled.li`
 `;
 
 const StyledInput = styled.input`
-  width: 100%;
-  max-width: ${(props) => props.$maxWidth || "600px"};
+  width: 90%;
+  max-width: ${(props) => props.$maxWidth || "430px"};
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -681,14 +698,13 @@ const NotesContainer = styled.ul`
   background: #f9f9f9;
   padding: 15px;
   border-radius: 10px;
-  width: 100%;
-  max-width: 600px;
+  width: 90%;
   text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
   list-style-type: none;
   width: 100%;
-  max-width: 400px;
+  max-width: 430px;
   overflow-x: hidden;
 `;
 
