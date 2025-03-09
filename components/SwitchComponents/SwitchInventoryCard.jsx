@@ -23,18 +23,21 @@ export default function SwitchInventoryCard({
             <DeleteIcon />
           </DeleteInventoryItemButton>
         )}
-
-        <Image
-          src={switchObj.image}
-          alt={switchObj.name}
-          width={100}
-          height={100}
-          priority
-        />
-        <p>{switchObj.manufacturer}</p>
-        <p>
-          <strong>{switchObj.name}</strong>
-        </p>
+        <ImageContainer>
+          <StyledSwitchImage
+            src={switchObj.image}
+            alt={switchObj.name}
+            width={100}
+            height={100}
+            priority
+          />
+        </ImageContainer>
+        <TextContainer>
+          <p>{switchObj.manufacturer}</p>
+          <p>
+            <strong>{switchObj.name}</strong>
+          </p>
+        </TextContainer>
         <SwitchTypeLabel>{switchObj.switchType}</SwitchTypeLabel>
       </SwitchCard>
     ))
@@ -48,43 +51,60 @@ export default function SwitchInventoryCard({
 
 const SwitchCard = styled.li`
   position: relative;
-  margin-top: 5px;
   display: flex;
   flex-direction: column;
-  background-color: lightgrey;
+  background-color: white;
   align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 16px;
+  margin-top: 5px;
+  padding: 12px;
   padding-bottom: 25px;
-  box-shadow: 10px 5px 5px grey;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-bottom-width: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
   width: 100%;
   max-width: 200px;
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-  }
+
   &:hover {
-    scale: 1.05;
+    scale: 1.02;
   }
 `;
 
-const SwitchTypeLabel = styled.p`
+const ImageContainer = styled.div`
+  position: relative;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: #f8f8f8;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+const StyledSwitchImage = styled(Image)`
+  border-radius: 4px;
+`;
+
+const TextContainer = styled.div`
+  width: 100%;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+`;
+
+const SwitchTypeLabel = styled.div`
   position: absolute;
-  bottom: -12px;
+  bottom: -10px;
   left: 50%;
-  transform: translate(-50%);
-  padding: 4px 12px;
+  transform: translateX(-50%);
+  padding: 2px 12px;
   font-size: 12px;
   font-weight: bold;
   color: black;
-  background-color: white;
-  margin-top: 5px;
-  border: solid 1px black;
-  border-radius: 15px;
-  text-transform: capitalize;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
 `;
 
 const DeleteInventoryItemButton = styled.button`

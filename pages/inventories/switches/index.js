@@ -14,6 +14,7 @@ export default function Switches() {
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
   const [userSwitches, setUserSwitches] = useState([]);
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const {
     data: switches,
@@ -86,6 +87,13 @@ export default function Switches() {
     }
   };
 
+  const filteredSwitches =
+    switches?.filter(
+      (switchItem) =>
+        typeFilter === "all" ||
+        switchItem.switchType.toLowerCase() === typeFilter
+    ) ?? [];
+
   if (error) return <p>Error loading switches</p>;
   if (!switches) return <p>Loading...</p>;
 
@@ -103,9 +111,19 @@ export default function Switches() {
         />
         <Container>
           <h1>Switches Inventory</h1>
+          <StyledInput
+            as="select"
+            value={typeFilter}
+            onChange={(event) => setTypeFilter(event.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="linear">Linear</option>
+            <option value="tactile">Tactile</option>
+            <option value="clicky">Clicky</option>
+          </StyledInput>
           <SwitchGrid>
             <SwitchInventoryCard
-              switches={switches}
+              switches={filteredSwitches}
               isEditMode={isEditMode}
               onDelete={handleDeleteSwitch}
             />
@@ -135,6 +153,7 @@ const SwitchGrid = styled.ul`
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
+  position: relative;
 `;
 
 const HomeBurger = styled(Link)`
@@ -152,4 +171,15 @@ const HomeBurger = styled(Link)`
 
 const NewDiv = styled.div`
   padding: 10px;
+`;
+
+const StyledInput = styled.input`
+  width: auto;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 `;
