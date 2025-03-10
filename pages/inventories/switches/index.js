@@ -119,7 +119,7 @@ export default function Switches() {
       />
 
       <StyledContainer>
-        <h1> Switches Inventory</h1>
+        <LongTitle> Switches Inventory</LongTitle>
 
         <StyledInput
           as="select"
@@ -222,4 +222,10 @@ const LoaderWrapper = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
+`;
+
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
+  }
 `;
