@@ -109,27 +109,30 @@ export default function Switches() {
   return (
     <>
       <HomeBurger href="/">
-        {" "}
-        <MenuIcon />{" "}
+        <MenuIcon />
       </HomeBurger>
-      <NewDiv>
-        <Modal
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          onAddSwitch={handleAddSwitch}
-        />
-        <Container>
-          <h1>Switches Inventory</h1>
-          <StyledInput
-            as="select"
-            value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="linear">Linear</option>
-            <option value="tactile">Tactile</option>
-            <option value="clicky">Clicky</option>
-          </StyledInput>
+
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        onAddSwitch={handleAddSwitch}
+      />
+
+      <StyledContainer>
+        <h1> Switches Inventory</h1>
+
+        <StyledInput
+          as="select"
+          value={typeFilter}
+          onChange={(event) => setTypeFilter(event.target.value)}
+        >
+          <option value="all">All Types</option>
+          <option value="linear">Linear</option>
+          <option value="tactile">Tactile</option>
+          <option value="clicky">Clicky</option>
+        </StyledInput>
+
+        <CardContainer>
           <SwitchGrid>
             <SwitchInventoryCard
               switches={filteredSwitches}
@@ -137,32 +140,48 @@ export default function Switches() {
               onDelete={handleDeleteSwitch}
             />
           </SwitchGrid>
-        </Container>
+        </CardContainer>
+      </StyledContainer>
 
-        <AddButtton
-          onOpenModal={() => setIsOpen(true)}
-          isEditMode={isEditMode}
-        />
-        <EditInventoryButton
-          isEditMode={isEditMode}
-          onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
-        />
-      </NewDiv>
+      <AddButtton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+      />
     </>
   );
 }
-const Container = styled.div`
-  margin-top: 25px;
+
+const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: 25px;
 `;
+
+const CardContainer = styled.div`
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const SwitchGrid = styled.ul`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
   position: relative;
+`;
+
+const StyledInput = styled.input`
+  width: auto;
+  position: absolute;
+  right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  top: 80px;
 `;
 
 const HomeBurger = styled(Link)`
@@ -176,21 +195,6 @@ const HomeBurger = styled(Link)`
   top: 8px;
   z-index: 1000;
   border-radius: 10px;
-`;
-
-const NewDiv = styled.div`
-  padding: 10px;
-`;
-
-const StyledInput = styled.input`
-  width: auto;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 `;
 
 const StyledSpan = styled.span`
