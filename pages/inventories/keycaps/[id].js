@@ -65,15 +65,28 @@ export default function KeyCapDetail() {
     });
   };
 
+  const handleColorSelection = (selectedColor, currentColors) => {
+    if (currentColors.includes(selectedColor)) {
+      return { error: "Color already selected" };
+    }
+    if (currentColors.length >= 4) {
+      return { error: "Maximum 4 colors allowed" };
+    }
+    return { newColors: [...currentColors, selectedColor] };
+  };
+
   const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
+    const colors = isEditMode ? editedColors : selectedColors;
+
+    const result = handleColorSelection(selectedColor, colors);
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
 
     if (isEditMode) {
-      if (editedColors.includes(selectedColor)) return;
-      if (editedColors.length >= 4) {
-        return alert("You can only select up to 4 colors.");
-      }
-      setEditedColors((prevColors) => [...prevColors, selectedColor]);
+      setEditedColors(result.newColors);
       return;
     }
 
@@ -108,19 +121,23 @@ export default function KeyCapDetail() {
 
   const [newNote, setNewNote] = useState("");
 
-  const handleAddNote = () => {
-    if (newNote.trim() === "") return; //no empty notes please
-    if (newNote.length > 100) {
-      return alert("Note must be 100 characters or less.");
+  const validateNote = (note) => {
+    if (note.trim() === "") {
+      throw new Error("Note cannot be empty");
     }
+    if (note.length > 100) {
+      throw new Error("Note must be 100 characters or less");
+    }
+  };
 
-    const newId = nanoid();
-    const timestamp = new Date();
-    const newNoteObj = { _id: newId, text: newNote, timestamp: timestamp };
+  const createNoteObject = (noteText) => ({
+    _id: nanoid(),
+    text: noteText,
+    timestamp: new Date(),
+  });
 
-    const updatedNotes = [...notes, newNoteObj];
-
-    fetch("/api/inventories/userkeycaps", {
+  const updateNotesInApi = async (updatedNotes) => {
+    await fetch("/api/inventories/userkeycaps", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -130,10 +147,21 @@ export default function KeyCapDetail() {
         selectedColors: userKeycap.selectedColors,
         notes: updatedNotes,
       }),
-    }).then(() => {
-      mutate();
-      setNewNote("");
     });
+  };
+
+  const handleAddNote = async () => {
+    try {
+      validateNote(newNote);
+      const newNoteObj = createNoteObject(newNote);
+      const updatedNotes = [...notes, newNoteObj];
+
+      await updateNotesInApi(updatedNotes);
+      await mutate();
+      setNewNote("");
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleEditNote = (noteId, currentText) => {
@@ -189,7 +217,11 @@ export default function KeyCapDetail() {
   }
 
   if (!keycaps || !userKeycaps) {
-    return <p>Loading...</p>;
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
   }
 
   const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
@@ -294,7 +326,6 @@ export default function KeyCapDetail() {
                   onClick={() =>
                     setSelectedImage({ url: kit.pic, name: kit.name })
                   }
-                  style={{ cursor: "pointer" }}
                 >
                   {kit.pic ? (
                     <Image
@@ -584,7 +615,7 @@ const KitCard = styled.li`
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  cursor: ${(props) => (props.$isEditMode ? "pointer" : "default")};
+  cursor: pointer;
   opacity: ${(props) =>
     props.$isEditMode && !props.$isSelected ? "0.33" : "1"};
   transition: opacity 0.2s ease-in-out;
@@ -740,4 +771,31 @@ const AcceptCancelEditButtonContainer = styled.div`
   z-index: 1000;
   align-self: ${(props) =>
     props.$innerWidth > 600 && props.$isEditMode ? "center" : ""};
+`;
+
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `;

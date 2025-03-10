@@ -87,15 +87,24 @@ export default function Switches() {
     }
   };
 
-  const filteredSwitches =
-    switches?.filter(
-      (switchItem) =>
-        typeFilter === "all" ||
-        switchItem.switchType.toLowerCase() === typeFilter
-    ) ?? [];
+  const getFilteredSwitches = (switches, typeFilter) => {
+    if (!switches) return [];
+    if (typeFilter === "all") return switches;
+
+    return switches.filter(
+      (switchItem) => switchItem.switchType.toLowerCase() === typeFilter
+    );
+  };
+
+  const filteredSwitches = getFilteredSwitches(switches, typeFilter);
 
   if (error) return <p>Error loading switches</p>;
-  if (!switches) return <p>Loading...</p>;
+  if (!switches)
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
 
   return (
     <>
@@ -182,4 +191,31 @@ const StyledInput = styled.input`
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
+`;
+
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `;

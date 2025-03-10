@@ -15,12 +15,12 @@ export default function KitImageModal({ open, onClose, imageUrl, kitName }) {
         </CloseButton>
         <h2>{kitName}</h2>
         <ImageContainer>
-          <Image
+          <StyledImage
             src={imageUrl}
             alt={kitName}
             width={400}
             height={225}
-            style={{ objectFit: "cover" }}
+            sizes="(min-width: 768px) 640px, 400px"
             priority
           />
         </ImageContainer>
@@ -40,6 +40,17 @@ const Overlay = styled.div`
   z-index: 1000;
 `;
 
+const StyledImage = styled(Image)`
+  object-fit: cover;
+  width: 400px;
+  height: 225px;
+
+  @media (min-width: 768px) {
+    width: 640px;
+    height: 320px;
+  }
+`;
+
 const ModalWrapper = styled.section`
   position: fixed;
   top: 50%;
@@ -51,8 +62,11 @@ const ModalWrapper = styled.section`
   border-radius: 10px;
   width: 350px;
   max-height: 90vh;
-  max-width: 90vh;
   overflow: hidden;
+
+  @media (min-width: 768px) {
+    width: 680px;
+  }
 `;
 
 const ImageContainer = styled.div`

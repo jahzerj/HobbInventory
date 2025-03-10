@@ -262,13 +262,14 @@ const DeleteInventoryItemButton = styled.button`
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  z-index: 1000;
 
   &:hover {
     background-color: rgb(162, 24, 24);
   }
 `;
 
-const ColorDotsList = styled.li`
+const ColorDotsList = styled.div`
   position: absolute;
   top: 15px;
   right: 15px;
@@ -283,7 +284,7 @@ const ColorDotsList = styled.li`
     $isEditMode && `right: 60px; //move over when delete button appears`}
 `;
 
-const ColorDotItem = styled.li`
+const ColorDotItem = styled.span`
   font-size: 2rem;
   color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);

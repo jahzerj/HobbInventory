@@ -51,18 +51,21 @@ export default function Keycaps() {
     }
   };
 
+  const getDeleteConfirmation = (itemType) => {
+    return window.confirm(
+      `Are you sure you want to remove this ${itemType}?\n\n` +
+        `This will permanently remove:\n` +
+        `• This ${itemType}\n` +
+        `• Selected kits\n` +
+        `• Selected colors\n` +
+        `• Any personal notes that you have added`
+    );
+  };
+
   const handleDeleteKeycap = async (keycapSetId, event) => {
     event.stopPropagation();
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to remove this keycapset?\n\n" +
-        "This will permanently remove:\n" +
-        "• This keycapset\n" +
-        "• Selected kits\n" +
-        "• Selected colors\n" +
-        "• Any personal notes that you have added"
-    );
-    if (!confirmDelete) return;
+    if (!getDeleteConfirmation("keycapset")) return;
 
     // Remove from UI
     setUserKeycaps((prevKeycaps) =>
@@ -83,7 +86,12 @@ export default function Keycaps() {
   };
 
   if (error) return <p> Error loading keycaps...</p>;
-  if (!data) return <p> Loading keycaps....</p>;
+  if (!data)
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
 
   return (
     <>
@@ -149,4 +157,31 @@ const HomeBurger = styled(Link)`
   top: 8px;
   z-index: 1000;
   border-radius: 10px;
+`;
+
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `;

@@ -28,10 +28,10 @@ const StyledButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: ${(props) => (props.$isEditMode ? "16px" : "24px")};
   font-weight: bold;
   border-radius: ${(props) => (props.$isEditMode ? "8px" : "50%")};
-  width: ${(props) => (props.$isEditMode ? "auto" : "45px")};
+  width: ${(props) => (props.$isEditMode ? "160px" : "45px")};
   height: 45px;
   transition: all 0.3s ease-in-out;
   white-space: nowrap;

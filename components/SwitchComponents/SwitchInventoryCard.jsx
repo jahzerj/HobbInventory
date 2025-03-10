@@ -117,6 +117,7 @@ const DeleteInventoryItemButton = styled.button`
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  z-index: 1000;
 
   &:hover {
     background-color: rgb(162, 24, 24);

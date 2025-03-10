@@ -71,11 +71,12 @@ export default function SwitchDetail() {
       setInnerWidth(window.innerWidth);
     }
   }, []);
+
   useEffect(() => {
     if (userSwitch) {
       setEditedNotes(userSwitch.notes);
     }
-  }, [userSwitch?.notes]);
+  }, [userSwitch]);
 
   const handleAddNote = () => {
     if (newNote.trim() === "") return; //no empty notes please
@@ -137,6 +138,15 @@ export default function SwitchDetail() {
     setEditedNotes(updatedNotes);
   };
 
+  const validateSwitchData = (data) => {
+    const requiredFields = ["name", "manufacturer", "image", "switchType"];
+    const missingFields = requiredFields.filter((field) => !data[field]);
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+    }
+  };
+
   const handleSaveChanges = async () => {
     if (
       !editedName ||
@@ -149,6 +159,12 @@ export default function SwitchDetail() {
     }
 
     try {
+      validateSwitchData({
+        name: editedName,
+        manufacturer: editedManufacturer,
+        image: editedImage,
+        switchType: editedSwitchType,
+      });
       await fetch("/api/inventories/userswitches", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -175,7 +191,7 @@ export default function SwitchDetail() {
       setIsEditMode(false);
     } catch (error) {
       console.error("Error saving notes:", error);
-      alert("Failed to save changes. Please try again.");
+      alert(error.message);
     }
   };
 
@@ -202,7 +218,11 @@ export default function SwitchDetail() {
   }
 
   if (!mxswitch) {
-    return <p>Loading...</p>;
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
   }
 
   return (
@@ -529,4 +549,31 @@ const RemoveNoteButton = styled(BaseButton)`
   &:hover {
     background-color: #ff4d4d;
   }
+`;
+
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `;
