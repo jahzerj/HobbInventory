@@ -15,6 +15,7 @@ export default function SwitchInventoryCard({
         key={switchObj._id}
         onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
       >
+        <QuantityBubble>{switchObj.quantity || 0}</QuantityBubble>
         {isEditMode && (
           <DeleteInventoryItemButton
             onClick={(event) => onDelete(switchObj._id, event)}
@@ -121,5 +122,25 @@ const DeleteInventoryItemButton = styled.button`
 
   &:hover {
     background-color: rgb(162, 24, 24);
+  }
+`;
+
+const QuantityBubble = styled.div`
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: darkgrey;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+
+  transition: transform 0.2s ease;
+  ${SwitchCard}:hover & {
+    transform: scale(1.1);
   }
 `;

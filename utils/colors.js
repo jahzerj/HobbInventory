@@ -9,5 +9,6 @@ export const colorOptions = [
   { name: "Black", emoji: "⚫" },
   { name: "Brown", emoji: "🟤" },
   { name: "White", emoji: "⚪" },
-  { name: "Beige/Grey", emoji: "🩶" },
+  { name: "Grey", emoji: "🩶" },
+  { name: "Beige", emoji: "🍦" },
 ];
