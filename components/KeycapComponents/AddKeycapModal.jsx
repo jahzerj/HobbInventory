@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 
-export default function Modal({ open, onClose, onAddKeycap }) {
+export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
   const [selectedKeycap, setSelectedKeycap] = useState("");
   const [selectedKits, setSelectedKits] = useState([]);
@@ -109,6 +109,12 @@ export default function Modal({ open, onClose, onAddKeycap }) {
           </p>
         )}
 
+        {selectedKeycap && selectedKits.length === 0 && (
+          <HelperText>
+            Please select at least one kit before adding this keycap set.
+          </HelperText>
+        )}
+
         <CancelButton onClick={onClose}>Cancel</CancelButton>
         <AddButton
           onClick={() => {
@@ -117,7 +123,7 @@ export default function Modal({ open, onClose, onAddKeycap }) {
             onAddKeycap(selectedKeycapObj._id, selectedKits);
             onClose();
           }}
-          disabled={!selectedKeycapObj}
+          disabled={!selectedKeycapObj || selectedKits.length === 0}
         >
           Add Keycaps
         </AddButton>
@@ -199,4 +205,12 @@ const AddButton = styled.button`
   text-align: center;
   cursor: pointer;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+`;
+
+const HelperText = styled.p`
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+  font-style: italic;
 `;

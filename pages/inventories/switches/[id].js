@@ -1,6 +1,4 @@
 import { useRouter } from "next/router";
-import Link from "next/link";
-import styled from "styled-components";
 import { useState, useEffect } from "react";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
 import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";

@@ -1,13 +1,14 @@
 import InventoryCard from "@/components/KeycapComponents/InventoryCard";
 import Link from "next/link";
 import AddButton from "@/components/KeycapComponents/AddButton";
-import Modal from "@/components/KeycapComponents/Modal";
+import Modal from "@/components/KeycapComponents/AddKeycapModal";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 import { AttentionSeeker } from "react-awesome-reveal";
 import MenuIcon from "@/components/icons/MenuIcon";
+import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
@@ -112,7 +113,7 @@ export default function Keycaps() {
         <MenuIcon />
       </HomeBurger>
 
-      <Modal
+      <AddKeycapModal
         open={isOpen}
         onClose={() => setIsOpen(false)}
         onAddKeycap={handleAddKeycap}
@@ -235,5 +236,5 @@ const StyledInput = styled.input`
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  top: 80px; // Adjust this value to position the dropdown in the space
+  top: 80px;
 `;
