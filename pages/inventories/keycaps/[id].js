@@ -10,6 +10,20 @@ import EditButton from "@/components/KeycapComponents/EditButton";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
 import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
 import KitImageModal from "@/components/KeycapComponents/KitImageModal";
+import Notes from "@/components/SharedComponents/Notes";
+import {
+  DetailPageContainer,
+  StyledLink,
+  HeaderSection,
+  HeaderImage,
+  BoxContainer,
+  ExternalLink,
+  AcceptCancelEditButtonContainer,
+  StyledSpan,
+  LoaderWrapper,
+  StyledInput,
+  ButtonContainer,
+} from "@/components/SharedComponents/DetailPageStyles";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -34,10 +48,7 @@ export default function KeyCapDetail() {
 
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
-
-  const [editedNotes, setEditedNotes] = useState([]);
-  const [editNoteId, setEditNoteId] = useState(null);
-  const [editNoteText, setEditNoteText] = useState("");
+  const [editedNotes, setEditedNotes] = useState(notes || []);
   const [innerWidth, setInnerWidth] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -119,77 +130,28 @@ export default function KeyCapDetail() {
     );
   };
 
-  const [newNote, setNewNote] = useState("");
-
-  const validateNote = (note) => {
-    if (note.trim() === "") {
-      throw new Error("Note cannot be empty");
-    }
-    if (note.length > 100) {
-      throw new Error("Note must be 100 characters or less");
-    }
-  };
-
-  const createNoteObject = (noteText) => ({
-    _id: nanoid(),
-    text: noteText,
-    timestamp: new Date(),
-  });
-
-  const updateNotesInApi = async (updatedNotes) => {
-    await fetch("/api/inventories/userkeycaps", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: "guest_user",
-        keycapSetId: id,
-        selectedKits: userKeycap.selectedKits,
-        selectedColors: userKeycap.selectedColors,
-        notes: updatedNotes,
-      }),
-    });
-  };
-
-  const handleAddNote = async () => {
-    try {
-      validateNote(newNote);
-      const newNoteObj = createNoteObject(newNote);
-      const updatedNotes = [...notes, newNoteObj];
-
-      await updateNotesInApi(updatedNotes);
+  const handleNotesUpdate = async (updatedNotes) => {
+    if (isEditMode) {
+      setEditedNotes(updatedNotes);
+    } else {
+      // Only make API call when not in edit mode
+      await fetch("/api/inventories/userkeycaps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          keycapSetId: id,
+          selectedKits: userKeycap.selectedKits,
+          selectedColors: userKeycap.selectedColors,
+          notes: updatedNotes,
+        }),
+      });
       await mutate();
-      setNewNote("");
-    } catch (error) {
-      alert(error.message);
     }
-  };
-
-  const handleEditNote = (noteId, currentText) => {
-    setEditNoteId(noteId); //Set the note being edited
-    setEditNoteText(currentText); // Only store the current note being edited
-  };
-
-  const handleSaveEditedNote = () => {
-    if (!editNoteId || editNoteText.trim() === "") return;
-
-    setEditedNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note._id === editNoteId ? { ...note, text: editNoteText } : note
-      )
-    );
-
-    setEditNoteId(null); // ✅ Close edit mode
-    setEditNoteText(""); // Clear the edit texts state
-  };
-
-  const handleDeleteNote = (noteId) => {
-    if (!isEditMode) return;
-
-    const updatedNotes = editedNotes.filter((note) => note._id !== noteId);
-    setEditedNotes(updatedNotes);
   };
 
   const handleSaveChanges = async () => {
+    // Save all changes including notes
     await fetch("/api/inventories/userkeycaps", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -206,9 +168,9 @@ export default function KeyCapDetail() {
   };
 
   const handleCancelEdits = () => {
-    setEditNoteId(null);
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
+    setEditedNotes([...notes]);
     setIsEditMode(false);
   };
 
@@ -398,87 +360,12 @@ export default function KeyCapDetail() {
             : "No colors selected"}
         </ColorsContainer>
 
-        <h3>Notes</h3>
-        <StyledInput
-          type="text"
-          maxLength={100}
-          placeholder="Write a note (max 100 chars)..."
-          value={newNote}
-          onChange={(event) => setNewNote(event.target.value)}
+        <Notes
+          notes={isEditMode ? editedNotes : notes}
+          isEditMode={isEditMode}
+          onNotesUpdate={handleNotesUpdate}
         />
-        <BaseButton $bgColor="#28a745" onClick={handleAddNote}>
-          Submit Note
-        </BaseButton>
 
-        <NotesContainer>
-          {notes.length === 0 && editedNotes.length === 0 ? (
-            <p> &lt; No notes yet!&gt; </p>
-          ) : (
-            (isEditMode ? editedNotes : notes).map((note) => (
-              <NoteItem key={note._id}>
-                {editNoteId === note._id ? (
-                  <>
-                    <StyledInput
-                      type="text"
-                      maxLength={100}
-                      value={editNoteText}
-                      onChange={(event) => setEditNoteText(event.target.value)}
-                    />
-                    <BaseButton onClick={handleSaveEditedNote}>
-                      💾 Save
-                    </BaseButton>
-                    <BaseButton
-                      onClick={() => {
-                        setEditNoteId(null);
-                        setEditNoteText("");
-                      }}
-                    >
-                      ❌ Cancel
-                    </BaseButton>
-                  </>
-                ) : (
-                  <>
-                    <span>{note.text}</span>
-                    <NoteTimestamp>
-                      {new Date(note.timestamp).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}{" "}
-                      {new Date(note.timestamp).toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hourCycle: "h23",
-                      })}
-                    </NoteTimestamp>
-                    {isEditMode && (
-                      <ButtonContainer>
-                        <BaseButton
-                          onClick={() => handleEditNote(note._id, note.text)}
-                        >
-                          ✏️ Edit
-                        </BaseButton>
-                        <RemoveNoteButton
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to delete this note?"
-                              )
-                            ) {
-                              handleDeleteNote(note._id);
-                            }
-                          }}
-                        >
-                          🗑️ Delete
-                        </RemoveNoteButton>
-                      </ButtonContainer>
-                    )}
-                  </>
-                )}
-              </NoteItem>
-            ))
-          )}
-        </NotesContainer>
         <AcceptCancelEditButtonContainer
           $innerWidth={innerWidth}
           $isEditMode={isEditMode}
@@ -507,86 +394,6 @@ export default function KeyCapDetail() {
     </>
   );
 }
-
-const DetailPageContainer = styled.div`
-  max-width: 900px;
-  margin: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding-bottom: 60px;
-  background-color: #ccc;
-`;
-const StyledLink = styled(Link)`
-  position: fixed;
-  top: 5px;
-  right: 5px;
-  text-decoration: none;
-  color: white;
-  background-color: #007bff;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  font-size: 24px;
-  height: 45px;
-  width: 45px;
-  z-index: 1000;
-
-  &:hover {
-    background-color: darkblue;
-  }
-`;
-
-const HeaderSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-  margin-top: 10px;
-`;
-
-const HeaderImage = styled.div`
-  width: 340px;
-  height: 170px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
-
-  @media (min-width: 430px) {
-    width: 387px;
-    height: 195px;
-  }
-
-  @media (min-width: 600px) {
-    width: 640px;
-    height: 320px;
-  }
-`;
-
-const BoxContainer = styled.ul`
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 10px;
-  width: 80%;
-  max-width: 430px;
-  text-align: left;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  list-style-type: none;
-`;
-
-const ExternalLink = styled.a`
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
 
 const GridContainer = styled.ul`
   display: grid;
@@ -637,16 +444,6 @@ const KitCard = styled.li`
   }
 `;
 
-const StyledInput = styled.input`
-  width: 90%;
-  max-width: ${(props) => props.$maxWidth || "430px"};
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  background-color: ${(props) => props.$bgColor || "#f9f9f9"};
-`;
-
 const ColorsContainer = styled.ul`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -675,127 +472,17 @@ const SelectedColorLi = styled.li`
   min-width: 0;
 `;
 
-const BaseButton = styled.button`
-  margin-top: ${(props) => props.margin || "10px"};
-  padding: 8px 15px;
-  background-color: ${(props) => props.$bgColor || "#28a745"};
-  color: white;
+const RemoveColorButton = styled.button`
+  background-color: #f9f9f9;
+  color: black;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 0;
   border: none;
   border-radius: 5px;
-  font-size: ${(props) => props.fontSize || "16px"};
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${(props) => props.hoverColor || "#218838"};
-  }
-`;
-
-const RemoveColorButton = styled(BaseButton)`
-  background-color: #f9f9f9;
-  color: black;
-  font-size: 14px;
-  margin-left: 5px;
-  padding: 0;
 
   &:hover {
     background-color: #ff4d4d;
   }
-`;
-
-const RemoveNoteButton = styled(BaseButton)`
-  background-color: #f9f9f9;
-  color: black;
-  font-size: 14px;
-  margin-left: 5px;
-  padding: 0;
-
-  &:hover {
-    background-color: #ff4d4d;
-  }
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const NotesContainer = styled.ul`
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 10px;
-  width: 90%;
-  text-align: left;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  list-style-type: none;
-  width: 100%;
-  max-width: 430px;
-  overflow-x: hidden;
-`;
-
-const NoteItem = styled.li`
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 5px;
-  &:last-child {
-    border-bottom: none;
-  }
-  display: flex;
-  flex-direction: column;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  width: 100%;
-`;
-
-const NoteTimestamp = styled.span`
-  font-size: 12px;
-  color: #666;
-`;
-
-const AcceptCancelEditButtonContainer = styled.div`
-  position: fixed;
-  bottom: 10px;
-  left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "" : "10px"};
-  display: flex;
-  gap: 10px;
-  z-index: 1000;
-  align-self: ${(props) =>
-    props.$innerWidth > 600 && props.$isEditMode ? "center" : ""};
-`;
-
-const StyledSpan = styled.span`
-  width: 48px;
-  height: 48px;
-  border: 5px solid #fff;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
 `;
