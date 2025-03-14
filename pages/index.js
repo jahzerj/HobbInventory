@@ -65,6 +65,7 @@ const InfoText = styled.p`
   max-width: 500px;
   margin: 10px 0;
   line-height: 1.5;
+  text-align: justify;
 `;
 
 const Alert = styled.div`

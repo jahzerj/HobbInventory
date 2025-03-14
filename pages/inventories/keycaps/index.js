@@ -12,19 +12,21 @@ import MenuIcon from "@/components/icons/MenuIcon";
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
-  const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
+  const [colorFilter, setColorFilter] = useState("all");
+  const userId = "guest_user";
 
-  //Fetch user keycaps
-  const { data, error, mutate } = useSWR(
-    `/api/inventories/userkeycaps?userId=${userId}`
-  );
+  const {
+    data: keycaps,
+    error,
+    mutate,
+  } = useSWR(`/api/inventories/userkeycaps?userId=${userId}`);
 
   useEffect(() => {
-    if (data) {
-      setUserKeycaps(data.map((keycap) => keycap._id));
+    if (keycaps) {
+      setUserKeycaps(keycaps.map((keycap) => keycap._id));
     }
-  }, [data]);
+  }, [keycaps]);
 
   //Function for adding keycap ID to the userKeycaps array
   const handleAddKeycap = async (keycapId, selectedKits) => {
@@ -51,18 +53,21 @@ export default function Keycaps() {
     }
   };
 
+  const getDeleteConfirmation = (itemType) => {
+    return window.confirm(
+      `Are you sure you want to remove this ${itemType}?\n\n` +
+        `This will permanently remove:\n` +
+        `• This ${itemType}\n` +
+        `• Selected kits\n` +
+        `• Selected colors\n` +
+        `• Any personal notes that you have added`
+    );
+  };
+
   const handleDeleteKeycap = async (keycapSetId, event) => {
     event.stopPropagation();
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to remove this keycapset?\n\n" +
-        "This will permanently remove:\n" +
-        "• This keycapset\n" +
-        "• Selected kits\n" +
-        "• Selected colors\n" +
-        "• Any personal notes that you have added"
-    );
-    if (!confirmDelete) return;
+    if (!getDeleteConfirmation("keycapset")) return;
 
     // Remove from UI
     setUserKeycaps((prevKeycaps) =>
@@ -82,14 +87,29 @@ export default function Keycaps() {
     }
   };
 
-  if (error) return <p> Error loading keycaps...</p>;
-  if (!data) return <p> Loading keycaps....</p>;
+  const getFilteredKeycaps = (keycapsData, selectedColor) => {
+    if (!keycapsData) return [];
+    if (selectedColor === "all") return keycapsData;
+
+    return keycapsData.filter((keycap) =>
+      keycap.selectedColors?.includes(selectedColor)
+    );
+  };
+
+  const filteredKeycaps = getFilteredKeycaps(keycaps, colorFilter);
+
+  if (error) return <p>Error loading keycaps...</p>;
+  if (!keycaps)
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
 
   return (
     <>
       <HomeBurger href="/">
-        {" "}
-        <MenuIcon />{" "}
+        <MenuIcon />
       </HomeBurger>
 
       <Modal
@@ -100,28 +120,48 @@ export default function Keycaps() {
 
       <StyledContainer>
         <h1>Keycap Inventory</h1>
-        {data?.length ? (
-          isEditMode ? (
-            <AttentionSeeker effect="shake">
+
+        <StyledInput
+          as="select"
+          value={colorFilter}
+          onChange={(event) => setColorFilter(event.target.value)}
+        >
+          <option value="all">All Colors</option>
+          {Array.from(
+            new Set(keycaps?.flatMap((keycap) => keycap.selectedColors || []))
+          ).map((color) => (
+            <option key={color} value={color}>
+              {color}
+            </option>
+          ))}
+        </StyledInput>
+
+        <CardContainer>
+          {filteredKeycaps?.length ? (
+            isEditMode ? (
+              <AttentionSeeker effect="shake">
+                <InventoryCard
+                  data={filteredKeycaps}
+                  isEditMode={isEditMode}
+                  onDelete={handleDeleteKeycap}
+                />
+              </AttentionSeeker>
+            ) : (
               <InventoryCard
-                data={data}
+                data={filteredKeycaps}
                 isEditMode={isEditMode}
                 onDelete={handleDeleteKeycap}
               />
-            </AttentionSeeker>
+            )
           ) : (
-            <InventoryCard
-              data={data}
-              isEditMode={isEditMode}
-              onDelete={handleDeleteKeycap}
-            />
-          )
-        ) : (
-          <>
-            <p>You have no keycaps in your inventory!</p>
-            <p>Click the ➕ button to add a keycap set to your inventory</p>
-          </>
-        )}
+            <>
+              <p>No keycaps found with the selected color!</p>
+              {keycaps?.length === 0 && (
+                <p>Click the ➕ button to add a keycap set to your inventory</p>
+              )}
+            </>
+          )}
+        </CardContainer>
       </StyledContainer>
       <AddButton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
       <EditInventoryButton
@@ -134,6 +174,16 @@ export default function Keycaps() {
 
 const StyledContainer = styled.ul`
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 25px;
+`;
+
+const CardContainer = styled.div`
+  margin-top: 60px; // Creates space for the dropdown
+  width: 100%;
+  display: flex;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
 `;
@@ -149,4 +199,41 @@ const HomeBurger = styled(Link)`
   top: 8px;
   z-index: 1000;
   border-radius: 10px;
+`;
+
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const StyledInput = styled.input`
+  width: auto;
+  position: absolute;
+  right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  top: 80px; // Adjust this value to position the dropdown in the space
 `;

@@ -14,6 +14,7 @@ export default function Switches() {
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
   const [userSwitches, setUserSwitches] = useState([]);
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const {
     data: switches,
@@ -86,55 +87,101 @@ export default function Switches() {
     }
   };
 
+  const getFilteredSwitches = (switches, typeFilter) => {
+    if (!switches) return [];
+    if (typeFilter === "all") return switches;
+
+    return switches.filter(
+      (switchItem) => switchItem.switchType.toLowerCase() === typeFilter
+    );
+  };
+
+  const filteredSwitches = getFilteredSwitches(switches, typeFilter);
+
   if (error) return <p>Error loading switches</p>;
-  if (!switches) return <p>Loading...</p>;
+  if (!switches)
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
 
   return (
     <>
       <HomeBurger href="/">
-        {" "}
-        <MenuIcon />{" "}
+        <MenuIcon />
       </HomeBurger>
-      <NewDiv>
-        <Modal
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          onAddSwitch={handleAddSwitch}
-        />
-        <Container>
-          <h1>Switches Inventory</h1>
+
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        onAddSwitch={handleAddSwitch}
+      />
+
+      <StyledContainer>
+        <LongTitle> Switches Inventory</LongTitle>
+
+        <StyledInput
+          as="select"
+          value={typeFilter}
+          onChange={(event) => setTypeFilter(event.target.value)}
+        >
+          <option value="all">All Types</option>
+          <option value="linear">Linear</option>
+          <option value="tactile">Tactile</option>
+          <option value="clicky">Clicky</option>
+        </StyledInput>
+
+        <CardContainer>
           <SwitchGrid>
             <SwitchInventoryCard
-              switches={switches}
+              switches={filteredSwitches}
               isEditMode={isEditMode}
               onDelete={handleDeleteSwitch}
             />
           </SwitchGrid>
-        </Container>
+        </CardContainer>
+      </StyledContainer>
 
-        <AddButtton
-          onOpenModal={() => setIsOpen(true)}
-          isEditMode={isEditMode}
-        />
-        <EditInventoryButton
-          isEditMode={isEditMode}
-          onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
-        />
-      </NewDiv>
+      <AddButtton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+      />
     </>
   );
 }
-const Container = styled.div`
-  margin-top: 25px;
+
+const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: 25px;
 `;
+
+const CardContainer = styled.div`
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const SwitchGrid = styled.ul`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
+  position: relative;
+`;
+
+const StyledInput = styled.input`
+  width: auto;
+  position: absolute;
+  right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  top: 80px;
 `;
 
 const HomeBurger = styled(Link)`
@@ -150,6 +197,35 @@ const HomeBurger = styled(Link)`
   border-radius: 10px;
 `;
 
-const NewDiv = styled.div`
-  padding: 10px;
+const StyledSpan = styled.span`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
+  }
 `;

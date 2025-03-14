@@ -9,6 +9,21 @@ import { nanoid } from "nanoid";
 import EditButton from "@/components/KeycapComponents/EditButton";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
 import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
+import KitImageModal from "@/components/KeycapComponents/KitImageModal";
+import Notes from "@/components/SharedComponents/Notes";
+import {
+  DetailPageContainer,
+  StyledLink,
+  HeaderSection,
+  HeaderImage,
+  BoxContainer,
+  ExternalLink,
+  AcceptCancelEditButtonContainer,
+  StyledSpan,
+  LoaderWrapper,
+  StyledInput,
+  ButtonContainer,
+} from "@/components/SharedComponents/DetailPageStyles";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -33,11 +48,9 @@ export default function KeyCapDetail() {
 
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
-
-  const [editedNotes, setEditedNotes] = useState([]);
-  const [editNoteId, setEditNoteId] = useState(null);
-  const [editNoteText, setEditNoteText] = useState("");
+  const [editedNotes, setEditedNotes] = useState(notes || []);
   const [innerWidth, setInnerWidth] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -63,15 +76,28 @@ export default function KeyCapDetail() {
     });
   };
 
+  const handleColorSelection = (selectedColor, currentColors) => {
+    if (currentColors.includes(selectedColor)) {
+      return { error: "Color already selected" };
+    }
+    if (currentColors.length >= 4) {
+      return { error: "Maximum 4 colors allowed" };
+    }
+    return { newColors: [...currentColors, selectedColor] };
+  };
+
   const handleColorSelect = async (event) => {
     const selectedColor = event.target.value;
+    const colors = isEditMode ? editedColors : selectedColors;
+
+    const result = handleColorSelection(selectedColor, colors);
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
 
     if (isEditMode) {
-      if (editedColors.includes(selectedColor)) return;
-      if (editedColors.length >= 4) {
-        return alert("You can only select up to 4 colors.");
-      }
-      setEditedColors((prevColors) => [...prevColors, selectedColor]);
+      setEditedColors(result.newColors);
       return;
     }
 
@@ -104,62 +130,28 @@ export default function KeyCapDetail() {
     );
   };
 
-  const [newNote, setNewNote] = useState("");
-
-  const handleAddNote = () => {
-    if (newNote.trim() === "") return; //no empty notes please
-    if (newNote.length > 100) {
-      return alert("Note must be 100 characters or less.");
+  const handleNotesUpdate = async (updatedNotes) => {
+    if (isEditMode) {
+      setEditedNotes(updatedNotes);
+    } else {
+      // Only make API call when not in edit mode
+      await fetch("/api/inventories/userkeycaps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          keycapSetId: id,
+          selectedKits: userKeycap.selectedKits,
+          selectedColors: userKeycap.selectedColors,
+          notes: updatedNotes,
+        }),
+      });
+      await mutate();
     }
-
-    const newId = nanoid();
-    const timestamp = new Date();
-    const newNoteObj = { _id: newId, text: newNote, timestamp: timestamp };
-
-    const updatedNotes = [...notes, newNoteObj];
-
-    fetch("/api/inventories/userkeycaps", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: "guest_user",
-        keycapSetId: id,
-        selectedKits: userKeycap.selectedKits,
-        selectedColors: userKeycap.selectedColors,
-        notes: updatedNotes,
-      }),
-    }).then(() => {
-      mutate();
-      setNewNote("");
-    });
-  };
-
-  const handleEditNote = (noteId, currentText) => {
-    setEditNoteId(noteId); //Set the note being edited
-    setEditNoteText(currentText); // Only store the current note being edited
-  };
-
-  const handleSaveEditedNote = () => {
-    if (!editNoteId || editNoteText.trim() === "") return;
-
-    setEditedNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note._id === editNoteId ? { ...note, text: editNoteText } : note
-      )
-    );
-
-    setEditNoteId(null); // ✅ Close edit mode
-    setEditNoteText(""); // Clear the edit texts state
-  };
-
-  const handleDeleteNote = (noteId) => {
-    if (!isEditMode) return;
-
-    const updatedNotes = editedNotes.filter((note) => note._id !== noteId);
-    setEditedNotes(updatedNotes);
   };
 
   const handleSaveChanges = async () => {
+    // Save all changes including notes
     await fetch("/api/inventories/userkeycaps", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -176,9 +168,9 @@ export default function KeyCapDetail() {
   };
 
   const handleCancelEdits = () => {
-    setEditNoteId(null);
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
+    setEditedNotes([...notes]);
     setIsEditMode(false);
   };
 
@@ -187,7 +179,11 @@ export default function KeyCapDetail() {
   }
 
   if (!keycaps || !userKeycaps) {
-    return <p>Loading...</p>;
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
   }
 
   const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
@@ -216,7 +212,8 @@ export default function KeyCapDetail() {
               <Image
                 src={keycaps.render_pics[0]}
                 alt={keycaps.name}
-                fill={true}
+                fill
+                style={{ objectFit: "cover" }}
                 priority
               />
             </HeaderImage>
@@ -247,7 +244,11 @@ export default function KeyCapDetail() {
               const isCurrentlySelected = editedKits.includes(kit.name);
 
               return (
-                <KitCard key={kit.name}>
+                <KitCard
+                  key={kit.name}
+                  $isEditMode={isEditMode}
+                  $isSelected={isCurrentlySelected}
+                >
                   <input
                     type="checkbox"
                     checked={isCurrentlySelected}
@@ -259,6 +260,7 @@ export default function KeyCapDetail() {
                       alt={kit.name}
                       width={116}
                       height={67}
+                      style={{ objectFit: "cover" }}
                       priority
                     />
                   ) : (
@@ -268,7 +270,7 @@ export default function KeyCapDetail() {
                   {wasPreviouslySelected !== isCurrentlySelected && (
                     <small>
                       {isCurrentlySelected
-                        ? "(Will be added"
+                        ? "(Will be added)"
                         : "(Will be removed)"}
                     </small>
                   )}
@@ -281,7 +283,12 @@ export default function KeyCapDetail() {
             {kitsAvailable
               .filter((kit) => selectedKits.includes(kit.name))
               .map((kit) => (
-                <KitCard key={kit.name}>
+                <KitCard
+                  key={kit.name}
+                  onClick={() =>
+                    setSelectedImage({ url: kit.pic, name: kit.name })
+                  }
+                >
                   {kit.pic ? (
                     <Image
                       src={kit.pic}
@@ -300,12 +307,20 @@ export default function KeyCapDetail() {
         ) : (
           <p>No kits selected.</p>
         )}
+
+        {/* Opens image modal */}
+        <KitImageModal
+          open={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+          imageUrl={selectedImage?.url}
+          kitName={selectedImage?.name}
+        />
         <h3>Choose 4 Colors</h3>
         <StyledInput
           as="select"
           onChange={handleColorSelect}
           value=""
-          $maxWidth="400px"
+          $maxWidth="430px"
         >
           <option value="" disabled>
             -- Choose up to 4 colors --
@@ -345,87 +360,12 @@ export default function KeyCapDetail() {
             : "No colors selected"}
         </ColorsContainer>
 
-        <h3>Notes</h3>
-        <StyledInput
-          type="text"
-          maxLength={100}
-          placeholder="Write a note (max 100 chars)..."
-          value={newNote}
-          onChange={(event) => setNewNote(event.target.value)}
+        <Notes
+          notes={isEditMode ? editedNotes : notes}
+          isEditMode={isEditMode}
+          onNotesUpdate={handleNotesUpdate}
         />
-        <BaseButton $bgColor="#28a745" onClick={handleAddNote}>
-          Submit Note
-        </BaseButton>
 
-        <NotesContainer>
-          {notes.length === 0 && editedNotes.length === 0 ? (
-            <p> &lt; No notes yet!&gt; </p>
-          ) : (
-            (isEditMode ? editedNotes : notes).map((note) => (
-              <NoteItem key={note._id}>
-                {editNoteId === note._id ? (
-                  <>
-                    <StyledInput
-                      type="text"
-                      maxLength={100}
-                      value={editNoteText}
-                      onChange={(event) => setEditNoteText(event.target.value)}
-                    />
-                    <BaseButton onClick={handleSaveEditedNote}>
-                      💾 Save
-                    </BaseButton>
-                    <BaseButton
-                      onClick={() => {
-                        setEditNoteId(null);
-                        setEditNoteText("");
-                      }}
-                    >
-                      ❌ Cancel
-                    </BaseButton>
-                  </>
-                ) : (
-                  <>
-                    <span>{note.text}</span>
-                    <NoteTimestamp>
-                      {new Date(note.timestamp).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}{" "}
-                      {new Date(note.timestamp).toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hourCycle: "h23",
-                      })}
-                    </NoteTimestamp>
-                    {isEditMode && (
-                      <ButtonContainer>
-                        <BaseButton
-                          onClick={() => handleEditNote(note._id, note.text)}
-                        >
-                          ✏️ Edit
-                        </BaseButton>
-                        <RemoveNoteButton
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to delete this note?"
-                              )
-                            ) {
-                              handleDeleteNote(note._id);
-                            }
-                          }}
-                        >
-                          🗑️ Delete
-                        </RemoveNoteButton>
-                      </ButtonContainer>
-                    )}
-                  </>
-                )}
-              </NoteItem>
-            ))
-          )}
-        </NotesContainer>
         <AcceptCancelEditButtonContainer
           $innerWidth={innerWidth}
           $isEditMode={isEditMode}
@@ -455,92 +395,13 @@ export default function KeyCapDetail() {
   );
 }
 
-const DetailPageContainer = styled.div`
-  max-width: 900px;
-  margin: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding-bottom: 60px;
-`;
-const StyledLink = styled(Link)`
-  position: fixed;
-  top: 5px;
-  right: 5px;
-  text-decoration: none;
-  color: white;
-  background-color: #007bff;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  font-size: 24px;
-  height: 45px;
-  width: 45px;
-  z-index: 1000;
-
-  &:hover {
-    background-color: darkgrey;
-  }
-`;
-
-const HeaderSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-  margin-top: 10px;
-`;
-
-const HeaderImage = styled.div`
-  width: 340px;
-  height: 170px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
-
-  @media (min-width: 430px) {
-    width: 387px;
-    height: 195px;
-  }
-
-  @media (min-width: 600px) {
-    width: 640px;
-    height: 320px;
-  }
-`;
-
-const BoxContainer = styled.ul`
-  background: ${(props) => props.$bgColor || "#f9f9f9"};
-  padding: 15px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: ${(props) => props.$maxWidth || "600px"};
-  text-align: ${(props) => props.align || "left"};
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: ${(props) => props.margin || "15px"};
-  list-style-type: none;
-`;
-
-const ExternalLink = styled.a`
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
 const GridContainer = styled.ul`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
   width: auto;
   margin: 10px 0;
-  max-width: 365px;
+  max-width: 430px;
   background-color: transparent;
 
   @media (min-width: 430px) {
@@ -553,6 +414,7 @@ const GridContainer = styled.ul`
 `;
 
 const KitCard = styled.li`
+  position: relative;
   background: white;
   border-radius: 10px;
   padding: 10px;
@@ -560,33 +422,40 @@ const KitCard = styled.li`
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-`;
+  cursor: pointer;
+  opacity: ${(props) =>
+    props.$isEditMode && !props.$isSelected ? "0.33" : "1"};
+  transition: opacity 0.2s ease-in-out;
 
-const StyledInput = styled.input`
-  width: 100%;
-  max-width: ${(props) => props.$maxWidth || "600px"};
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  background-color: ${(props) => props.$bgColor || "#f9f9f9"};
+  &:hover {
+    opacity: ${(props) => (props.$isEditMode ? "0.8" : "1")};
+  }
+
+  input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    margin: 0;
+    z-index: 1;
+  }
 `;
 
 const ColorsContainer = styled.ul`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
   background-color: #f9f9f9;
   padding: 10px;
-  flex-wrap: wrap;
   gap: 15px;
   width: auto;
   margin: 10px 0;
   max-width: 365px;
   border: 1px solid #ccc;
   border-radius: 5px;
-
-  @media (min-width: 430px) {
-    max-width: 400px;
-  }
 `;
 
 const SelectedColorLi = styled.li`
@@ -598,104 +467,22 @@ const SelectedColorLi = styled.li`
   border: 2px solid ${(props) => props.$bgColor || "black"};
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  min-width: 0;
 `;
 
-const BaseButton = styled.button`
-  margin-top: ${(props) => props.margin || "10px"};
-  padding: 8px 15px;
-  background-color: ${(props) => props.$bgColor || "#28a745"};
-  color: white;
+const RemoveColorButton = styled.button`
+  background-color: #f9f9f9;
+  color: black;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 0;
   border: none;
   border-radius: 5px;
-  font-size: ${(props) => props.fontSize || "16px"};
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${(props) => props.hoverColor || "#218838"};
-  }
-`;
-
-const RemoveColorButton = styled(BaseButton)`
-  background-color: #f9f9f9;
-  color: black;
-  font-size: 14px;
-  margin-left: 5px;
-  padding: 0;
 
   &:hover {
     background-color: #ff4d4d;
   }
-`;
-
-const RemoveNoteButton = styled(BaseButton)`
-  background-color: #f9f9f9;
-  color: black;
-  font-size: 14px;
-  margin-left: 5px;
-  padding: 0;
-
-  &:hover {
-    background-color: #ff4d4d;
-  }
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const NotesContainer = styled.ul`
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 600px;
-  text-align: left;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  list-style-type: none;
-  width: 100%;
-  max-width: 400px;
-  overflow-x: hidden;
-`;
-
-const NoteItem = styled.li`
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 5px;
-  &:last-child {
-    border-bottom: none;
-  }
-  display: flex;
-  flex-direction: column;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  width: 100%;
-`;
-
-const NoteTimestamp = styled.span`
-  font-size: 12px;
-  color: #666;
-`;
-
-const AcceptCancelEditButtonContainer = styled.div`
-  position: fixed;
-  bottom: 10px;
-  left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "" : "10px"};
-  display: flex;
-  gap: 10px;
-  z-index: 1000;
-  align-self: ${(props) =>
-    props.$innerWidth > 600 && props.$isEditMode ? "center" : ""};
 `;
