@@ -58,6 +58,10 @@ const StyledCard = styled.li`
   @media (min-width: 600px) {
     width: 50%;
   }
+
+  &:hover {
+    scale: 1.05;
+  }
 `;
 
 const ImageWrapper = styled.div`

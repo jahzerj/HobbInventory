@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
+import AddIcon from "../icons/AddIcon";
 
 export default function AddButtton({ onOpenModal, isEditMode }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -53,7 +54,8 @@ const StyledButton = styled.button`
   bottom: 10px;
   right: 10px;
   z-index: 1000;
-  background-color: ${(props) => (props.$isEditMode ? "#ccc" : "#007bff")};
+  background-color: #007bff;
+  opacity: ${(props) => (props.$isEditMode ? "0.5" : "1")};
   cursor: ${(props) => (props.$isEditMode ? "not-allowed" : "pointer")};
   color: white;
   border: none;
@@ -63,13 +65,13 @@ const StyledButton = styled.button`
   font-size: ${(props) => (props.$isExpanded ? "16px" : "24px")};
   font-weight: bold;
   border-radius: ${(props) => (props.$isExpanded ? "8px" : "50%")};
-  width: ${(props) => (props.$isExpanded ? "160px" : "50px")};
-  height: 50px;
+  width: ${(props) => (props.$isExpanded ? "160px" : "45px")};
+  height: 45px;
   transition: all 0.3s ease-in-out;
   white-space: nowrap;
   padding: ${(props) => (props.$isExpanded ? "0 15px" : "0")};
 
   &:hover {
-    background-color: ${(props) => (props.$isEditMode ? "#ccc" : "#0056b3")};
+    background-color: #0056b3;
   }
 `;

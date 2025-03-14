@@ -1,23 +1,31 @@
 import Link from "next/link";
 import AddButtton from "@/components/SwitchComponents/AddButton";
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/components/SwitchComponents/Modal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
 import SwitchInventoryCard from "@/components/SwitchComponents/SwitchInventoryCard";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import MenuIcon from "@/components/icons/MenuIcon";
 
 export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
+  const [userSwitches, setUserSwitches] = useState([]);
 
   const {
     data: switches,
     error,
     mutate,
-  } = useSWR("/api/inventories/userswitches");
+  } = useSWR(`/api/inventories/userswitches?userId=${userId}`);
+
+  useEffect(() => {
+    if (switches) {
+      setUserSwitches(switches);
+    }
+  }, [switches]);
 
   const handleAddSwitch = async (newSwitch) => {
     const tempId = nanoid();
@@ -46,7 +54,9 @@ export default function Switches() {
     }
   };
 
-  const handleDeleteSwitch = async (switchId) => {
+  const handleDeleteSwitch = async (switchId, event) => {
+    event.stopPropagation();
+
     if (!switchId) return;
 
     const confirmDelete = window.confirm(
@@ -55,16 +65,24 @@ export default function Switches() {
     );
     if (!confirmDelete) return;
 
-    const response = await fetch("/api/inventories/userswitches", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, switchId }),
-    });
+    setUserSwitches((prevSwitches) =>
+      prevSwitches.filter((s) => s._id !== switchId)
+    );
 
-    if (response.ok) {
-      mutate();
-    } else {
-      console.error("Failed to delete keycap:", await response.json());
+    try {
+      const response = await fetch("/api/inventories/userswitches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, switchId }),
+      });
+
+      if (response.ok) {
+        await mutate();
+      } else {
+        console.error("Failed to delete switch:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error deleting switch.", error);
     }
   };
 
@@ -73,33 +91,41 @@ export default function Switches() {
 
   return (
     <>
-      <Link href="/"> ← Back to Hub</Link>
+      <HomeBurger href="/">
+        {" "}
+        <MenuIcon />{" "}
+      </HomeBurger>
+      <NewDiv>
+        <Modal
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          onAddSwitch={handleAddSwitch}
+        />
+        <Container>
+          <h1>Switches Inventory</h1>
+          <SwitchGrid>
+            <SwitchInventoryCard
+              switches={switches}
+              isEditMode={isEditMode}
+              onDelete={handleDeleteSwitch}
+            />
+          </SwitchGrid>
+        </Container>
 
-      <Modal
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        onAddSwitch={handleAddSwitch}
-      />
-      <Container>
-        <h1>Switches Inventory</h1>
-        <SwitchGrid>
-          <SwitchInventoryCard
-            switches={switches}
-            isEditMode={isEditMode}
-            onDelete={handleDeleteSwitch}
-          />
-        </SwitchGrid>
-      </Container>
-
-      <AddButtton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
-      <EditInventoryButton
-        isEditMode={isEditMode}
-        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
-      />
+        <AddButtton
+          onOpenModal={() => setIsOpen(true)}
+          isEditMode={isEditMode}
+        />
+        <EditInventoryButton
+          isEditMode={isEditMode}
+          onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+        />
+      </NewDiv>
     </>
   );
 }
 const Container = styled.div`
+  margin-top: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -109,4 +135,21 @@ const SwitchGrid = styled.ul`
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
+`;
+
+const HomeBurger = styled(Link)`
+  position: fixed;
+  display: flex;
+  background-color: #007bff;
+  height: 40px;
+  width: 40px;
+  color: white;
+  left: 10px;
+  top: 8px;
+  z-index: 1000;
+  border-radius: 10px;
+`;
+
+const NewDiv = styled.div`
+  padding: 10px;
 `;

@@ -64,3 +64,27 @@ export default async function handler(req, res) {
 
   res.status(405).json({ message: "Method not allowed." });
 }
+
+
+// if (req.method === "POST" || req.method === "PUT") {
+//   const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
+
+//   if (!keycapSetId) {
+//     return res.status(400).json({ message: "Keycap ID is required." });
+//   }
+
+//   const existingKeycap = await UserKeycaps.findOne({ userId, keycapSetId });
+
+//   const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
+//     { userId, keycapSetId },
+//     {
+//       keycapSetId,
+//       selectedKits: selectedKits ?? existingKeycap?.selectedKits, // ✅ Preserve existing kits if not provided
+//       selectedColors: selectedColors ?? existingKeycap?.selectedColors, // ✅ Preserve existing colors
+//       notes: notes ?? existingKeycap?.notes, // ✅ Preserve existing notes
+//     },
+//     { new: true, upsert: true }
+//   );
+
+//   res.status(200).json({ message: "Keycap selection updated.", updatedKeycaps });
+// }

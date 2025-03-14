@@ -7,6 +7,7 @@ import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 import { AttentionSeeker } from "react-awesome-reveal";
+import MenuIcon from "@/components/icons/MenuIcon";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
@@ -86,7 +87,10 @@ export default function Keycaps() {
 
   return (
     <>
-      <Link href="/"> ← Back to Hub</Link>
+      <HomeBurger href="/">
+        {" "}
+        <MenuIcon />{" "}
+      </HomeBurger>
 
       <Modal
         open={isOpen}
@@ -132,4 +136,17 @@ const StyledContainer = styled.ul`
   display: flex;
   flex-direction: column;
   align-items: center;
+`;
+
+const HomeBurger = styled(Link)`
+  position: fixed;
+  display: flex;
+  background-color: #007bff;
+  height: 40px;
+  width: 40px;
+  color: white;
+  left: 10px;
+  top: 8px;
+  z-index: 1000;
+  border-radius: 10px;
 `;

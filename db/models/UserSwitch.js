@@ -23,7 +23,8 @@ const userswitchSchema = new Schema(
     isFilmed: { type: Boolean, default: false },
     notes: [
       {
-        text: { type: String, maxlength: 200 },
+        _id: { type: String, required: true },
+        text: { type: String, maxlength: 100 },
         timestamp: { type: Date, default: Date.now },
       },
     ],

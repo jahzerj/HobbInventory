@@ -135,7 +135,6 @@ export default function KeyCapDetail() {
   };
 
   const handleEditNote = (noteId, currentText) => {
-    console.log("Editing note:", noteId, currentText);
     setEditNoteId(noteId); //Set the note being edited
     setEditNoteText(currentText); // Only store the current note being edited
   };
@@ -177,6 +176,7 @@ export default function KeyCapDetail() {
   };
 
   const handleCancelEdits = () => {
+    setEditNoteId(null);
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
     setIsEditMode(false);
@@ -471,13 +471,13 @@ const StyledLink = styled(Link)`
   right: 5px;
   text-decoration: none;
   color: white;
-  background-color: lightgrey;
+  background-color: #007bff;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   font-size: 24px;
-  height: 50px;
-  width: 50px;
+  height: 45px;
+  width: 45px;
   z-index: 1000;
 
   &:hover {
@@ -692,7 +692,7 @@ const AcceptCancelEditButtonContainer = styled.div`
   position: fixed;
   bottom: 10px;
   left: ${(props) =>
-    props.$innerWidth > 400 && props.$isEditMode ? "" : "20px"};
+    props.$innerWidth > 400 && props.$isEditMode ? "" : "10px"};
   display: flex;
   gap: 10px;
   z-index: 1000;
