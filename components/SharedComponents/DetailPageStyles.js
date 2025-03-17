@@ -64,7 +64,7 @@ export const BoxContainer = styled.ul`
   background: #f9f9f9;
   padding: 15px;
   border-radius: 10px;
-  width: 80%;
+  width: 90%;
   max-width: 430px;
   text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
@@ -122,8 +122,8 @@ export const LoaderWrapper = styled.div`
 `;
 
 export const StyledInput = styled.input`
-  width: 100%;
-  max-width: ${(props) => props.$maxWidth || "600px"};
+  width: 90%;
+  max-width: 430px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;

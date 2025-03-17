@@ -171,7 +171,7 @@ const NotesContainer = styled.ul`
   padding: 15px;
   border-radius: 10px;
   width: 90%;
-  max-width: 600px;
+  max-width: 430px;
   text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;

@@ -292,6 +292,10 @@ const SwtichHeaderImage = styled.div`
   position: relative;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
 
+  @media (min-width: 400px) {
+    width: 250px;
+    height: 250px;
+  }
   @media (min-width: 600px) {
     width: 300px;
     height: 300px;
