@@ -172,6 +172,10 @@ const SwitchGrid = styled.ul`
   gap: 10px;
   margin-top: 20px;
   position: relative;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 `;
 
 const StyledInput = styled.input`

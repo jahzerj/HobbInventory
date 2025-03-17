@@ -5,6 +5,7 @@ import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
 import EditButton from "@/components/KeycapComponents/EditButton";
 import useSWR from "swr";
 import Image from "next/image";
+import styled from "styled-components";
 import Notes from "@/components/SharedComponents/Notes";
 import {
   DetailPageContainer,
@@ -194,15 +195,16 @@ export default function SwitchDetail() {
               {mxswitch.manufacturer} {mxswitch.name}
             </h1>
           )}
-          <HeaderImage>
+          <SwtichHeaderImage>
             <Image
               src={mxswitch.image}
               alt={mxswitch.name}
-              height={200}
-              width={200}
+              fill
+              sizes="(max-width: 600px) 200px, 300px"
+              style={{ objectFit: "cover" }}
               priority
             />
-          </HeaderImage>
+          </SwtichHeaderImage>
         </HeaderSection>
 
         <BoxContainer>
@@ -281,3 +283,17 @@ export default function SwitchDetail() {
     </>
   );
 }
+
+const SwtichHeaderImage = styled.div`
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+
+  @media (min-width: 600px) {
+    width: 300px;
+    height: 300px;
+  }
+`;
