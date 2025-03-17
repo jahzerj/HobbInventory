@@ -11,20 +11,20 @@ import {
   DetailPageContainer,
   StyledLink,
   HeaderSection,
-  HeaderImage,
   BoxContainer,
   AcceptCancelEditButtonContainer,
   StyledSpan,
   LoaderWrapper,
+  StyledInput,
 } from "@/components/SharedComponents/DetailPageStyles";
 
 export default function SwitchDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data: mxswitch, error: switchError } = useSWR(
-    id ? `/api/inventories/switches/${id}` : null
-  );
+  // const { data: mxswitch, error: switchError } = useSWR(
+  //   id ? `/api/inventories/switches/${id}` : null
+  // );
 
   const {
     data: userSwitches,
@@ -38,37 +38,37 @@ export default function SwitchDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [innerWidth, setInnerWidth] = useState(0);
 
-  const [editedName, setEditedName] = useState(mxswitch?.name || "");
+  const [editedName, setEditedName] = useState(userSwitch?.name || "");
   const [editedManufacturer, setEditedManufacturer] = useState(
-    mxswitch?.manufacturer || ""
+    userSwitch?.manufacturer || ""
   );
-  const [editedImage, setEditedImage] = useState(mxswitch?.image || "");
+  const [editedImage, setEditedImage] = useState(userSwitch?.image || "");
   const [editedSwitchType, setEditedSwitchType] = useState(
-    mxswitch?.switchType || ""
+    userSwitch?.switchType || ""
   );
   const [editedQuantity, setEditedQuantity] = useState(
-    mxswitch?.quantity || ""
+    userSwitch?.quantity || ""
   );
   const [editedSpringWeight, setEditedSpringWeight] = useState(
-    mxswitch?.springWeight || ""
+    userSwitch?.springWeight || ""
   );
   const [editedTopMaterial, setEditedTopMaterial] = useState(
-    mxswitch?.topMaterial || ""
+    userSwitch?.topMaterial || ""
   );
   const [editedBottomMaterial, setEditedBottomMaterial] = useState(
-    mxswitch?.bottomMaterial || ""
+    userSwitch?.bottomMaterial || ""
   );
   const [editedStemMaterial, setEditedStemMaterial] = useState(
-    mxswitch?.stemMaterial || ""
+    userSwitch?.stemMaterial || ""
   );
   const [editedFactoryLubed, setEditedFactoryLubed] = useState(
-    mxswitch?.factoryLubed || false
+    userSwitch?.factoryLubed || false
   );
   const [editedIsLubed, setEditedIsLubed] = useState(
-    mxswitch?.isLubed || false
+    userSwitch?.isLubed || false
   );
   const [editedIsFilmed, setEditedIsFilmed] = useState(
-    mxswitch?.isFilmed || false
+    userSwitch?.isFilmed || false
   );
 
   useEffect(() => {
@@ -76,6 +76,23 @@ export default function SwitchDetail() {
       setInnerWidth(window.innerWidth);
     }
   }, []);
+
+  useEffect(() => {
+    if (userSwitch) {
+      setEditedName(userSwitch.name || "");
+      setEditedManufacturer(userSwitch.manufacturer || "");
+      setEditedImage(userSwitch.image || "");
+      setEditedSwitchType(userSwitch.switchType || "");
+      setEditedQuantity(userSwitch.quantity || "");
+      setEditedSpringWeight(userSwitch.springWeight || "");
+      setEditedTopMaterial(userSwitch.topMaterial || "");
+      setEditedBottomMaterial(userSwitch.bottomMaterial || "");
+      setEditedStemMaterial(userSwitch.stemMaterial || "");
+      setEditedFactoryLubed(userSwitch.factoryLubed || false);
+      setEditedIsLubed(userSwitch.isLubed || false);
+      setEditedIsFilmed(userSwitch.isFilmed || false);
+    }
+  }, [userSwitch]);
 
   const handleNotesUpdate = async (updatedNotes) => {
     await fetch("/api/inventories/userswitches", {
@@ -139,7 +156,7 @@ export default function SwitchDetail() {
         }),
       });
 
-      mutate();
+      await mutate();
       setIsEditMode(false);
     } catch (error) {
       console.error("Error saving notes:", error);
@@ -149,25 +166,25 @@ export default function SwitchDetail() {
 
   const handleCancelEdits = () => {
     setIsEditMode(false);
-    setEditedName(mxswitch?.name || "");
-    setEditedManufacturer(mxswitch?.manufacturer || "");
-    setEditedImage(mxswitch?.image || "");
-    setEditedSwitchType(mxswitch?.switchType || "");
-    setEditedQuantity(mxswitch?.quantity || "");
-    setEditedSpringWeight(mxswitch?.springWeight || "");
-    setEditedTopMaterial(mxswitch?.topMaterial || "");
-    setEditedBottomMaterial(mxswitch?.bottomMaterial || "");
-    setEditedStemMaterial(mxswitch?.stemMaterial || "");
-    setEditedFactoryLubed(mxswitch?.factoryLubed || false);
-    setEditedIsLubed(mxswitch?.isLubed || false);
-    setEditedIsFilmed(mxswitch?.isFilmed || false);
+    setEditedName(userSwitch?.name || "");
+    setEditedManufacturer(userSwitch?.manufacturer || "");
+    setEditedImage(userSwitch?.image || "");
+    setEditedSwitchType(userSwitch?.switchType || "");
+    setEditedQuantity(userSwitch?.quantity || "");
+    setEditedSpringWeight(userSwitch?.springWeight || "");
+    setEditedTopMaterial(userSwitch?.topMaterial || "");
+    setEditedBottomMaterial(userSwitch?.bottomMaterial || "");
+    setEditedStemMaterial(userSwitch?.stemMaterial || "");
+    setEditedFactoryLubed(userSwitch?.factoryLubed || false);
+    setEditedIsLubed(userSwitch?.isLubed || false);
+    setEditedIsFilmed(userSwitch?.isFilmed || false);
   };
 
-  if (switchError || userSwitchesError) {
+  if (userSwitchesError) {
     return <p> Error loading switch details</p>;
   }
 
-  if (!mxswitch) {
+  if (!userSwitch) {
     return (
       <LoaderWrapper>
         <StyledSpan />
@@ -189,16 +206,16 @@ export default function SwitchDetail() {
 
         <HeaderSection>
           {isEditMode ? (
-            <h1>Editing {mxswitch.name}</h1>
+            <h1>Editing {userSwitch.name}</h1>
           ) : (
             <h1>
-              {mxswitch.manufacturer} {mxswitch.name}
+              {userSwitch.manufacturer} {userSwitch.name}
             </h1>
           )}
           <SwtichHeaderImage>
             <Image
-              src={mxswitch.image}
-              alt={mxswitch.name}
+              src={userSwitch.image}
+              alt={userSwitch.name}
               fill
               sizes="(max-width: 600px) 200px, 300px"
               style={{ objectFit: "cover" }}
@@ -207,37 +224,169 @@ export default function SwitchDetail() {
           </SwtichHeaderImage>
         </HeaderSection>
 
+        <h3>Details</h3>
         <BoxContainer>
-          <li>
-            <strong>Manufacturer:</strong> {mxswitch.manufacturer}
-          </li>
-          <li>
-            <strong>Switch Type:</strong> {mxswitch.switchType}
-          </li>
-          <li>
-            <strong>Quantity:</strong> {mxswitch.quantity}
-          </li>
-          <li>
-            <strong>Spring Weight:</strong> {mxswitch.springWeight}
-          </li>
-          <li>
-            <strong>Top Housing:</strong> {mxswitch.topMaterial}
-          </li>
-          <li>
-            <strong>Bottom Housing:</strong> {mxswitch.bottomMaterial}
-          </li>
-          <li>
-            <strong>Stem Material:</strong> {mxswitch.stemMaterial}
-          </li>
-          <li>
-            <strong>Factory Lube:</strong> {mxswitch.factoryLubed}
-          </li>
-          <li>
-            <strong>Hand Lubed:</strong> {mxswitch.isLubed}
-          </li>
-          <li>
-            <strong>Filmed:</strong> {mxswitch.isFilmed}
-          </li>
+          {isEditMode ? (
+            <>
+              <li>
+                <strong>Manufacturer:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedManufacturer}
+                  onChange={(event) =>
+                    setEditedManufacturer(event.target.value)
+                  }
+                />
+              </li>
+              <li>
+                <strong>Switch Type:</strong>
+                <StyledInput
+                  as="select"
+                  value={editedSwitchType}
+                  onChange={(event) => setEditedSwitchType(event.target.value)}
+                >
+                  <option value="">-- Select Type --</option>
+                  <option value="linear">Linear</option>
+                  <option value="tactile">Tactile</option>
+                  <option value="clicky">Clicky</option>
+                </StyledInput>
+              </li>
+              <li>
+                <strong>Quantity:</strong>
+                <StyledInput
+                  type="number"
+                  min="0"
+                  value={editedQuantity}
+                  onChange={(event) => {
+                    // Ensure value is not negative
+                    const value = Math.max(
+                      0,
+                      parseInt(event.target.value) || 0
+                    );
+                    setEditedQuantity(value.toString());
+                  }}
+                />
+              </li>
+              <li>
+                <strong>Spring Weight:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedSpringWeight}
+                  onChange={(event) =>
+                    setEditedSpringWeight(event.target.value)
+                  }
+                />
+              </li>
+              <li>
+                <strong>Top Housing:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedTopMaterial}
+                  onChange={(event) => setEditedTopMaterial(event.target.value)}
+                />
+              </li>
+              <li>
+                <strong>Bottom Housing:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedBottomMaterial}
+                  onChange={(event) =>
+                    setEditedBottomMaterial(event.target.value)
+                  }
+                />
+              </li>
+              <li>
+                <strong>Stem Material:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedStemMaterial}
+                  onChange={(event) =>
+                    setEditedStemMaterial(event.target.value)
+                  }
+                />
+              </li>
+              <li>
+                <strong>Factory Lube:</strong>
+                <StyledCheckbox>
+                  <input
+                    type="checkbox"
+                    id="factoryLubed"
+                    checked={editedFactoryLubed}
+                    onChange={(event) =>
+                      setEditedFactoryLubed(event.target.checked)
+                    }
+                  />
+                  <label htmlFor="factoryLubed">
+                    {editedFactoryLubed ? "Yes" : "No"}
+                  </label>
+                </StyledCheckbox>
+              </li>
+              <li>
+                <strong>Hand Lubed:</strong>
+                <StyledCheckbox>
+                  <input
+                    type="checkbox"
+                    id="handLubed"
+                    checked={editedIsLubed}
+                    onChange={(event) => setEditedIsLubed(event.target.checked)}
+                  />
+                  <label htmlFor="handLubed">
+                    {editedIsLubed ? "Yes" : "No"}
+                  </label>
+                </StyledCheckbox>
+              </li>
+              <li>
+                <strong>Filmed:</strong>
+                <StyledCheckbox>
+                  <input
+                    type="checkbox"
+                    id="filmed"
+                    checked={editedIsFilmed}
+                    onChange={(event) =>
+                      setEditedIsFilmed(event.target.checked)
+                    }
+                  />
+                  <label htmlFor="filmed">
+                    {editedIsFilmed ? "Yes" : "No"}
+                  </label>
+                </StyledCheckbox>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <strong>Manufacturer:</strong> {userSwitch.manufacturer}
+              </li>
+              <li>
+                <strong>Switch Type:</strong> {userSwitch.switchType}
+              </li>
+              <li>
+                <strong>Quantity:</strong> {userSwitch.quantity}
+              </li>
+              <li>
+                <strong>Spring Weight:</strong> {userSwitch.springWeight}
+              </li>
+              <li>
+                <strong>Top Housing:</strong> {userSwitch.topMaterial}
+              </li>
+              <li>
+                <strong>Bottom Housing:</strong> {userSwitch.bottomMaterial}
+              </li>
+              <li>
+                <strong>Stem Material:</strong> {userSwitch.stemMaterial}
+              </li>
+              <li>
+                <strong>Factory Lube:</strong>
+                {userSwitch.factoryLubed ? "Yes" : "No"}
+              </li>
+              <li>
+                <strong>Hand Lubed:</strong> {userSwitch.isLubed ? "Yes" : "No"}
+              </li>
+              <li>
+                <strong>Filmed:</strong> {userSwitch.isFilmed ? "Yes" : "No"}
+              </li>
+            </>
+          )}
         </BoxContainer>
 
         <Notes
@@ -257,18 +406,18 @@ export default function SwitchDetail() {
                 handleCancelEdits();
               } else {
                 setIsEditMode(true);
-                setEditedName(mxswitch?.name || "");
-                setEditedManufacturer(mxswitch?.manufacturer || "");
-                setEditedImage(mxswitch?.image || "");
-                setEditedSwitchType(mxswitch?.switchType || "");
-                setEditedQuantity(mxswitch?.quantity || "");
-                setEditedSpringWeight(mxswitch?.springWeight || "");
-                setEditedTopMaterial(mxswitch?.topMaterial || "");
-                setEditedBottomMaterial(mxswitch?.bottomMaterial || "");
-                setEditedStemMaterial(mxswitch?.stemMaterial || "");
-                setEditedFactoryLubed(mxswitch?.factoryLubed || false);
-                setEditedIsLubed(mxswitch?.isLubed || false);
-                setEditedIsFilmed(mxswitch?.isFilmed || false);
+                setEditedName(userSwitch?.name || "");
+                setEditedManufacturer(userSwitch?.manufacturer || "");
+                setEditedImage(userSwitch?.image || "");
+                setEditedSwitchType(userSwitch?.switchType || "");
+                setEditedQuantity(userSwitch?.quantity || "");
+                setEditedSpringWeight(userSwitch?.springWeight || "");
+                setEditedTopMaterial(userSwitch?.topMaterial || "");
+                setEditedBottomMaterial(userSwitch?.bottomMaterial || "");
+                setEditedStemMaterial(userSwitch?.stemMaterial || "");
+                setEditedFactoryLubed(userSwitch?.factoryLubed || false);
+                setEditedIsLubed(userSwitch?.isLubed || false);
+                setEditedIsFilmed(userSwitch?.isFilmed || false);
               }
             }}
           />
@@ -299,5 +448,19 @@ const SwtichHeaderImage = styled.div`
   @media (min-width: 600px) {
     width: 300px;
     height: 300px;
+  }
+`;
+
+const StyledCheckbox = styled.div`
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+
+  input {
+    margin-right: 5px;
+  }
+
+  label {
+    font-size: 14px;
   }
 `;

@@ -20,7 +20,6 @@ import {
   StyledSpan,
   LoaderWrapper,
   StyledInput,
-  ButtonContainer,
 } from "@/components/SharedComponents/DetailPageStyles";
 
 export default function KeyCapDetail() {
@@ -217,6 +216,8 @@ export default function KeyCapDetail() {
             </HeaderImage>
           )}
         </HeaderSection>
+
+        <h3>Details</h3>
         <BoxContainer>
           <li>
             <strong>Manufacturer:</strong> {keycaps.keycapstype}
