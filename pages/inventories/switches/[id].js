@@ -255,6 +255,18 @@ export default function SwitchDetail() {
                 handleCancelEdits();
               } else {
                 setIsEditMode(true);
+                setEditedName(mxswitch?.name || "");
+                setEditedManufacturer(mxswitch?.manufacturer || "");
+                setEditedImage(mxswitch?.image || "");
+                setEditedSwitchType(mxswitch?.switchType || "");
+                setEditedQuantity(mxswitch?.quantity || "");
+                setEditedSpringWeight(mxswitch?.springWeight || "");
+                setEditedTopMaterial(mxswitch?.topMaterial || "");
+                setEditedBottomMaterial(mxswitch?.bottomMaterial || "");
+                setEditedStemMaterial(mxswitch?.stemMaterial || "");
+                setEditedFactoryLubed(mxswitch?.factoryLubed || false);
+                setEditedIsLubed(mxswitch?.isLubed || false);
+                setEditedIsFilmed(mxswitch?.isFilmed || false);
               }
             }}
           />

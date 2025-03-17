@@ -13,6 +13,14 @@ export default function Notes({ notes, isEditMode, onNotesUpdate }) {
   const [editNoteText, setEditNoteText] = useState("");
   const [localNotes, setLocalNotes] = useState(notes);
 
+  // Add effect to watch for isEditMode changes
+  useEffect(() => {
+    if (!isEditMode) {
+      setEditNoteId(null);
+      setEditNoteText("");
+    }
+  }, [isEditMode]);
+
   // Update local notes when props change
   useEffect(() => {
     setLocalNotes(notes);
