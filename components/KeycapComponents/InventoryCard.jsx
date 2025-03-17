@@ -147,10 +147,13 @@ const StyledCard = styled.li`
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
-
+  border: 2px solid white;
+  border-bottom-width: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
   cursor: pointer;
   overflow: hidden;
+  background-color: white;
 
   @media (min-width: 600px) {
     width: 500px;
@@ -173,13 +176,13 @@ const CardContent = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 15px;
-  background: linear-gradient(
+  /* background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.4) 0%,
     rgba(0, 0, 0, 0) 30%,
     rgba(0, 0, 0, 0) 60%,
     rgba(0, 0, 0, 0.4) 100%
-  );
+  ); */
   z-index: 1;
 `;
 const CardTitle = styled.h3`
@@ -255,8 +258,8 @@ const CarouselButton = styled.button`
 const DeleteInventoryItemButton = styled.button`
   display: flex;
   position: absolute;
-  top: 5%;
-  right: 5%;
+  bottom: 1%;
+  left: 2%;
   color: white;
   background: #ff4d4d;
   border: none;
@@ -268,24 +271,24 @@ const DeleteInventoryItemButton = styled.button`
     background-color: rgb(162, 24, 24);
   }
 `;
-
 const ColorDotsList = styled.div`
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: -2px;
+  right: -2px;
   display: flex;
   gap: 5px;
-  z-index: 1;
-  list-style: none;
-  padding: 0;
+  z-index: 10;
+  padding: 2px;
   margin: 0;
-
-  ${({ $isEditMode }) =>
-    $isEditMode && `right: 60px; //move over when delete button appears`}
+  background-color: white;
+  border-radius: 0 30px 0 20px;
+  border: 2px solid white;
+  border-top-width: 2px;
+  border-right-width: 2px;
 `;
 
 const ColorDotItem = styled.span`
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 `;
