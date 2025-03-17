@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
-import { AttentionSeeker } from "react-awesome-reveal";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 
@@ -139,21 +138,11 @@ export default function Keycaps() {
 
         <CardContainer>
           {filteredKeycaps?.length ? (
-            isEditMode ? (
-              <AttentionSeeker effect="shake">
-                <InventoryCard
-                  data={filteredKeycaps}
-                  isEditMode={isEditMode}
-                  onDelete={handleDeleteKeycap}
-                />
-              </AttentionSeeker>
-            ) : (
-              <InventoryCard
-                data={filteredKeycaps}
-                isEditMode={isEditMode}
-                onDelete={handleDeleteKeycap}
-              />
-            )
+            <InventoryCard
+              data={filteredKeycaps}
+              isEditMode={isEditMode}
+              onDelete={handleDeleteKeycap}
+            />
           ) : (
             <>
               <p>No keycaps found with the selected color!</p>
@@ -187,6 +176,17 @@ const CardContainer = styled.div`
   justify-content: center;
   flex-direction: column;
   align-items: center;
+
+  @media (min-width: 900px) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 60px auto 0;
+    justify-content: center;
+    align-items: start;
+  }
 `;
 
 const HomeBurger = styled(Link)`
