@@ -69,7 +69,6 @@ export default function SwitchDetail() {
   const [editedIsFilmed, setEditedIsFilmed] = useState(
     mxswitch?.isFilmed || false
   );
-  const [editedNotes, setEditedNotes] = useState(notes || []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -77,27 +76,17 @@ export default function SwitchDetail() {
     }
   }, []);
 
-  useEffect(() => {
-    if (userSwitch?.notes) {
-      setEditedNotes(userSwitch.notes);
-    }
-  }, [userSwitch?.notes]);
-
   const handleNotesUpdate = async (updatedNotes) => {
-    if (isEditMode) {
-      setEditedNotes(updatedNotes);
-    } else {
-      await fetch("/api/inventories/userswitches", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "guest_user",
-          switchId: id,
-          notes: updatedNotes,
-        }),
-      });
-      await mutate();
-    }
+    await fetch("/api/inventories/userswitches", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "guest_user",
+        switchId: id,
+        notes: updatedNotes,
+      }),
+    });
+    await mutate();
   };
 
   const validateSwitchData = (data) => {
@@ -145,7 +134,7 @@ export default function SwitchDetail() {
           factoryLubed: editedFactoryLubed,
           isLubed: editedIsLubed,
           isFilmed: editedIsFilmed,
-          notes: editedNotes,
+          notes: notes,
         }),
       });
 
@@ -158,6 +147,7 @@ export default function SwitchDetail() {
   };
 
   const handleCancelEdits = () => {
+    setIsEditMode(false);
     setEditedName(mxswitch?.name || "");
     setEditedManufacturer(mxswitch?.manufacturer || "");
     setEditedImage(mxswitch?.image || "");
@@ -170,8 +160,6 @@ export default function SwitchDetail() {
     setEditedFactoryLubed(mxswitch?.factoryLubed || false);
     setEditedIsLubed(mxswitch?.isLubed || false);
     setEditedIsFilmed(mxswitch?.isFilmed || false);
-    setEditedNotes([...notes]);
-    setIsEditMode(false);
   };
 
   if (switchError || userSwitchesError) {
@@ -251,7 +239,7 @@ export default function SwitchDetail() {
         </BoxContainer>
 
         <Notes
-          notes={isEditMode ? editedNotes : notes}
+          notes={notes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
         />
@@ -267,7 +255,6 @@ export default function SwitchDetail() {
                 handleCancelEdits();
               } else {
                 setIsEditMode(true);
-                setEditedNotes([...notes]);
               }
             }}
           />
