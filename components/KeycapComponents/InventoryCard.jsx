@@ -147,7 +147,7 @@ const StyledCard = styled.li`
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
-  border: 2px solid white;
+  border: 2px solid rgba(0, 0, 0, 0.1);
   border-bottom-width: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
@@ -176,19 +176,41 @@ const CardContent = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 15px;
-  /* background: linear-gradient(
+  background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.4) 0%,
     rgba(0, 0, 0, 0) 30%,
     rgba(0, 0, 0, 0) 60%,
-    rgba(0, 0, 0, 0.4) 100%
-  ); */
+    rgba(0, 0, 0, 0.5) 100%
+  );
   z-index: 1;
 `;
+
 const CardTitle = styled.h3`
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   margin: 0;
+`;
+
+const ColorDotsList = styled.div`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: flex;
+  gap: 2px;
+  z-index: 10;
+  background-color: white;
+  border-radius: 0 30px 0 20px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-width: 2px;
+  border-right-width: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
+
+const ColorDotItem = styled.span`
+  font-size: 1.8rem;
+  color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 `;
 
 const ImageWrapper = styled.div`
@@ -270,25 +292,4 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
-`;
-const ColorDotsList = styled.div`
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  display: flex;
-  gap: 5px;
-  z-index: 10;
-  padding: 2px;
-  margin: 0;
-  background-color: white;
-  border-radius: 0 30px 0 20px;
-  border: 2px solid white;
-  border-top-width: 2px;
-  border-right-width: 2px;
-`;
-
-const ColorDotItem = styled.span`
-  font-size: 1.5rem;
-  color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 `;

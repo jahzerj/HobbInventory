@@ -294,6 +294,7 @@ export default function KeyCapDetail() {
                       alt={kit.name}
                       width={116}
                       height={67}
+                      style={{ objectFit: "cover" }}
                       priority
                     />
                   ) : (
