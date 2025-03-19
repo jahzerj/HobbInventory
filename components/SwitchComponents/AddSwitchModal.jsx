@@ -4,7 +4,7 @@ import styled from "styled-components";
 import Image from "next/image";
 import { nanoid } from "nanoid";
 
-export default function Modal({ open, onClose, onAddSwitch }) {
+export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
   const [switchData, setSwitchData] = useState({

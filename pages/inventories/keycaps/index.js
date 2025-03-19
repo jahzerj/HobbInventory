@@ -299,13 +299,13 @@ const ColorFilterContainer = styled.div`
   padding: 10px 15px;
   gap: 10px;
   position: sticky;
-  top: 0;
+  top: 40px; // place it under the burger menu
   z-index: 100;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; //IE and Edge
 
   &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none; // Chrome, Safari, Opera
   }
 `;
 

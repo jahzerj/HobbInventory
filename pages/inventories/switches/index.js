@@ -2,7 +2,7 @@ import Link from "next/link";
 import AddButtton from "@/components/SwitchComponents/AddButton";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import Modal from "@/components/SwitchComponents/Modal";
+import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
 import SwitchInventoryCard from "@/components/SwitchComponents/SwitchInventoryCard";
@@ -112,7 +112,7 @@ export default function Switches() {
         <MenuIcon />
       </HomeBurger>
 
-      <Modal
+      <AddSwitchModal
         open={isOpen}
         onClose={() => setIsOpen(false)}
         onAddSwitch={handleAddSwitch}
