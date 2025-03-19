@@ -256,12 +256,13 @@ export default function SwitchDetail() {
                 <StyledInput
                   type="number"
                   min="0"
+                  max="9999"
                   value={editedQuantity}
                   onChange={(event) => {
-                    // Ensure value is not negative
-                    const value = Math.max(
-                      0,
-                      parseInt(event.target.value) || 0
+                    // Ensure value is not negative and not too large
+                    const value = Math.min(
+                      9999,
+                      Math.max(0, parseInt(event.target.value) || 0)
                     );
                     setEditedQuantity(value.toString());
                   }}

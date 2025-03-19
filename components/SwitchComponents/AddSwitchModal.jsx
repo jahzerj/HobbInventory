@@ -1,12 +1,13 @@
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import styled from "styled-components";
-import Image from "next/image";
 import { nanoid } from "nanoid";
+import SwitchInventoryCard from "./SwitchInventoryCard";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
+  const [activeTab, setActiveTab] = useState("manual");
   const [switchData, setSwitchData] = useState({
     name: "",
     manufacturer: "",
@@ -36,6 +37,18 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         alert(
           "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp"
         );
+        return;
+      }
+    }
+
+    // Add quantity validation
+    if (name === "quantity") {
+      const numValue = parseInt(value) || 0;
+      if (numValue > 9999) {
+        setSwitchData((prevData) => ({
+          ...prevData,
+          [name]: 9999,
+        }));
         return;
       }
     }
@@ -99,182 +112,215 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
     <>
       <Overlay />
       <ModalWrapper>
-        <Title>Add your Switch&apos;s Information</Title>
+        <Title>Add Switch to Inventory</Title>
 
-        <Input
-          type="text"
-          name="name"
-          placeholder="Switch Name *"
-          value={switchData.name}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          type="text"
-          name="manufacturer"
-          placeholder="Manufacturer *"
-          value={switchData.manufacturer}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          type="url"
-          name="image"
-          placeholder="Image URL *"
-          value={switchData.image}
-          onChange={handleChange}
-          pattern="https?://.*"
-          required
-        />
+        {/* Tab Navigation */}
+        <TabContainer>
+          <TabButton
+            $isActive={activeTab === "manual"}
+            onClick={() => setActiveTab("manual")}
+          >
+            Manual Entry
+          </TabButton>
+          <TabButton
+            $isActive={activeTab === "dropdown"}
+            onClick={() => setActiveTab("dropdown")}
+          >
+            Select from Database
+          </TabButton>
+        </TabContainer>
 
-        <Select
-          name="switchType"
-          value={switchData.switchType}
-          onChange={handleChange}
-        >
-          <option value="">Select Switch Type *</option>
-          <option value="Linear">Linear</option>
-          <option value="Tactile">Tactile</option>
-          <option value="Clicky">Clicky</option>
-        </Select>
-
-        {isPreviewVisible && (
+        {/* Tab Content */}
+        {activeTab === "manual" ? (
+          // Manual Entry Tab Content
           <>
-            <h3>Preview</h3>
-            <PreviewContainer>
-              <SwitchCard>
-                <Image
-                  src={switchData.image}
-                  alt={switchData.name}
-                  width={100}
-                  height={100}
+            <Input
+              type="text"
+              name="name"
+              placeholder="Switch Name *"
+              value={switchData.name}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              type="text"
+              name="manufacturer"
+              placeholder="Manufacturer *"
+              value={switchData.manufacturer}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              type="url"
+              name="image"
+              placeholder="Image URL *"
+              value={switchData.image}
+              onChange={handleChange}
+              pattern="https?://.*"
+              required
+            />
+
+            <Select
+              name="switchType"
+              value={switchData.switchType}
+              onChange={handleChange}
+            >
+              <option value="">Select Switch Type *</option>
+              <option value="Linear">Linear</option>
+              <option value="Tactile">Tactile</option>
+              <option value="Clicky">Clicky</option>
+            </Select>
+
+            {isPreviewVisible && (
+              <>
+                <h3>Preview</h3>
+                <PreviewWrapper>
+                  <SwitchInventoryCard
+                    switches={[
+                      {
+                        _id: "preview", // Temporary ID for preview
+                        name: switchData.name,
+                        manufacturer: switchData.manufacturer,
+                        image: switchData.image,
+                        quantity: switchData.quantity,
+                        switchType: switchData.switchType,
+                      },
+                    ]}
+                    isEditMode={false}
+                    onDelete={() => {}} // Empty function since we don't need delete functionality in preview
+                  />
+                </PreviewWrapper>
+              </>
+            )}
+
+            <ToggleAdditionalFieldsButton
+              onClick={() => {
+                setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
+                setSwitchData((prevData) => ({
+                  ...prevData,
+                  quantity: 1,
+                  factoryLubed: false,
+                  springWeight: "",
+                  topMaterial: "",
+                  bottomMaterial: "",
+                  stemMaterial: "",
+                  isLubed: false,
+                  isFilmed: false,
+                  notes: [],
+                }));
+              }}
+            >
+              {isAdditionalFieldsVisible
+                ? "Hide Additional Information"
+                : "Add Additional Information"}
+            </ToggleAdditionalFieldsButton>
+
+            {isAdditionalFieldsVisible && (
+              <AdditionalFieldsContainer>
+                <label htmlFor="quantity">Quantity</label>
+                <Input
+                  type="number"
+                  name="quantity"
+                  placeholder="Quantity"
+                  min="0"
+                  max="9999"
+                  value={switchData.quantity}
+                  onChange={handleChange}
                 />
-                <p>{switchData.manufacturer}</p>
-                <p>
-                  <strong>{switchData.name}</strong>
-                </p>
-              </SwitchCard>
-            </PreviewContainer>
+
+                <Input
+                  type="text"
+                  name="springWeight"
+                  placeholder="Spring Weight"
+                  value={switchData.springWeight}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="topMaterial"
+                  placeholder="Top Housing Material"
+                  value={switchData.topMaterial}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="bottomMaterial"
+                  placeholder="Bottom Housing Material"
+                  value={switchData.bottomMaterial}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="stemMaterial"
+                  placeholder="Stem Material"
+                  value={switchData.stemMaterial}
+                  onChange={handleChange}
+                />
+                <CheckboxContainer>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="factoryLubed"
+                      checked={switchData.factoryLubed}
+                      onChange={handleChange}
+                    />
+                    Factory Lubed
+                  </label>
+                </CheckboxContainer>
+
+                <CheckboxContainer>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="isLubed"
+                      checked={switchData.isLubed}
+                      onChange={handleChange}
+                    />
+                    Hand Lubed
+                  </label>
+                </CheckboxContainer>
+                <CheckboxContainer>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="isFilmed"
+                      checked={switchData.isFilmed}
+                      onChange={handleChange}
+                    />
+                    Filmed
+                  </label>
+                </CheckboxContainer>
+
+                <TextArea
+                  name="notesText"
+                  placeholder="Add a note..."
+                  value={noteText}
+                  onChange={(event) => setNoteText(event.target.value)}
+                />
+                <AddButton onClick={handleAddNote}> Add Note</AddButton>
+
+                <h4>User Notes</h4>
+                <NotesContainer>
+                  {switchData.notes.length > 0 ? (
+                    switchData.notes.map((note) => (
+                      <NoteItem key={nanoid()}>
+                        {note.text} (
+                        {new Date(note.timestamp).toLocaleDateString()})
+                      </NoteItem>
+                    ))
+                  ) : (
+                    <p>No notes for this switch.</p>
+                  )}
+                </NotesContainer>
+              </AdditionalFieldsContainer>
+            )}
           </>
-        )}
-
-        <ToggleAdditionalFieldsButton
-          onClick={() => {
-            setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
-            setSwitchData((prevData) => ({
-              ...prevData,
-              quantity: 1,
-              factoryLubed: false,
-              springWeight: "",
-              topMaterial: "",
-              bottomMaterial: "",
-              stemMaterial: "",
-              isLubed: false,
-              isFilmed: false,
-              notes: [],
-            }));
-          }}
-        >
-          {isAdditionalFieldsVisible
-            ? "Hide Additional Information"
-            : "Add Additional Information"}
-        </ToggleAdditionalFieldsButton>
-        {isAdditionalFieldsVisible && (
-          <AdditionalFieldsContainer>
-            <label htmlFor="quantity">Quantity</label>
-            <Input
-              type="number"
-              name="quantity"
-              placeholder="Quantity"
-              value={switchData.quantity}
-              onChange={handleChange}
-            />
-
-            <Input
-              type="text"
-              name="springWeight"
-              placeholder="Spring Weight"
-              value={switchData.springWeight}
-              onChange={handleChange}
-            />
-            <Input
-              type="text"
-              name="topMaterial"
-              placeholder="Top Housing Material"
-              value={switchData.topMaterial}
-              onChange={handleChange}
-            />
-            <Input
-              type="text"
-              name="bottomMaterial"
-              placeholder="Bottom Housing Material"
-              value={switchData.bottomMaterial}
-              onChange={handleChange}
-            />
-            <Input
-              type="text"
-              name="stemMaterial"
-              placeholder="Stem Material"
-              value={switchData.stemMaterial}
-              onChange={handleChange}
-            />
-            <CheckboxContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="factoryLubed"
-                  checked={switchData.factoryLubed}
-                  onChange={handleChange}
-                />
-                Factory Lubed
-              </label>
-            </CheckboxContainer>
-
-            <CheckboxContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isLubed"
-                  checked={switchData.isLubed}
-                  onChange={handleChange}
-                />
-                Hand Lubed
-              </label>
-            </CheckboxContainer>
-            <CheckboxContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isFilmed"
-                  checked={switchData.isFilmed}
-                  onChange={handleChange}
-                />
-                Filmed
-              </label>
-            </CheckboxContainer>
-
-            <TextArea
-              name="notesText"
-              placeholder="Add a note..."
-              value={noteText}
-              onChange={(event) => setNoteText(event.target.value)}
-            />
-            <AddButton onClick={handleAddNote}> Add Note</AddButton>
-
-            <h4>User Notes</h4>
-            <NotesContainer>
-              {switchData.notes.length > 0 ? (
-                switchData.notes.map((note) => (
-                  <NoteItem key={nanoid()}>
-                    {note.text} ({new Date(note.timestamp).toLocaleDateString()}
-                    )
-                  </NoteItem>
-                ))
-              ) : (
-                <p>No notes for this switch.</p>
-              )}
-            </NotesContainer>
-          </AdditionalFieldsContainer>
+        ) : (
+          // Dropdown Selection Tab Content
+          <TabContent>
+            <p>Select a switch from our database:</p>
+            <SelectSwitchButton>Select a Switch</SelectSwitchButton>
+          </TabContent>
         )}
 
         <ButtonContainer>
@@ -282,10 +328,11 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
           <AddButton
             onClick={handleSubmit}
             disabled={
-              !switchData.name ||
-              !switchData.manufacturer ||
-              !switchData.image ||
-              !switchData.switchType
+              activeTab === "manual" &&
+              (!switchData.name ||
+                !switchData.manufacturer ||
+                !switchData.image ||
+                !switchData.switchType)
             }
           >
             Add Switch
@@ -414,33 +461,13 @@ const NoteItem = styled.li`
   width: 100%;
 `;
 
-const PreviewContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 10px;
-  text-align: center;
-`;
-
-const SwitchCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center;
+const PreviewWrapper = styled.div`
   width: 100%;
-  max-width: 200px;
-
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-  }
+  max-width: 250px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const AdditionalFieldsContainer = styled.div`
@@ -460,4 +487,57 @@ const ToggleAdditionalFieldsButton = styled.button`
 
 const Title = styled.h2`
   text-align: center;
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+`;
+
+const TabButton = styled.button`
+  flex: 1;
+  padding: 10px;
+  background: ${(props) => (props.$isActive ? "#f0f8ff" : "#f5f5f5")};
+  border: none;
+  border-bottom: 3px solid
+    ${(props) => (props.$isActive ? "#007bff" : "transparent")};
+  cursor: pointer;
+  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) => (props.$isActive ? "#f0f8ff" : "#e9e9e9")};
+  }
+`;
+
+const TabContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+`;
+
+const SelectSwitchButton = styled.button`
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;

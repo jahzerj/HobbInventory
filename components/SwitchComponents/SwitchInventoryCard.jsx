@@ -9,13 +9,23 @@ export default function SwitchInventoryCard({
   onDelete,
 }) {
   const router = useRouter();
+
+  // Add a function to format quantity
+  const formatQuantity = (quantity) => {
+    const num = parseInt(quantity) || 0;
+    if (num > 9999) {
+      return "9999+";
+    }
+    return num;
+  };
+
   return switches.length > 0 ? (
     switches.map((switchObj) => (
       <SwitchCard
         key={switchObj._id}
         onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
       >
-        <QuantityBubble>{switchObj.quantity || 0}</QuantityBubble>
+        <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
         {isEditMode && (
           <DeleteInventoryItemButton
             onClick={(event) => onDelete(switchObj._id, event)}
@@ -138,6 +148,10 @@ const QuantityBubble = styled.div`
   z-index: 2;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   transition: transform 0.2s ease;
   ${SwitchCard}:hover & {
