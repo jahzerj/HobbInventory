@@ -2,7 +2,7 @@ import InventoryCard from "@/components/KeycapComponents/InventoryCard";
 import Link from "next/link";
 import AddButton from "@/components/KeycapComponents/AddButton";
 import Modal from "@/components/KeycapComponents/AddKeycapModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
@@ -13,7 +13,8 @@ export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
   const [userKeycaps, setUserKeycaps] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [colorFilter, setColorFilter] = useState("all");
+  const [selectedColors, setSelectedColors] = useState(["all"]);
+  const colorScrollRef = useRef(null);
   const userId = "guest_user";
 
   const {
@@ -87,16 +88,80 @@ export default function Keycaps() {
     }
   };
 
-  const getFilteredKeycaps = (keycapsData, selectedColor) => {
+  // Multiselect filtered keycaps
+  const getFilteredKeycaps = (keycapsData, selectedColorArray) => {
     if (!keycapsData) return [];
-    if (selectedColor === "all") return keycapsData;
 
-    return keycapsData.filter((keycap) =>
-      keycap.selectedColors?.includes(selectedColor)
-    );
+    // If "all" is selected or no colors are selected, return all keycaps
+    if (selectedColorArray.includes("all") || selectedColorArray.length === 0) {
+      return keycapsData;
+    }
+
+    // Return keycaps that have at least one of the selected colors
+    return keycapsData.filter((keycap) => {
+      if (!keycap.selectedColors) return false;
+      return keycap.selectedColors.some((color) =>
+        selectedColorArray.includes(color)
+      );
+    });
   };
 
-  const filteredKeycaps = getFilteredKeycaps(keycaps, colorFilter);
+  // Function to handle color selection
+  const handleColorSelect = (color) => {
+    setSelectedColors((prev) => {
+      // If selecting "all", clear other selections
+      if (color === "all") {
+        return ["all"];
+      }
+
+      // If currently "all" is selected and selecting another color, remove "all"
+      if (prev.includes("all") && color !== "all") {
+        return [color];
+      }
+
+      // Toggle selection
+      if (prev.includes(color)) {
+        const newSelection = prev.filter((c) => c !== color);
+        // If no colors left, select "all"
+        return newSelection.length === 0 ? ["all"] : newSelection;
+      } else {
+        return [...prev, color];
+      }
+    });
+  };
+
+  // Mouse wheel horizontal scrolling
+  const handleWheel = (event) => {
+    if (colorScrollRef.current) {
+      event.preventDefault();
+      colorScrollRef.current.scrollLeft += event.deltaY;
+    }
+  };
+
+  useEffect(() => {
+    const scrollContainer = colorScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("wheel", handleWheel, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, []);
+
+  const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
+
+  // Get all unique colors once
+  const uniqueColors = [
+    "all",
+    ...Array.from(
+      new Set(keycaps?.flatMap((keycap) => keycap.selectedColors || []))
+    ),
+  ];
 
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps)
@@ -121,20 +186,18 @@ export default function Keycaps() {
       <StyledContainer>
         <h1>Keycap Inventory</h1>
 
-        <StyledInput
-          as="select"
-          value={colorFilter}
-          onChange={(event) => setColorFilter(event.target.value)}
-        >
-          <option value="all">All Colors</option>
-          {Array.from(
-            new Set(keycaps?.flatMap((keycap) => keycap.selectedColors || []))
-          ).map((color) => (
-            <option key={color} value={color}>
-              {color}
-            </option>
+        <ColorFilterContainer ref={colorScrollRef}>
+          {uniqueColors.map((color) => (
+            <ColorPill
+              key={color}
+              $color={color !== "all" ? color.toLowerCase() : null}
+              $isSelected={selectedColors.includes(color)}
+              onClick={() => handleColorSelect(color)}
+            >
+              {color === "all" ? "All Colors" : color}
+            </ColorPill>
           ))}
-        </StyledInput>
+        </ColorFilterContainer>
 
         <CardContainer>
           {filteredKeycaps?.length ? (
@@ -170,7 +233,7 @@ const StyledContainer = styled.ul`
 `;
 
 const CardContainer = styled.div`
-  margin-top: 60px; // Creates space for the dropdown
+  margin-top: 20px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -183,7 +246,7 @@ const CardContainer = styled.div`
     gap: 10px;
     width: 90%;
     max-width: 1200px;
-    margin: 60px auto 0;
+    margin: 20px auto 0;
     justify-content: center;
     align-items: start;
   }
@@ -229,12 +292,55 @@ const LoaderWrapper = styled.div`
   height: 100vh;
 `;
 
-const StyledInput = styled.input`
-  width: auto;
-  position: absolute;
-  right: 10px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  top: 80px;
+const ColorFilterContainer = styled.div`
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px 15px;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+`;
+
+const ColorPill = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  padding: 8px 16px;
+  border-radius: 50px;
+  white-space: nowrap;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: ${(props) =>
+    props.$isSelected ? (props.$color ? props.$color : "#007bff") : "#f0f0f0"};
+
+  color: ${(props) => {
+    // If selected, always use white text for better contrast
+    if (props.$isSelected) return "white";
+
+    // If not selected, always use black text for better readability
+    return "#333";
+  }};
+
+  border: 2px solid ${(props) => (props.$color ? props.$color : "#007bff")};
+  box-shadow: ${(props) =>
+    props.$isSelected ? "0 2px 5px rgba(0,0,0,0.2)" : "none"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+  }
 `;

@@ -199,9 +199,9 @@ const ColorDotsList = styled.div`
   display: flex;
   gap: 2px;
   z-index: 10;
-  background-color: white;
+  background-color: #ffffff52;
   border-radius: 0 30px 0 20px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
   border-top-width: 2px;
   border-right-width: 2px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);

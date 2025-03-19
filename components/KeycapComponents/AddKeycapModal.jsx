@@ -19,6 +19,11 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps) return <p> Loading keycaps...</p>;
 
+  // Sort keycaps alphabetically by name
+  const sortedKeycaps = [...keycaps].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
   const selectedKeycapObj = keycaps.find(
     (keycap) => keycap.name === selectedKeycap
   );
@@ -53,7 +58,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
         >
           <option value="">-- Choose a keycap set --</option>
 
-          {keycaps.map((keycap) => (
+          {sortedKeycaps.map((keycap) => (
             <option key={keycap._id} value={keycap.name}>
               {keycap.name}
             </option>
