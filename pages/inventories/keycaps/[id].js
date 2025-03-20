@@ -310,7 +310,7 @@ export default function KeyCapDetail() {
 
         {/* Opens image modal */}
         <KitImageModal
-          open={!!selectedImage}
+          open={Boolean(selectedImage)}
           onClose={() => setSelectedImage(null)}
           imageUrl={selectedImage?.url}
           kitName={selectedImage?.name}

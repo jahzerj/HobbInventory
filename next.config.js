@@ -36,6 +36,7 @@ const nextConfig = {
       "keygem.com",
       "rndkbd.com",
       "res.cloudinary.com",
+      "akkogear.eu",
     ],
   },
 };

@@ -3,11 +3,86 @@ import { useState } from "react";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
 import SwitchInventoryCard from "./SwitchInventoryCard";
+import useSWR from "swr";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
+  const [activeTab, setActiveTab] = useState("manual");
+  const [selectedManufacturer, setSelectedManufacturer] = useState("");
+  const [selectedSwitchId, setSelectedSwitchId] = useState("");
+
+  const { data: dbSwitches, error: dbSwitchesError } = useSWR(
+    activeTab === "dropdown" ? "/api/inventories/switches" : null
+  );
+
+  //Get unique manufacturers and sort alphabetically
+  const manufacturers = dbSwitches
+    ? [...new Set(dbSwitches.map((sw) => sw.manufacturer))].sort()
+    : [];
+
+  //Get Switches filtered by selected manufacturer
+  const filteredSwitches = dbSwitches
+    ? dbSwitches
+        .filter((sw) => sw.manufacturer === selectedManufacturer)
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  const handleManufacturerChange = (event) => {
+    const manufacturer = event.target.value;
+    setSelectedManufacturer(manufacturer);
+    setSelectedSwitchId(""); //resets switch selection when manufacturer changes
+  };
+
+  const handleSwitchChange = (event) => {
+    const switchId = event.target.value;
+    setSelectedSwitchId(switchId);
+
+    if (switchId) {
+      const selectedSwitch = dbSwitches.find((sw) => sw._id === switchId);
+      if (selectedSwitch) {
+        //populate selectedSwitch data to switchData
+        setSwitchData({
+          name: selectedSwitch.name,
+          manufacturer: selectedSwitch.manufacturer,
+          image: selectedSwitch.image,
+          quantity: 1,
+          switchType: selectedSwitch.switchType,
+          factoryLubed: selectedSwitch.factoryLubed || false,
+          springWeight: selectedSwitch.springWeight || "",
+          topMaterial: selectedSwitch.topMaterial || "",
+          bottomMaterial: selectedSwitch.bottomMaterial || "",
+          stemMaterial: selectedSwitch.stemMaterial || "",
+          isLubed: selectedSwitch.isLubed || false,
+          isFilmed: selectedSwitch.isFilmed || false,
+          notes: [],
+        });
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setSelectedManufacturer("");
+    setSelectedSwitchId("");
+    setSwitchData({
+      name: "",
+      manufacturer: "",
+      image: "",
+      quantity: 1,
+      switchType: "",
+      factoryLubed: false,
+      springWeight: "",
+      topMaterial: "",
+      bottomMaterial: "",
+      stemMaterial: "",
+      isLubed: false,
+      isFilmed: false,
+      notes: [],
+    });
+    setNoteText("");
+    setIsAdditionalFieldsVisible(false);
+  };
+
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
-  const [activeTab, setActiveTab] = useState("manual");
   const [switchData, setSwitchData] = useState({
     name: "",
     manufacturer: "",
@@ -30,6 +105,17 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
+
+    // Add length validation for text fields
+    if (name === "name" && value.length > 40) {
+      alert("Switch name cannot exceed 40 characters.");
+      return;
+    }
+
+    if (name === "manufacturer" && value.length > 25) {
+      alert("Manufacturer name cannot exceed 25 characters.");
+      return;
+    }
 
     if (name === "image") {
       const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
@@ -64,42 +150,45 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
     setSwitchData((prevData) => ({
       ...prevData,
-      notes: [...prevData.notes, { text: noteText, timestamp: new Date() }],
+      notes: [
+        ...prevData.notes,
+        {
+          _id: nanoid(),
+          text: noteText,
+          timestamp: new Date(),
+        },
+      ],
     }));
 
     setNoteText("");
   };
 
   const handleSubmit = () => {
-    if (
-      !switchData.name ||
-      !switchData.manufacturer ||
-      !switchData.image ||
-      !switchData.switchType
-    ) {
-      alert(
-        "Please fill out all required fields: Name, Manufacturer, Image, and Switch Type."
-      );
-      return;
+    if (activeTab === "manual") {
+      // Validation for manual entry
+      if (
+        !switchData.name ||
+        !switchData.manufacturer ||
+        !switchData.image ||
+        !switchData.switchType
+      ) {
+        alert(
+          "Please fill out all required fields: Name, Manufacturer, Image, and Switch Type."
+        );
+        return;
+      }
+    } else if (activeTab === "dropdown") {
+      // Validation for dropdown selection
+      if (!selectedSwitchId) {
+        alert("Please select a manufacturer and switch.");
+        return;
+      }
     }
 
     onAddSwitch(switchData);
+
+    resetForm();
     onClose();
-    setSwitchData({
-      name: "",
-      manufacturer: "",
-      image: "",
-      quantity: 1,
-      switchType: "",
-      factoryLubed: false,
-      springWeight: "",
-      topMaterial: "",
-      bottomMaterial: "",
-      stemMaterial: "",
-      isLubed: false,
-      isFilmed: false,
-      notes: [],
-    });
   };
 
   const isPreviewVisible =
@@ -118,13 +207,23 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         <TabContainer>
           <TabButton
             $isActive={activeTab === "manual"}
-            onClick={() => setActiveTab("manual")}
+            onClick={() => {
+              if (activeTab !== "manual") {
+                resetForm();
+                setActiveTab("manual");
+              }
+            }}
           >
             Manual Entry
           </TabButton>
           <TabButton
             $isActive={activeTab === "dropdown"}
-            onClick={() => setActiveTab("dropdown")}
+            onClick={() => {
+              if (activeTab !== "dropdown") {
+                resetForm();
+                setActiveTab("dropdown");
+              }
+            }}
           >
             Select from Database
           </TabButton>
@@ -318,8 +417,150 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         ) : (
           // Dropdown Selection Tab Content
           <TabContent>
-            <p>Select a switch from our database:</p>
-            <SelectSwitchButton>Select a Switch</SelectSwitchButton>
+            <p>Choose a switch to add to your inventory:</p>
+
+            {dbSwitchesError ? (
+              <p>Error loading switches. Please try again.</p>
+            ) : !dbSwitches ? (
+              <LoaderWrapper>
+                <StyledSpan />
+              </LoaderWrapper>
+            ) : (
+              <>
+                {/* Step 1: Select Manufacturer */}
+                <FormGroup>
+                  <Label>Manufacturer</Label>
+                  <Select
+                    value={selectedManufacturer}
+                    onChange={handleManufacturerChange}
+                  >
+                    <option value="">-- Select Manufacturer --</option>
+                    {manufacturers.map((manufacturer) => (
+                      <option key={manufacturer} value={manufacturer}>
+                        {manufacturer}
+                      </option>
+                    ))}
+                  </Select>
+                </FormGroup>
+
+                {/* Step 2: Select Switch (only shown if manufacturer is selected) */}
+                {selectedManufacturer && (
+                  <FormGroup>
+                    <Label>Switch</Label>
+                    <Select
+                      value={selectedSwitchId}
+                      onChange={handleSwitchChange}
+                    >
+                      <option value="">-- Select Switch --</option>
+                      {filteredSwitches.map((sw) => (
+                        <option key={sw._id} value={sw._id}>
+                          {sw.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+                )}
+
+                {/* Step 3: Quantity and Preview (only shown if switch is selected) */}
+                {selectedSwitchId && (
+                  <>
+                    <FormGroup>
+                      <Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="9999"
+                        value={switchData.quantity}
+                        onChange={(event) => {
+                          const value = Math.min(
+                            9999,
+                            Math.max(0, parseInt(event.target.value) || 0)
+                          );
+                          setSwitchData((prev) => ({
+                            ...prev,
+                            quantity: value,
+                          }));
+                        }}
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <CheckboxContainer>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={switchData.isLubed}
+                            onChange={(event) =>
+                              setSwitchData((prev) => ({
+                                ...prev,
+                                isLubed: event.target.checked,
+                              }))
+                            }
+                          />
+                          Hand Lubed
+                        </label>
+                      </CheckboxContainer>
+
+                      <CheckboxContainer>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={switchData.isFilmed}
+                            onChange={(event) =>
+                              setSwitchData((prev) => ({
+                                ...prev,
+                                isFilmed: event.target.checked,
+                              }))
+                            }
+                          />
+                          Filmed
+                        </label>
+                      </CheckboxContainer>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label>Notes</Label>
+                      <TextArea
+                        placeholder="Add a note..."
+                        value={noteText}
+                        onChange={(event) => setNoteText(event.target.value)}
+                      />
+                      <AddNoteButton onClick={handleAddNote} type="button">
+                        Add Note
+                      </AddNoteButton>
+                    </FormGroup>
+
+                    {switchData.notes.length > 0 && (
+                      <>
+                        <h4>Notes</h4>
+                        <NotesContainer>
+                          {switchData.notes.map((note) => (
+                            <NoteItem key={nanoid()}>
+                              {note.text} (
+                              {new Date(note.timestamp).toLocaleDateString()})
+                            </NoteItem>
+                          ))}
+                        </NotesContainer>
+                      </>
+                    )}
+
+                    <h3>Preview</h3>
+                    <PreviewWrapper>
+                      <SwitchInventoryCard
+                        switches={[
+                          {
+                            _id: "preview",
+                            ...switchData,
+                          },
+                        ]}
+                        isEditMode={false}
+                        onDelete={() => {}}
+                      />
+                    </PreviewWrapper>
+                  </>
+                )}
+              </>
+            )}
           </TabContent>
         )}
 
@@ -328,11 +569,12 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
           <AddButton
             onClick={handleSubmit}
             disabled={
-              activeTab === "manual" &&
-              (!switchData.name ||
-                !switchData.manufacturer ||
-                !switchData.image ||
-                !switchData.switchType)
+              (activeTab === "manual" &&
+                (!switchData.name ||
+                  !switchData.manufacturer ||
+                  !switchData.image ||
+                  !switchData.switchType)) ||
+              (activeTab === "dropdown" && !selectedSwitchId)
             }
           >
             Add Switch
@@ -526,6 +768,68 @@ const SelectSwitchButton = styled.button`
   color: white;
   border: none;
   border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 16px;
+  width: 100%;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+`;
+
+const StyledSpan = styled.span`
+  width: 32px;
+  height: 32px;
+  border: 3px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  border-color: #007bff;
+  border-bottom-color: transparent;
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
+const AddNoteButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
