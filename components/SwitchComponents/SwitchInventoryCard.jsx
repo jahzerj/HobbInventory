@@ -19,6 +19,13 @@ export default function SwitchInventoryCard({
     return num;
   };
 
+  // Add a function to standardize switch type case
+  const formatSwitchType = (type) => {
+    if (!type) return "";
+    // Convert to lowercase first, then capitalize first letter
+    return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+  };
+
   return switches.length > 0 ? (
     switches.map((switchObj) => (
       <SwitchCard
@@ -49,7 +56,9 @@ export default function SwitchInventoryCard({
             <strong>{switchObj.name}</strong>
           </p>
         </TextContainer>
-        <SwitchTypeLabel>{switchObj.switchType}</SwitchTypeLabel>
+        <SwitchTypeLabel>
+          {formatSwitchType(switchObj.switchType)}
+        </SwitchTypeLabel>
       </SwitchCard>
     ))
   ) : (

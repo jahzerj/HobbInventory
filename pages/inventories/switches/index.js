@@ -92,7 +92,8 @@ export default function Switches() {
     if (typeFilter === "all") return switches;
 
     return switches.filter(
-      (switchItem) => switchItem.switchType.toLowerCase() === typeFilter
+      (switchItem) =>
+        switchItem.switchType.toLowerCase() === typeFilter.toLowerCase()
     );
   };
 
