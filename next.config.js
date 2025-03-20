@@ -37,6 +37,7 @@ const nextConfig = {
       "rndkbd.com",
       "res.cloudinary.com",
       "akkogear.eu",
+      "unikeyboards.com",
     ],
   },
 };

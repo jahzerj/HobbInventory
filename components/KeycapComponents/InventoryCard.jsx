@@ -128,7 +128,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
             <DeleteIcon />
           </DeleteInventoryItemButton>
         )}
-        <ColorDotsList $isEditMode={isEditMode}>
+        <ColorDotsList>
           {(keycapObj.selectedColors || []).map((color, index) => (
             <ColorDotItem key={index} $color={color}>
               •
@@ -152,8 +152,10 @@ const StyledCard = styled.li`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   background-color: white;
+  padding-bottom: 25px;
+  list-style: none;
 
   @media (min-width: 600px) {
     width: 500px;
@@ -194,22 +196,27 @@ const CardTitle = styled.h3`
 
 const ColorDotsList = styled.div`
   position: absolute;
-  top: -2px;
-  right: -2px;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: black;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.15);
   display: flex;
-  gap: 2px;
-  z-index: 10;
-  background-color: #ffffff52;
-  border-radius: 0 30px 0 20px;
-  border: 2px solid white;
-  border-top-width: 2px;
-  border-right-width: 2px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+  gap: 3px;
+  align-items: center;
+  z-index: 2;
 `;
 
 const ColorDotItem = styled.span`
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
+  line-height: 0.7;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 `;
 
@@ -221,9 +228,11 @@ const ImageWrapper = styled.div`
   height: 100%;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   border-radius: 30px;
+  overflow: hidden;
 
   img {
     object-fit: cover;
+    border-radius: 30px;
   }
   background-color: transparent;
 `;
@@ -280,8 +289,8 @@ const CarouselButton = styled.button`
 const DeleteInventoryItemButton = styled.button`
   display: flex;
   position: absolute;
-  bottom: 1%;
-  left: 2%;
+  top: 1%;
+  right: 2%;
   color: white;
   background: #ff4d4d;
   border: none;
