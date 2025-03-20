@@ -94,26 +94,28 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
               >
                 →
               </CarouselButton>
+
+              <DotsContainer>
+                {selectedKitData.map((_, index) => (
+                  <Dot
+                    key={index}
+                    $active={index === currentImageIndex}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setImageIndexes((prev) => ({
+                        ...prev,
+                        [keycapObj._id]: index,
+                      }));
+                    }}
+                  >
+                    •
+                  </Dot>
+                ))}
+              </DotsContainer>
+
               <div>
                 <KitName>{selectedKitData[currentImageIndex].name}</KitName>
-                <DotsContainer>
-                  {selectedKitData.map((_, index) => (
-                    <Dot
-                      key={index}
-                      $active={index === currentImageIndex}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setImageIndexes((prev) => ({
-                          ...prev,
-                          [keycapObj._id]: index,
-                        }));
-                      }}
-                    >
-                      •
-                    </Dot>
-                  ))}
-                </DotsContainer>
               </div>
             </CardContent>
           </>
@@ -128,7 +130,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
             <DeleteIcon />
           </DeleteInventoryItemButton>
         )}
-        <ColorDotsList>
+        <ColorDotsList $isEmpty={(keycapObj.selectedColors || []).length === 0}>
           {(keycapObj.selectedColors || []).map((color, index) => (
             <ColorDotItem key={index} $color={color}>
               •
@@ -180,10 +182,10 @@ const CardContent = styled.div`
   padding: 15px;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.3) 0%,
     rgba(0, 0, 0, 0) 30%,
     rgba(0, 0, 0, 0) 60%,
-    rgba(0, 0, 0, 0.5) 100%
+    rgba(0, 0, 0, 0.4) 100%
   );
   z-index: 1;
 `;
@@ -199,25 +201,31 @@ const ColorDotsList = styled.div`
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 2px 12px;
+  padding: 2px 6px;
   font-size: 12px;
-  font-weight: bold;
+  /* font-weight: bold; */
   color: black;
-  background: white;
+  background: #f9f9f9;
   border-radius: 12px;
   border: 2px solid rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   gap: 3px;
   align-items: center;
   z-index: 2;
+  min-width: 80px;
+  justify-content: center;
+  height: 24px;
 `;
 
 const ColorDotItem = styled.span`
   font-size: 1.5rem;
   color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
-  line-height: 0.7;
+  line-height: 0.6;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  padding-bottom: 2px;
 `;
 
 const ImageWrapper = styled.div`
@@ -245,15 +253,21 @@ const KitName = styled.p`
 `;
 
 const DotsContainer = styled.div`
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  margin-top: 5px;
+  z-index: 3;
+  padding: 2px 8px;
+  border-radius: 10px;
 `;
 
 const Dot = styled.span`
   font-size: 1.2rem;
   margin: 0 3px;
   cursor: pointer;
-  color: ${(props) => (props.$active ? "#007bff" : "#ccc")};
+  color: ${(props) => (props.$active ? "white" : "#ccc")};
 `;
 
 const CarouselButton = styled.button`
