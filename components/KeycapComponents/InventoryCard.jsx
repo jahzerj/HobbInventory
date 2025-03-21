@@ -12,30 +12,81 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
   const [imageIndexes, setImageIndexes] = useState({});
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const [touchDebug, setTouchDebug] = useState({});
+  const [isTouchActive, setIsTouchActive] = useState(false);
+  const touchMoveX = useRef(0);
 
   // Handle touch start event
   const handleTouchStart = (event) => {
-    touchStartX.current = event.touches[0].clientX;
+    event.stopPropagation(); // Prevent event from bubbling up
+    const x = event.touches[0].clientX;
+    touchStartX.current = x;
+    touchMoveX.current = x;
+    setIsTouchActive(true);
+
+    // Update debug info
+    setTouchDebug({
+      start: x,
+      current: x,
+      end: null,
+      diff: 0,
+    });
+
+    console.log("Touch start:", x);
+  };
+
+  // Add a touch move handler
+  const handleTouchMove = (event) => {
+    if (!isTouchActive) return;
+
+    const x = event.touches[0].clientX;
+    touchMoveX.current = x;
+
+    // Update debug info during movement
+    setTouchDebug((prev) => ({
+      ...prev,
+      current: x,
+      diff: touchStartX.current - x,
+    }));
   };
 
   // Handle touch end event
   const handleTouchEnd = (event, keycapId, totalImages) => {
-    touchEndX.current = event.changedTouches[0].clientX;
-    handleSwipe(keycapId, totalImages);
+    event.stopPropagation(); // Prevent event from bubbling up
+
+    const x = event.changedTouches[0].clientX;
+    touchEndX.current = x;
+    setIsTouchActive(false);
+
+    // Update final debug info
+    setTouchDebug((prev) => ({
+      ...prev,
+      end: x,
+      diff: touchStartX.current - x,
+    }));
+
+    console.log("Touch end:", x, "Difference:", touchStartX.current - x);
+
+    // Lower the threshold for testing
+    const swipeThreshold = 50; // Much lower than 200 for testing
+    handleSwipe(keycapId, totalImages, swipeThreshold);
   };
 
   // Process swipe based on direction
-  const handleSwipe = (keycapId, totalImages) => {
-    const swipeThreshold = 50; // Minimum swipe distance
+  const handleSwipe = (keycapId, totalImages, threshold = 200) => {
     const difference = touchStartX.current - touchEndX.current;
+    console.log(`Swipe check: diff=${difference}, threshold=${threshold}`);
 
-    if (Math.abs(difference) < swipeThreshold) return; // Ignore small movements
+    if (Math.abs(difference) < threshold) {
+      console.log("Swipe ignored - below threshold");
+      return;
+    }
 
     if (difference > 0) {
-      // Swiped left - go to next image
+      console.log("Swiped left - next image");
       handleNextImage(keycapId, totalImages);
     } else {
-      // Swiped right - go to previous image
+      console.log("Swiped right - previous image");
       handlePrevImage(keycapId, totalImages);
     }
   };
@@ -94,6 +145,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
           <>
             <ImageWrapper
               onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
               onTouchEnd={(event) =>
                 handleTouchEnd(event, keycapObj._id, selectedKitData.length)
               }
@@ -105,6 +157,26 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
                 style={{ objectFit: "cover" }}
                 priority
               />
+
+              {/* Visual debugging overlay */}
+              {touchDebug.start && (
+                <TouchDebugOverlay>
+                  <DebugText>
+                    Start: {touchDebug.start?.toFixed(0)}px
+                    <br />
+                    Current: {touchDebug.current?.toFixed(0)}px
+                    <br />
+                    {touchDebug.end && `End: ${touchDebug.end.toFixed(0)}px`}
+                    <br />
+                    Diff: {touchDebug.diff?.toFixed(0)}px
+                  </DebugText>
+                  <SwipeLine
+                    $startX={touchDebug.start}
+                    $currentX={touchDebug.current}
+                    $endX={touchDebug.end}
+                  />
+                </TouchDebugOverlay>
+              )}
             </ImageWrapper>
             <CardContent>
               <CardTitle>{keycapObj.keycapSetId?.name}</CardTitle>
@@ -238,6 +310,7 @@ const ColorDotsList = styled.div`
   padding: 2px 6px;
   font-size: 12px;
   color: black;
+  font-weight: bold;
   background: lightgray;
   border-radius: 12px;
   border: 2px solid white;
@@ -348,4 +421,42 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
+`;
+
+const TouchDebugOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+`;
+
+const DebugText = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: monospace;
+`;
+
+const SwipeLine = styled.div`
+  position: absolute;
+  top: 50%;
+  left: ${(props) => props.$startX}px;
+  width: ${(props) =>
+    props.$currentX && props.$startX
+      ? Math.abs(props.$currentX - props.$startX)
+      : 0}px;
+  height: 4px;
+  background-color: ${(props) =>
+    props.$startX > (props.$currentX || props.$startX) ? "red" : "blue"};
+  transform-origin: ${(props) =>
+    props.$startX > (props.$currentX || props.$startX) ? "right" : "left"};
+  transform: translateY(-50%);
 `;
