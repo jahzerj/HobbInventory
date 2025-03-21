@@ -15,14 +15,17 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
   const [touchDebug, setTouchDebug] = useState({});
   const [isTouchActive, setIsTouchActive] = useState(false);
   const touchMoveX = useRef(0);
+  const [debugCounter, setDebugCounter] = useState(0);
+  const [hasSwipeOccurred, setHasSwipeOccurred] = useState(false);
 
   // Handle touch start event
   const handleTouchStart = (event) => {
-    event.stopPropagation(); // Prevent event from bubbling up
+    event.stopPropagation();
     const x = event.touches[0].clientX;
     touchStartX.current = x;
     touchMoveX.current = x;
     setIsTouchActive(true);
+    setHasSwipeOccurred(false);
 
     // Update debug info
     setTouchDebug({
@@ -52,7 +55,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
 
   // Handle touch end event
   const handleTouchEnd = (event, keycapId, totalImages) => {
-    event.stopPropagation(); // Prevent event from bubbling up
+    event.stopPropagation();
 
     const x = event.changedTouches[0].clientX;
     touchEndX.current = x;
@@ -65,11 +68,17 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
       diff: touchStartX.current - x,
     }));
 
-    console.log("Touch end:", x, "Difference:", touchStartX.current - x);
+    const difference = touchStartX.current - x;
+    console.log("Touch end:", x, "Difference:", difference);
 
     // Lower the threshold for testing
-    const swipeThreshold = 50; // Much lower than 200 for testing
-    handleSwipe(keycapId, totalImages, swipeThreshold);
+    const swipeThreshold = 30; // Even lower for testing
+
+    // If swipe detected, prevent card click
+    if (Math.abs(difference) > swipeThreshold) {
+      setHasSwipeOccurred(true);
+      handleSwipe(keycapId, totalImages, swipeThreshold);
+    }
   };
 
   // Process swipe based on direction
@@ -137,9 +146,12 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
     return (
       <StyledCard
         key={keycapObj._id}
-        onClick={() =>
-          router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`)
-        }
+        onClick={(event) => {
+          if (!hasSwipeOccurred) {
+            router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`);
+          }
+          setHasSwipeOccurred(false);
+        }}
       >
         {selectedKitData.length > 0 ? (
           <>
@@ -162,13 +174,38 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
               {touchDebug.start && (
                 <TouchDebugOverlay>
                   <DebugText>
-                    Start: {touchDebug.start?.toFixed(0)}px
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        marginBottom: "10px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Touch Debug
+                    </div>
+                    Start X: {touchDebug.start?.toFixed(0)}px
                     <br />
-                    Current: {touchDebug.current?.toFixed(0)}px
+                    Current X: {touchDebug.current?.toFixed(0)}px
                     <br />
-                    {touchDebug.end && `End: ${touchDebug.end.toFixed(0)}px`}
+                    {touchDebug.end
+                      ? `End X: ${touchDebug.end.toFixed(0)}px`
+                      : "Not ended"}
                     <br />
-                    Diff: {touchDebug.diff?.toFixed(0)}px
+                    Swipe distance: {touchDebug.diff?.toFixed(0)}px
+                    <br />
+                    Threshold: 30px
+                    <br />
+                    Touch active: {isTouchActive ? "YES" : "NO"}
+                    <br />
+                    Was swiped:{" "}
+                    {Math.abs(touchDebug.diff || 0) > 30 ? "YES" : "NO"}
+                    <br />
+                    Direction:{" "}
+                    {touchDebug.diff > 0
+                      ? "LEFT ←"
+                      : touchDebug.diff < 0
+                      ? "RIGHT →"
+                      : "NONE"}
                   </DebugText>
                   <SwipeLine
                     $startX={touchDebug.start}
@@ -429,20 +466,25 @@ const TouchDebugOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 100;
+  z-index: 1050;
   pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.2);
 `;
 
 const DebugText = styled.div`
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 10px;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: 16px;
   font-family: monospace;
+  z-index: 1060;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  max-width: 90%;
+  text-align: left;
 `;
 
 const SwipeLine = styled.div`
@@ -453,10 +495,12 @@ const SwipeLine = styled.div`
     props.$currentX && props.$startX
       ? Math.abs(props.$currentX - props.$startX)
       : 0}px;
-  height: 4px;
+  height: 8px;
   background-color: ${(props) =>
     props.$startX > (props.$currentX || props.$startX) ? "red" : "blue"};
   transform-origin: ${(props) =>
     props.$startX > (props.$currentX || props.$startX) ? "right" : "left"};
   transform: translateY(-50%);
+  z-index: 1060;
+  box-shadow: 0 0 5px white;
 `;
