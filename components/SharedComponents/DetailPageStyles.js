@@ -60,6 +60,11 @@ export const HeaderImage = styled.div`
   }
 `;
 
+export const SectionHeading = styled.h3`
+  margin: 24px 0 12px 0;
+  align-self: center;
+`;
+
 export const BoxContainer = styled.ul`
   background: #f9f9f9;
   padding: 15px;
@@ -68,7 +73,7 @@ export const BoxContainer = styled.ul`
   max-width: 430px;
   text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
+  margin-bottom: 24px;
   list-style-type: none;
 `;
 
@@ -123,12 +128,13 @@ export const LoaderWrapper = styled.div`
 
 export const StyledInput = styled.input`
   width: 90%;
-  max-width: 430px;
+  max-width: ${(props) => props.$maxWidth || "430px"};
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
   background-color: ${(props) => props.$bgColor || "#f9f9f9"};
+  margin-bottom: 20px;
 `;
 
 export const BaseButton = styled.button`

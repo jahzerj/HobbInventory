@@ -20,6 +20,7 @@ import {
   StyledSpan,
   LoaderWrapper,
   StyledInput,
+  SectionHeading,
 } from "@/components/SharedComponents/DetailPageStyles";
 
 export default function KeyCapDetail() {
@@ -77,8 +78,8 @@ export default function KeyCapDetail() {
     if (currentColors.includes(selectedColor)) {
       return { error: "Color already selected" };
     }
-    if (currentColors.length >= 4) {
-      return { error: "Maximum 4 colors allowed" };
+    if (currentColors.length >= 6) {
+      return { error: "Maximum 6 colors allowed" };
     }
     return { newColors: [...currentColors, selectedColor] };
   };
@@ -100,8 +101,8 @@ export default function KeyCapDetail() {
 
     //non-edit mode color selection
     if (selectedColors.includes(selectedColor)) return;
-    if (selectedColors.length >= 4) {
-      return alert("You can only selected up to 4 colors.");
+    if (selectedColors.length >= 6) {
+      return alert("You can only selected up to 6 colors.");
     }
 
     const updatedColors = [...selectedColors, selectedColor];
@@ -217,7 +218,7 @@ export default function KeyCapDetail() {
           )}
         </HeaderSection>
 
-        <h3>Details</h3>
+        <SectionHeading>Details</SectionHeading>
         <BoxContainer>
           <li>
             <strong>Manufacturer:</strong> {keycaps.keycapstype}
@@ -235,7 +236,7 @@ export default function KeyCapDetail() {
             </ExternalLink>
           </li>
         </BoxContainer>
-        <h3>Your Kits</h3>
+        <SectionHeading>Your Kits</SectionHeading>
         {isEditMode ? (
           <GridContainer>
             {kitsAvailable.map((kit) => {
@@ -315,7 +316,7 @@ export default function KeyCapDetail() {
           imageUrl={selectedImage?.url}
           kitName={selectedImage?.name}
         />
-        <h3>Choose 4 Colors</h3>
+        <SectionHeading>Choose 6 Colors</SectionHeading>
         <StyledInput
           as="select"
           onChange={handleColorSelect}
@@ -323,7 +324,7 @@ export default function KeyCapDetail() {
           $maxWidth="430px"
         >
           <option value="" disabled>
-            -- Choose up to 4 colors --
+            -- Choose up to 6 colors --
           </option>
           {colorOptions
             .filter((color) =>
@@ -337,7 +338,7 @@ export default function KeyCapDetail() {
               </option>
             ))}
         </StyledInput>
-        <h3> Selected Colors</h3>
+        <SectionHeading>Selected Colors</SectionHeading>
         <ColorsContainer>
           {(isEditMode ? editedColors : selectedColors).length > 0
             ? (isEditMode ? editedColors : selectedColors).map((color) => {
@@ -400,7 +401,7 @@ const GridContainer = styled.ul`
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
   width: auto;
-  margin: 10px 0;
+  margin: 0 0 24px 0;
   max-width: 430px;
   background-color: transparent;
 
@@ -446,14 +447,14 @@ const KitCard = styled.li`
 
 const ColorsContainer = styled.ul`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-gap: 15px;
   background-color: #f9f9f9;
   padding: 10px;
   gap: 15px;
   width: auto;
-  margin: 10px 0;
-  max-width: 365px;
+  margin: 0 0 24px 0;
+  max-width: 430px;
   border: 1px solid #ccc;
   border-radius: 5px;
 `;

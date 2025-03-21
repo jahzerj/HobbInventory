@@ -11,7 +11,7 @@ const userkeycapsSchema = new Schema({
     required: true,
   },
   selectedKits: [{ type: String }],
-  selectedColors: [{ type: String, maxlength: 4 }],
+  selectedColors: [{ type: String, maxlength: 6 }],
   notes: [
     {
       _id: { type: String, required: true },

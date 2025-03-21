@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import useSWR from "swr";
 
 export default function InventoryCard({ data, isEditMode, onDelete }) {
@@ -10,6 +10,35 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
   const { data: keycapsData } = useSWR("/api/inventories/keycaps");
 
   const [imageIndexes, setImageIndexes] = useState({});
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  // Handle touch start event
+  const handleTouchStart = (event) => {
+    touchStartX.current = event.touches[0].clientX;
+  };
+
+  // Handle touch end event
+  const handleTouchEnd = (event, keycapId, totalImages) => {
+    touchEndX.current = event.changedTouches[0].clientX;
+    handleSwipe(keycapId, totalImages);
+  };
+
+  // Process swipe based on direction
+  const handleSwipe = (keycapId, totalImages) => {
+    const swipeThreshold = 50; // Minimum swipe distance
+    const difference = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(difference) < swipeThreshold) return; // Ignore small movements
+
+    if (difference > 0) {
+      // Swiped left - go to next image
+      handleNextImage(keycapId, totalImages);
+    } else {
+      // Swiped right - go to previous image
+      handlePrevImage(keycapId, totalImages);
+    }
+  };
 
   const handleNextImage = (keycapId, totalImages) => {
     setImageIndexes((prevIndexes) => {
@@ -63,7 +92,12 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
       >
         {selectedKitData.length > 0 ? (
           <>
-            <ImageWrapper>
+            <ImageWrapper
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(event) =>
+                handleTouchEnd(event, keycapObj._id, selectedKitData.length)
+              }
+            >
               <Image
                 src={selectedKitData[currentImageIndex].pic}
                 alt={selectedKitData[currentImageIndex].name}
@@ -149,8 +183,8 @@ const StyledCard = styled.li`
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-bottom-width: 6px;
+  border: 2px solid white;
+  border-bottom-width: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
   cursor: pointer;
@@ -198,16 +232,15 @@ const CardTitle = styled.h3`
 
 const ColorDotsList = styled.div`
   position: absolute;
-  bottom: -10px;
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
   padding: 2px 6px;
   font-size: 12px;
-  /* font-weight: bold; */
   color: black;
-  background: #f9f9f9;
+  background: lightgray;
   border-radius: 12px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   gap: 3px;
@@ -222,7 +255,7 @@ const ColorDotItem = styled.span`
   font-size: 1.5rem;
   color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
   line-height: 0.6;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   padding-bottom: 2px;

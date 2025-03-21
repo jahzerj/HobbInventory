@@ -5,6 +5,7 @@ import {
   StyledInput,
   BaseButton,
   ButtonContainer,
+  SectionHeading,
 } from "@/components/SharedComponents/DetailPageStyles";
 
 export default function Notes({ notes, isEditMode, onNotesUpdate }) {
@@ -87,7 +88,7 @@ export default function Notes({ notes, isEditMode, onNotesUpdate }) {
 
   return (
     <>
-      <h3>Notes</h3>
+      <SectionHeading>Notes</SectionHeading>
       <StyledInput
         type="text"
         maxLength={100}
@@ -95,7 +96,11 @@ export default function Notes({ notes, isEditMode, onNotesUpdate }) {
         value={newNote}
         onChange={(event) => setNewNote(event.target.value)}
       />
-      <BaseButton $bgColor="#28a745" onClick={handleAddNote}>
+      <BaseButton
+        $bgColor="#28a745"
+        onClick={handleAddNote}
+        style={{ marginBottom: "20px" }}
+      >
         Submit Note
       </BaseButton>
 
@@ -174,7 +179,7 @@ const NotesContainer = styled.ul`
   max-width: 430px;
   text-align: left;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
+  margin-bottom: 24px;
   list-style-type: none;
   overflow-x: hidden;
 `;
