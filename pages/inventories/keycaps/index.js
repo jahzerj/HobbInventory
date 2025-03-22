@@ -1,7 +1,6 @@
 import InventoryCard from "@/components/KeycapComponents/InventoryCard";
 import Link from "next/link";
 import AddButton from "@/components/KeycapComponents/AddButton";
-import Modal from "@/components/KeycapComponents/AddKeycapModal";
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
@@ -200,19 +199,25 @@ export default function Keycaps() {
         </ColorFilterContainer>
 
         <CardContainer>
-          {filteredKeycaps?.length ? (
+          {keycaps?.length === 0 ? (
+            // No keycaps added at all
+            <EmptyStateMessage>
+              <p>No keycaps added yet!</p>
+              <p>Click the ➕ button to add a keycap set to your inventory</p>
+            </EmptyStateMessage>
+          ) : filteredKeycaps?.length === 0 ? (
+            // Keycaps exist but none match the current filter
+            <EmptyStateMessage>
+              <p>No keycaps found with the selected color!</p>
+              <p>Try selecting a different color filter</p>
+            </EmptyStateMessage>
+          ) : (
+            // Keycaps exist and match the current filter
             <InventoryCard
               data={filteredKeycaps}
               isEditMode={isEditMode}
               onDelete={handleDeleteKeycap}
             />
-          ) : (
-            <>
-              <p>No keycaps found with the selected color!</p>
-              {keycaps?.length === 0 && (
-                <p>Click the ➕ button to add a keycap set to your inventory</p>
-              )}
-            </>
           )}
         </CardContainer>
       </StyledContainer>
@@ -341,5 +346,25 @@ const ColorPill = styled.button`
 
   &:focus {
     outline: none;
+  }
+`;
+
+const EmptyStateMessage = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f8f8;
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  p:first-child {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+
+  p:last-child {
+    color: #666;
   }
 `;

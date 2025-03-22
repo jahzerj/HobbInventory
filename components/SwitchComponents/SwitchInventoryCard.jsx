@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
@@ -26,47 +26,55 @@ export default function SwitchInventoryCard({
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
   };
 
-  return switches.length > 0 ? (
-    switches.map((switchObj) => (
-      <SwitchCard
-        key={switchObj._id}
-        onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
-      >
-        <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
-        {isEditMode && (
-          <DeleteInventoryItemButton
-            onClick={(event) => onDelete(switchObj._id, event)}
-            aria-label="Delete Switch Button"
-          >
-            <DeleteIcon />
-          </DeleteInventoryItemButton>
-        )}
-        <ImageContainer>
-          <StyledSwitchImage
-            src={switchObj.image}
-            alt={switchObj.name}
-            width={100}
-            height={100}
-            priority
-          />
-        </ImageContainer>
-        <TextContainer>
-          <p>{switchObj.manufacturer}</p>
-          <p>
-            <strong>{switchObj.name}</strong>
-          </p>
-        </TextContainer>
-        <SwitchTypeLabel>
-          {formatSwitchType(switchObj.switchType)}
-        </SwitchTypeLabel>
-      </SwitchCard>
-    ))
-  ) : (
-    <>
-      <p> No Switches added yet.</p>
-      <p>Click the ➕ button to add switches to your inventory </p>
-    </>
-  );
+  return switches.map((switchObj) => (
+    <SwitchCard
+      key={switchObj._id}
+      onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
+    >
+      {switchObj.image ? (
+        <>
+          <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
+          {isEditMode && (
+            <DeleteInventoryItemButton
+              onClick={(event) => onDelete(switchObj._id, event)}
+              aria-label="Delete Switch Button"
+            >
+              <DeleteIcon />
+            </DeleteInventoryItemButton>
+          )}
+          <ImageContainer>
+            <StyledSwitchImage
+              src={switchObj.image}
+              alt={switchObj.name}
+              width={100}
+              height={100}
+              priority
+            />
+          </ImageContainer>
+          <TextContainer>
+            <p>{switchObj.manufacturer}</p>
+            <p>
+              <strong>{switchObj.name}</strong>
+            </p>
+          </TextContainer>
+          <SwitchTypeLabel>
+            {formatSwitchType(switchObj.switchType)}
+          </SwitchTypeLabel>
+        </>
+      ) : (
+        <>
+          <ImageContainer className="shimmer">
+            <ShimmerEffect />
+          </ImageContainer>
+          <TextContainer>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+          </TextContainer>
+          <SwitchTypeLabel>&nbsp;</SwitchTypeLabel>
+        </>
+      )}
+    </SwitchCard>
+  ));
 }
 
 const SwitchCard = styled.li`
@@ -165,5 +173,37 @@ const QuantityBubble = styled.div`
   transition: transform 0.2s ease;
   ${SwitchCard}:hover & {
     transform: scale(1.1);
+  }
+`;
+
+const shimmerAnimation = keyframes`
+  to {
+    background-position: 200px 0;
+  }
+`;
+
+const ShimmerEffect = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #fff 50%,
+      transparent 100%
+    );
+    background-size: 200px 100%;
+    background-position: -200px 0;
+    background-repeat: no-repeat;
+    animation: ${shimmerAnimation} 1.5s infinite;
   }
 `;

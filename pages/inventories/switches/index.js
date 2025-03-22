@@ -135,11 +135,18 @@ export default function Switches() {
 
         <CardContainer>
           <SwitchGrid>
-            <SwitchInventoryCard
-              switches={filteredSwitches}
-              isEditMode={isEditMode}
-              onDelete={handleDeleteSwitch}
-            />
+            {filteredSwitches && filteredSwitches.length > 0 ? (
+              <SwitchInventoryCard
+                switches={filteredSwitches}
+                isEditMode={isEditMode}
+                onDelete={handleDeleteSwitch}
+              />
+            ) : (
+              <>
+                <p>No Switches added yet.</p>
+                <p>Click the ➕ button to add switches to your inventory</p>
+              </>
+            )}
           </SwitchGrid>
         </CardContainer>
       </StyledContainer>
