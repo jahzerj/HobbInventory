@@ -4,139 +4,168 @@ import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
 import { useState } from "react";
 import useSWR from "swr";
+import { useSwipeable } from "react-swipeable";
 
-export default function InventoryCard({ data, isEditMode, onDelete }) {
+// Separate card component that can use hooks properly
+function KeycapCard({ keycapObj, fullKeycapData, isEditMode, onDelete }) {
   const router = useRouter();
+  const [imageIndex, setImageIndex] = useState(0);
+
+  const selectedKits = keycapObj.selectedKits ?? [];
+
+  // Get kit data with both image and name in the same order
+  const selectedKitData =
+    fullKeycapData?.kits?.[0]?.price_list
+      ?.filter((kit) => selectedKits.includes(kit.name))
+      ?.map((kit) => ({
+        name: kit.name,
+        pic: kit.pic || "/no_image_available.jpg",
+      })) ?? [];
+
+  // Determine if we should show navigation elements
+  const hasMultipleImages = selectedKitData.length > 1;
+
+  const handleNextImage = () => {
+    if (!hasMultipleImages) return;
+    setImageIndex((prevIndex) => (prevIndex + 1) % selectedKitData.length);
+  };
+
+  const handlePrevImage = () => {
+    if (!hasMultipleImages) return;
+    setImageIndex(
+      (prevIndex) =>
+        (prevIndex - 1 + selectedKitData.length) % selectedKitData.length
+    );
+  };
+
+  // Only add swipe handlers if there are multiple images
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleNextImage(),
+    onSwipedRight: () => handlePrevImage(),
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true,
+    trackTouch: true,
+    delta: 10,
+    touchAction: "none",
+  });
+
+  // Only apply swipe handlers if there are multiple images
+  const cardProps = hasMultipleImages ? swipeHandlers : {};
+
+  // Function to handle card click
+  const handleCardClick = () => {
+    router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`);
+  };
+
+  return (
+    <StyledCard {...cardProps} onClick={handleCardClick}>
+      {selectedKitData.length > 0 ? (
+        <>
+          <ImageWrapper>
+            <Image
+              src={selectedKitData[imageIndex].pic}
+              alt={selectedKitData[imageIndex].name}
+              fill
+              style={{ objectFit: "cover" }}
+              priority
+              draggable={false}
+            />
+          </ImageWrapper>
+          <CardContent>
+            <div>
+              <CardTitle>{keycapObj.keycapSetId?.name}</CardTitle>
+
+              {/* Dots moved below title */}
+              {hasMultipleImages && (
+                <DotsContainer>
+                  {selectedKitData.map((_, index) => (
+                    <Dot
+                      key={index}
+                      $active={index === imageIndex}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setImageIndex(index);
+                      }}
+                    >
+                      •
+                    </Dot>
+                  ))}
+                </DotsContainer>
+              )}
+            </div>
+
+            {/* Only show carousel buttons if there are multiple images */}
+            {hasMultipleImages && (
+              <>
+                <CarouselButton
+                  className="prev"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handlePrevImage();
+                  }}
+                >
+                  ←
+                </CarouselButton>
+                <CarouselButton
+                  className="next"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleNextImage();
+                  }}
+                >
+                  →
+                </CarouselButton>
+              </>
+            )}
+
+            <div>
+              <KitName>{selectedKitData[imageIndex].name}</KitName>
+            </div>
+          </CardContent>
+        </>
+      ) : (
+        <p>No Image available</p>
+      )}
+      {isEditMode && (
+        <DeleteInventoryItemButton
+          onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
+          aria-label="Delete Keycap Button"
+        >
+          <DeleteIcon />
+        </DeleteInventoryItemButton>
+      )}
+      <ColorDotsList $isEmpty={(keycapObj.selectedColors || []).length === 0}>
+        {(keycapObj.selectedColors || []).map((color, index) => (
+          <ColorDotItem key={index} $color={color}>
+            •
+          </ColorDotItem>
+        ))}
+      </ColorDotsList>
+    </StyledCard>
+  );
+}
+
+// Main component that renders the list of cards
+export default function InventoryCard({ data, isEditMode, onDelete }) {
   const { data: keycapsData } = useSWR("/api/inventories/keycaps");
 
-  const [imageIndexes, setImageIndexes] = useState({});
-
-  const handleNextImage = (keycapId, totalImages) => {
-    setImageIndexes((prevIndexes) => {
-      const currentIndex = prevIndexes[keycapId] ?? 0;
-      const newIndex = (currentIndex + 1) % totalImages;
-      return {
-        ...prevIndexes,
-        [keycapId]: newIndex,
-      };
-    });
-  };
-
-  const handlePrevImage = (keycapId, totalImages) => {
-    setImageIndexes((prevIndexes) => {
-      const currentIndex = prevIndexes[keycapId] ?? 0;
-      const newIndex = (currentIndex - 1 + totalImages) % totalImages;
-      return {
-        ...prevIndexes,
-        [keycapId]: newIndex,
-      };
-    });
-  };
-
   return data.map((keycapObj) => {
-    const selectedKits = keycapObj.selectedKits ?? [];
-
     // Find the matching keycapset from keycapsData
     const fullKeycapData = keycapsData?.find(
       (keycap) => keycap._id === keycapObj.keycapSetId._id
     );
 
-    // Get kit data with both image and name in the same order
-    const selectedKitData =
-      fullKeycapData?.kits?.[0]?.price_list
-        ?.filter((kit) => selectedKits.includes(kit.name))
-        ?.map((kit) => ({
-          name: kit.name,
-          pic: kit.pic || "/no_image_available.jpg",
-        })) ?? [];
-
-    //retrieve current image for this specific keycapObj
-    const currentImageIndex = imageIndexes[keycapObj._id] || 0;
-
     return (
-      <StyledCard
+      <KeycapCard
         key={keycapObj._id}
-        onClick={() => {
-          router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`);
-        }}
-      >
-        {selectedKitData.length > 0 ? (
-          <>
-            <ImageWrapper>
-              <Image
-                src={selectedKitData[currentImageIndex].pic}
-                alt={selectedKitData[currentImageIndex].name}
-                fill
-                style={{ objectFit: "cover" }}
-                priority
-              />
-            </ImageWrapper>
-            <CardContent>
-              <CardTitle>{keycapObj.keycapSetId?.name}</CardTitle>
-              <CarouselButton
-                className="prev"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  handlePrevImage(keycapObj._id, selectedKitData.length);
-                }}
-              >
-                ←
-              </CarouselButton>
-              <CarouselButton
-                className="next"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  handleNextImage(keycapObj._id, selectedKitData.length);
-                }}
-              >
-                →
-              </CarouselButton>
-
-              <DotsContainer>
-                {selectedKitData.map((_, index) => (
-                  <Dot
-                    key={index}
-                    $active={index === currentImageIndex}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      setImageIndexes((prev) => ({
-                        ...prev,
-                        [keycapObj._id]: index,
-                      }));
-                    }}
-                  >
-                    •
-                  </Dot>
-                ))}
-              </DotsContainer>
-
-              <div>
-                <KitName>{selectedKitData[currentImageIndex].name}</KitName>
-              </div>
-            </CardContent>
-          </>
-        ) : (
-          <p> No Image available</p>
-        )}
-        {isEditMode && (
-          <DeleteInventoryItemButton
-            onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
-            aria-label="Delete Keycap Button"
-          >
-            <DeleteIcon />
-          </DeleteInventoryItemButton>
-        )}
-        <ColorDotsList $isEmpty={(keycapObj.selectedColors || []).length === 0}>
-          {(keycapObj.selectedColors || []).map((color, index) => (
-            <ColorDotItem key={index} $color={color}>
-              •
-            </ColorDotItem>
-          ))}
-        </ColorDotsList>
-      </StyledCard>
+        keycapObj={keycapObj}
+        fullKeycapData={fullKeycapData}
+        isEditMode={isEditMode}
+        onDelete={onDelete}
+      />
     );
   });
 }
@@ -144,7 +173,7 @@ export default function InventoryCard({ data, isEditMode, onDelete }) {
 const StyledCard = styled.li`
   position: relative;
   width: 80%;
-  height: 300px;
+  height: 315px; /* Increased from 300px to provide more space */
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
@@ -157,6 +186,8 @@ const StyledCard = styled.li`
   background-color: white;
   padding-bottom: 25px;
   list-style: none;
+  touch-action: pan-y;
+  user-select: none;
 
   @media (min-width: 600px) {
     width: 500px;
@@ -178,7 +209,7 @@ const CardContent = styled.div`
   border-radius: 30px;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding: 10px;
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.3) 0%,
@@ -201,6 +232,7 @@ const ColorDotsList = styled.div`
   left: 50%;
   transform: translateX(-50%);
   padding: 2px 6px;
+  padding-bottom: 8px;
   font-size: 12px;
   color: black;
   font-weight: bold;
@@ -252,10 +284,7 @@ const KitName = styled.p`
 `;
 
 const DotsContainer = styled.div`
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: -8px;
   text-align: center;
   z-index: 3;
   padding: 2px 8px;
