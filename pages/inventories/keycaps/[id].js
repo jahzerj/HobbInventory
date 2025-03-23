@@ -339,7 +339,9 @@ export default function KeyCapDetail() {
             ))}
         </StyledInput>
         <SectionHeading>Selected Colors</SectionHeading>
-        <ColorsContainer>
+        <ColorsContainer
+          $itemCount={editedColors?.length || selectedColors?.length || 0}
+        >
           {(isEditMode ? editedColors : selectedColors).length > 0
             ? (isEditMode ? editedColors : selectedColors).map((color) => {
                 const colorData = colorOptions.find(
@@ -358,7 +360,7 @@ export default function KeyCapDetail() {
                   </SelectedColorLi>
                 );
               })
-            : "No colors selected"}
+            : "<-- No colors selected -->"}
         </ColorsContainer>
 
         <Notes
@@ -446,17 +448,19 @@ const KitCard = styled.li`
 `;
 
 const ColorsContainer = styled.ul`
-  display: grid;
+  display: ${(props) => (props.$itemCount > 1 ? "grid" : "flex")};
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 15px;
   background-color: #f9f9f9;
   padding: 10px;
   gap: 15px;
-  width: auto;
+  width: 430px;
   margin: 0 0 24px 0;
   max-width: 430px;
   border: 1px solid #ccc;
+  align-items: ${(props) => (props.$itemCount > 1 ? "start" : "center")};
   border-radius: 5px;
+  flex-direction: ${(props) => (props.$itemCount > 1 ? null : "column")};
 `;
 
 const SelectedColorLi = styled.li`
