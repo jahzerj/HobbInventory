@@ -22,53 +22,52 @@ export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
   };
 
-  // If image is loading or missing, show shimmer effect
-  if (!switchObj.image) {
-    return (
-      <StyledSwitchCard>
-        <ImageContainer className="shimmer">
-          <ShimmerEffect />
-        </ImageContainer>
-        <TextContainer>
-          <p>&nbsp;</p>
-          <p>&nbsp;</p>
-        </TextContainer>
-        <SwitchTypeLabel>&nbsp;</SwitchTypeLabel>
-      </StyledSwitchCard>
-    );
-  }
-
   return (
     <StyledSwitchCard
       onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
     >
-      <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
-      {isEditMode && (
-        <DeleteInventoryItemButton
-          onClick={(event) => onDelete(switchObj._id, event)}
-          aria-label="Delete Switch Button"
-        >
-          <DeleteIcon />
-        </DeleteInventoryItemButton>
+      {switchObj.image ? (
+        <>
+          <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
+          {isEditMode && (
+            <DeleteInventoryItemButton
+              onClick={(event) => onDelete(switchObj._id, event)}
+              aria-label="Delete Switch Button"
+            >
+              <DeleteIcon />
+            </DeleteInventoryItemButton>
+          )}
+          <ImageContainer>
+            <StyledSwitchImage
+              src={switchObj.image}
+              alt={switchObj.name}
+              width={100}
+              height={100}
+              priority
+            />
+          </ImageContainer>
+          <TextContainer>
+            <p>{switchObj.manufacturer}</p>
+            <p>
+              <strong>{switchObj.name}</strong>
+            </p>
+          </TextContainer>
+          <SwitchTypeLabel>
+            {formatSwitchType(switchObj.switchType)}
+          </SwitchTypeLabel>
+        </>
+      ) : (
+        <>
+          <ImageContainer className="shimmer">
+            <ShimmerEffect />
+          </ImageContainer>
+          <TextContainer>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+          </TextContainer>
+          <SwitchTypeLabel>&nbsp;</SwitchTypeLabel>
+        </>
       )}
-      <ImageContainer>
-        <StyledSwitchImage
-          src={switchObj.image}
-          alt={switchObj.name}
-          width={100}
-          height={100}
-          priority
-        />
-      </ImageContainer>
-      <TextContainer>
-        <p>{switchObj.manufacturer}</p>
-        <p>
-          <strong>{switchObj.name}</strong>
-        </p>
-      </TextContainer>
-      <SwitchTypeLabel>
-        {formatSwitchType(switchObj.switchType)}
-      </SwitchTypeLabel>
     </StyledSwitchCard>
   );
 }

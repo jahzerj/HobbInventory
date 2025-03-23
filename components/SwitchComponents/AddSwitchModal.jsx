@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import { useState } from "react";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
-import SwitchInventoryCard from "./SwitchInventoryCard";
+import SwitchCard from "./SwitchCard";
 import useSWR from "swr";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
@@ -274,7 +274,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
               <>
                 <h3>Preview</h3>
                 <PreviewWrapper>
-                  <SwitchInventoryCard
+                  <SwitchCard
                     switches={[
                       {
                         _id: "preview", // Temporary ID for preview
@@ -546,7 +546,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
                     <h3>Preview</h3>
                     <PreviewWrapper>
-                      <SwitchInventoryCard
+                      <SwitchCard
                         switches={[
                           {
                             _id: "preview",

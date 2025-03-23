@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { useState } from "react";
@@ -60,6 +60,38 @@ export default function KeycapCard({
   const handleCardClick = () => {
     router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`);
   };
+
+  const shimmerAnimation = keyframes`
+    to {
+      background-position: 315px 0;
+    }
+  `;
+
+  const ShimmerEffect = styled.div`
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #ddd;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #fff 50%,
+        transparent 100%
+      );
+      background-size: 315px 100%;
+      background-position: -315px 0;
+      background-repeat: no-repeat;
+      animation: ${shimmerAnimation} 1.5s infinite;
+    }
+  `;
 
   return (
     <StyledCard {...cardProps} onClick={handleCardClick}>
@@ -131,7 +163,19 @@ export default function KeycapCard({
           </CardContent>
         </>
       ) : (
-        <p>No Image available</p>
+        <>
+          <ImageWrapper className="shimmer">
+            <ShimmerEffect />
+          </ImageWrapper>
+          <CardContent>
+            <div>
+              <CardTitle>&nbsp;</CardTitle>
+            </div>
+            <div>
+              <KitName>&nbsp;</KitName>
+            </div>
+          </CardContent>
+        </>
       )}
       {isEditMode && (
         <DeleteInventoryItemButton
