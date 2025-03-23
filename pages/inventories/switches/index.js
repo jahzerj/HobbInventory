@@ -140,7 +140,7 @@ export default function Switches() {
 
         <CardContainer>
           <SwitchGrid>
-            {filteredSwitches?.length ? (
+            {filteredSwitches && filteredSwitches.length > 0 ? (
               <InventoryList
                 data={filteredSwitches}
                 isEditMode={isEditMode}

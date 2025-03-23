@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
@@ -21,6 +21,22 @@ export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
     if (!type) return "";
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
   };
+
+  // If image is loading or missing, show shimmer effect
+  if (!switchObj.image) {
+    return (
+      <StyledSwitchCard>
+        <ImageContainer className="shimmer">
+          <ShimmerEffect />
+        </ImageContainer>
+        <TextContainer>
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+        </TextContainer>
+        <SwitchTypeLabel>&nbsp;</SwitchTypeLabel>
+      </StyledSwitchCard>
+    );
+  }
 
   return (
     <StyledSwitchCard
@@ -153,5 +169,37 @@ const QuantityBubble = styled.div`
   transition: transform 0.2s ease;
   ${StyledSwitchCard}:hover & {
     transform: scale(1.1);
+  }
+`;
+
+const shimmerAnimation = keyframes`
+  to {
+    background-position: 200px 0;
+  }
+`;
+
+const ShimmerEffect = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #fff 50%,
+      transparent 100%
+    );
+    background-size: 200px 100%;
+    background-position: -200px 0;
+    background-repeat: no-repeat;
+    animation: ${shimmerAnimation} 1.5s infinite;
   }
 `;
