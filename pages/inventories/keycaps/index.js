@@ -1,13 +1,13 @@
-import InventoryCard from "@/components/KeycapComponents/InventoryCard";
 import Link from "next/link";
 import AddButton from "@/components/KeycapComponents/AddButton";
-import Modal from "@/components/KeycapComponents/AddKeycapModal";
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
+import InventoryList from "@/components/SharedComponents/InventoryList";
+import KeycapCard from "@/components/KeycapComponents/KeycapCard";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
@@ -163,6 +163,10 @@ export default function Keycaps() {
     ),
   ];
 
+  const findKeycapData = (inventoryData, itemObj) => {
+    return inventoryData?.find((item) => item._id === itemObj.keycapSetId._id);
+  };
+
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps)
     return (
@@ -201,10 +205,13 @@ export default function Keycaps() {
 
         <CardContainer>
           {filteredKeycaps?.length ? (
-            <InventoryCard
+            <InventoryList
               data={filteredKeycaps}
               isEditMode={isEditMode}
               onDelete={handleDeleteKeycap}
+              ItemComponent={KeycapCard}
+              dataEndpoint="/api/inventories/keycaps"
+              findFullItemData={findKeycapData}
             />
           ) : (
             <>

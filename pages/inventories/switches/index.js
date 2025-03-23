@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import SwitchInventoryCard from "@/components/SwitchComponents/SwitchInventoryCard";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
+import InventoryList from "@/components/SharedComponents/InventoryList";
+import SwitchCard from "@/components/SwitchComponents/SwitchCard";
 
 export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
@@ -99,6 +100,10 @@ export default function Switches() {
 
   const filteredSwitches = getFilteredSwitches(switches, typeFilter);
 
+  const findSwitchData = (inventoryData, itemObj) => {
+    return inventoryData?.find((item) => item._id === itemObj._id);
+  };
+
   if (error) return <p>Error loading switches</p>;
   if (!switches)
     return (
@@ -135,11 +140,21 @@ export default function Switches() {
 
         <CardContainer>
           <SwitchGrid>
-            <SwitchInventoryCard
-              switches={filteredSwitches}
-              isEditMode={isEditMode}
-              onDelete={handleDeleteSwitch}
-            />
+            {filteredSwitches?.length ? (
+              <InventoryList
+                data={filteredSwitches}
+                isEditMode={isEditMode}
+                onDelete={handleDeleteSwitch}
+                ItemComponent={SwitchCard}
+                dataEndpoint="/api/inventories/switches"
+                findFullItemData={findSwitchData}
+              />
+            ) : (
+              <>
+                <p>No Switches added yet.</p>
+                <p>Click the ➕ button to add switches to your inventory</p>
+              </>
+            )}
           </SwitchGrid>
         </CardContainer>
       </StyledContainer>

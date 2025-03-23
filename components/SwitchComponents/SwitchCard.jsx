@@ -3,14 +3,12 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
 
-export default function SwitchInventoryCard({
-  switches,
-  isEditMode,
-  onDelete,
-}) {
+export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
   const router = useRouter();
 
-  // Add a function to format quantity
+  // Rename for clarity about what we're working with
+  const switchObj = itemObj;
+
   const formatQuantity = (quantity) => {
     const num = parseInt(quantity) || 0;
     if (num > 9999) {
@@ -19,57 +17,47 @@ export default function SwitchInventoryCard({
     return num;
   };
 
-  // Add a function to standardize switch type case
   const formatSwitchType = (type) => {
     if (!type) return "";
-    // Convert to lowercase first, then capitalize first letter
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
   };
 
-  return switches.length > 0 ? (
-    switches.map((switchObj) => (
-      <SwitchCard
-        key={switchObj._id}
-        onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
-      >
-        <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
-        {isEditMode && (
-          <DeleteInventoryItemButton
-            onClick={(event) => onDelete(switchObj._id, event)}
-            aria-label="Delete Switch Button"
-          >
-            <DeleteIcon />
-          </DeleteInventoryItemButton>
-        )}
-        <ImageContainer>
-          <StyledSwitchImage
-            src={switchObj.image}
-            alt={switchObj.name}
-            width={100}
-            height={100}
-            priority
-          />
-        </ImageContainer>
-        <TextContainer>
-          <p>{switchObj.manufacturer}</p>
-          <p>
-            <strong>{switchObj.name}</strong>
-          </p>
-        </TextContainer>
-        <SwitchTypeLabel>
-          {formatSwitchType(switchObj.switchType)}
-        </SwitchTypeLabel>
-      </SwitchCard>
-    ))
-  ) : (
-    <>
-      <p> No Switches added yet.</p>
-      <p>Click the ➕ button to add switches to your inventory </p>
-    </>
+  return (
+    <StyledSwitchCard
+      onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
+    >
+      <QuantityBubble>{formatQuantity(switchObj.quantity)}</QuantityBubble>
+      {isEditMode && (
+        <DeleteInventoryItemButton
+          onClick={(event) => onDelete(switchObj._id, event)}
+          aria-label="Delete Switch Button"
+        >
+          <DeleteIcon />
+        </DeleteInventoryItemButton>
+      )}
+      <ImageContainer>
+        <StyledSwitchImage
+          src={switchObj.image}
+          alt={switchObj.name}
+          width={100}
+          height={100}
+          priority
+        />
+      </ImageContainer>
+      <TextContainer>
+        <p>{switchObj.manufacturer}</p>
+        <p>
+          <strong>{switchObj.name}</strong>
+        </p>
+      </TextContainer>
+      <SwitchTypeLabel>
+        {formatSwitchType(switchObj.switchType)}
+      </SwitchTypeLabel>
+    </StyledSwitchCard>
   );
 }
 
-const SwitchCard = styled.li`
+const StyledSwitchCard = styled.li`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -163,7 +151,7 @@ const QuantityBubble = styled.div`
   white-space: nowrap;
 
   transition: transform 0.2s ease;
-  ${SwitchCard}:hover & {
+  ${StyledSwitchCard}:hover & {
     transform: scale(1.1);
   }
 `;
