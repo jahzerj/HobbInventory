@@ -38,6 +38,7 @@ const nextConfig = {
       "res.cloudinary.com",
       "akkogear.eu",
       "unikeyboards.com",
+      "www.ashkeebs.com",
     ],
   },
 };

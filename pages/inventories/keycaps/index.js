@@ -203,7 +203,7 @@ export default function Keycaps() {
           ))}
         </ColorFilterContainer>
 
-        <CardContainer>
+        <CardContainer $itemCount={filteredKeycaps?.length || 0}>
           {keycaps?.length === 0 ? (
             // No keycaps added at all
             <EmptyStateMessage>
@@ -253,14 +253,16 @@ const CardContainer = styled.div`
   align-items: center;
 
   @media (min-width: 900px) {
-    display: grid;
+    /* Only use grid layout when we have multiple items */
+    display: ${(props) => (props.itemCount > 1 ? "grid" : "flex")};
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     width: 90%;
     max-width: 1200px;
     margin: 20px auto 0;
     justify-content: center;
-    align-items: start;
+    align-items: ${(props) => (props.itemCount > 1 ? "start" : "center")};
+    flex-direction: column;
   }
 `;
 

@@ -275,18 +275,12 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                 <h3>Preview</h3>
                 <PreviewWrapper>
                   <SwitchCard
-                    switches={[
-                      {
-                        _id: "preview", // Temporary ID for preview
-                        name: switchData.name,
-                        manufacturer: switchData.manufacturer,
-                        image: switchData.image,
-                        quantity: switchData.quantity,
-                        switchType: switchData.switchType,
-                      },
-                    ]}
+                    itemObj={{
+                      _id: "preview",
+                      ...switchData,
+                    }}
                     isEditMode={false}
-                    onDelete={() => {}} // Empty function since we don't need delete functionality in preview
+                    onDelete={() => {}}
                   />
                 </PreviewWrapper>
               </>
@@ -547,12 +541,10 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                     <h3>Preview</h3>
                     <PreviewWrapper>
                       <SwitchCard
-                        switches={[
-                          {
-                            _id: "preview",
-                            ...switchData,
-                          },
-                        ]}
+                        itemObj={{
+                          _id: "preview",
+                          ...switchData,
+                        }}
                         isEditMode={false}
                         onDelete={() => {}}
                       />

@@ -138,9 +138,9 @@ export default function Switches() {
           <option value="clicky">Clicky</option>
         </StyledInput>
 
-        <CardContainer>
-          <SwitchGrid>
-            {filteredSwitches && filteredSwitches.length > 0 ? (
+        <CardContainer $itemCount={filteredSwitches?.length || 0}>
+          {filteredSwitches && filteredSwitches.length > 0 ? (
+            <SwitchGrid $itemCount={filteredSwitches.length}>
               <InventoryList
                 data={filteredSwitches}
                 isEditMode={isEditMode}
@@ -149,13 +149,13 @@ export default function Switches() {
                 dataEndpoint="/api/inventories/switches"
                 findFullItemData={findSwitchData}
               />
-            ) : (
-              <>
-                <p>No Switches added yet.</p>
-                <p>Click the ➕ button to add switches to your inventory</p>
-              </>
-            )}
-          </SwitchGrid>
+            </SwitchGrid>
+          ) : (
+            <EmptyStateMessage>
+              <p>No Switches added yet.</p>
+              <p>Click the ➕ button to add switches to your inventory</p>
+            </EmptyStateMessage>
+          )}
         </CardContainer>
       </StyledContainer>
 
@@ -180,6 +180,7 @@ const CardContainer = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
 `;
 
 const SwitchGrid = styled.ul`
@@ -189,8 +190,11 @@ const SwitchGrid = styled.ul`
   margin-top: 20px;
   position: relative;
 
+  /* Apply responsive grid based on item count */
   @media (min-width: 600px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: ${(props) =>
+      props.$itemCount === 1 ? "1fr" : "repeat(4, 1fr)"};
+    justify-items: ${(props) => (props.$itemCount === 1 ? "center" : "start")};
   }
 `;
 
@@ -247,5 +251,25 @@ const LoaderWrapper = styled.div`
 const LongTitle = styled.h1`
   @media screen and (max-width: 390px) {
     font-size: 28px;
+  }
+`;
+
+const EmptyStateMessage = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f8f8;
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  p:first-child {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+
+  p:last-child {
+    color: #666;
   }
 `;
