@@ -224,7 +224,14 @@ export default function KeyCapDetail() {
             <strong>Manufacturer:</strong> {keycaps.keycapstype}
           </li>
           <li>
+            <strong>Material: </strong> {keycaps.material}
+          </li>
+          <li>
             <strong>Profile:</strong> {keycaps.profile}
+          </li>
+
+          <li>
+            <strong>Profile Height:</strong> {keycaps.profile_height}
           </li>
           <li>
             <strong>Designer:</strong> {keycaps.designer}
@@ -458,9 +465,16 @@ const ColorsContainer = styled.ul`
   margin: 0 0 24px 0;
   max-width: 430px;
   border: 1px solid #ccc;
-  align-items: ${(props) => (props.$itemCount > 1 ? "start" : "center")};
   border-radius: 5px;
-  flex-direction: ${(props) => (props.$itemCount > 1 ? null : "column")};
+
+  /* For 0-1 items, center it in the container */
+  ${(props) =>
+    props.$itemCount <= 1 &&
+    `
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  `}
 `;
 
 const SelectedColorLi = styled.li`

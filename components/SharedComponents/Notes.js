@@ -106,7 +106,7 @@ export default function Notes({ notes, isEditMode, onNotesUpdate }) {
 
       <NotesContainer>
         {localNotes.length === 0 ? (
-          <p>&lt; No notes yet!&gt;</p>
+          <p>&lt;-- No notes yet! --&gt;</p>
         ) : (
           localNotes.map((note) => (
             <NoteItem key={note._id}>
@@ -182,6 +182,12 @@ const NotesContainer = styled.ul`
   margin-bottom: 24px;
   list-style-type: none;
   overflow-x: hidden;
+
+  /* Center the "No notes yet!" message */
+  > p {
+    text-align: center;
+    width: 100%;
+  }
 `;
 
 const NoteItem = styled.li`
