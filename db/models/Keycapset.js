@@ -8,6 +8,8 @@ const keycapsetSchema = new Schema({
   keycapstype: { type: String, required: true },
   designer: { type: String, required: false },
   profile: { type: String, required: true },
+  profile_height: { type: String, required: false },
+  material: { type: String, required: false },
   link: { type: String, required: false },
   render_pics: { type: Array, required: false },
   kits: [{ type: Schema.ObjectId, ref: "Kit" }],
