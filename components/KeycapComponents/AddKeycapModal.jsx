@@ -8,6 +8,18 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const { data: keycaps, error } = useSWR("/api/inventories/keycaps");
   const [selectedKeycap, setSelectedKeycap] = useState("");
   const [selectedKits, setSelectedKits] = useState([]);
+  const [activeTab, setActiveTab] = useState("dropdown");
+  const [manualKeycapData, setManualKeycapData] = useState({
+    name: "",
+    kits: [{ name: "", image: "" }],
+    render: "",
+    manufacturer: "",
+    material: "",
+    profile: "",
+    profileHeight: "",
+    designer: "",
+    geekhacklink: "",
+  });
 
   useEffect(() => {
     if (open) {
@@ -43,95 +55,250 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
     );
   };
 
+  const handleManualChange = (event) => {
+    const { name, value } = event.target;
+    setManualKeycapData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleKitChange = (index, field, value) => {
+    const newKits = [...manualKeycapData.kits];
+    newKits[index][field] = value;
+    setManualKeycapData((prevData) => ({
+      ...prevData,
+      kits: newKits,
+    }));
+  };
+
+  const handleManualSubmit = async () => {
+    if (
+      !manualKeycapData.name ||
+      !manualKeycapData.kits[0].name ||
+      !manualKeycapData.kits[0].image ||
+      !manualKeycapData.render
+    ) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/inventories/userkeycaps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          ...manualKeycapData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add keycap");
+      }
+
+      onAddKeycap(manualKeycapData);
+      onClose();
+    } catch (error) {
+      console.error("Failed to add keycap:", error);
+    }
+  };
+
   return createPortal(
     <>
       <Overlay />
       <ModalWrapper>
-        <h2>Select a Keycap Set</h2>
+        <h2>Add Keycap Set</h2>
 
-        {/* Dropdown: Select Keycap Set */}
-        <DropDownSelect
-          value={selectedKeycap}
-          onChange={(event) => {
-            setSelectedKeycap(event.target.value);
-            setSelectedKits([]); // Reset kit selection
-          }}
-        >
-          <option value="">-- Choose a keycap set --</option>
+        {/* Tab Navigation */}
+        <TabContainer>
+          <TabButton
+            $isActive={activeTab === "dropdown"}
+            onClick={() => setActiveTab("dropdown")}
+          >
+            Select from Database
+          </TabButton>
+          <TabButton
+            $isActive={activeTab === "manual"}
+            onClick={() => setActiveTab("manual")}
+          >
+            Manual Entry
+          </TabButton>
+        </TabContainer>
 
-          {sortedKeycaps.map((keycap) => (
-            <option key={keycap._id} value={keycap.name}>
-              {keycap.name}
-            </option>
-          ))}
-        </DropDownSelect>
-
-        {/* Checkbox Selection for Kits */}
-        {kitsAvailable?.length > 0 ? (
+        {activeTab === "dropdown" ? (
+          // Existing dropdown content
           <>
-            <h3>Available Kits</h3>
-            <KitList>
-              {kitsAvailable.map((kit) => (
-                <KitItem key={kit.name}>
-                  <input
-                    type="checkbox"
-                    value={kit.name}
-                    checked={selectedKits.includes(kit.name)}
-                    onChange={handleKitSelection}
-                  />
-                  {kit.image && (
-                    <Image
-                      src={kit.image}
-                      alt={kit.name}
-                      width={50}
-                      height={50}
-                      style={{
-                        objectFit: "cover",
-                        marginRight: "10px",
-                        borderRadius: "5px",
-                      }}
-                      priority
-                    />
-                  )}
-                  {kit.name}
-                </KitItem>
+            {/* Dropdown: Select Keycap Set */}
+            <DropDownSelect
+              value={selectedKeycap}
+              onChange={(event) => {
+                setSelectedKeycap(event.target.value);
+                setSelectedKits([]); // Reset kit selection
+              }}
+            >
+              <option value="">-- Choose a keycap set --</option>
+
+              {sortedKeycaps.map((keycap) => (
+                <option key={keycap._id} value={keycap.name}>
+                  {keycap.name}
+                </option>
               ))}
-            </KitList>
+            </DropDownSelect>
+
+            {/* Checkbox Selection for Kits */}
+            {kitsAvailable?.length > 0 ? (
+              <>
+                <h3>Available Kits</h3>
+                <KitList>
+                  {kitsAvailable.map((kit) => (
+                    <KitItem key={kit.name}>
+                      <input
+                        type="checkbox"
+                        value={kit.name}
+                        checked={selectedKits.includes(kit.name)}
+                        onChange={handleKitSelection}
+                      />
+                      {kit.image && (
+                        <Image
+                          src={kit.image}
+                          alt={kit.name}
+                          width={50}
+                          height={50}
+                          style={{
+                            objectFit: "cover",
+                            marginRight: "10px",
+                            borderRadius: "5px",
+                          }}
+                          priority
+                        />
+                      )}
+                      {kit.name}
+                    </KitItem>
+                  ))}
+                </KitList>
+              </>
+            ) : selectedKeycap ? (
+              <p>No kits available for this set.</p>
+            ) : null}
+
+            {/* Display Selected Items */}
+            {selectedKeycap && (
+              <p>
+                <strong>Set:</strong> {selectedKeycap}
+              </p>
+            )}
+            {selectedKits.length > 0 && (
+              <p>
+                <strong>Selected Kits:</strong> {selectedKits.join(", ")}
+              </p>
+            )}
+
+            {selectedKeycap && selectedKits.length === 0 && (
+              <HelperText>
+                Please select at least one kit before adding this keycap set.
+              </HelperText>
+            )}
+
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
+            <AddButton
+              onClick={() => {
+                if (!selectedKeycap) return;
+
+                onAddKeycap(selectedKeycapObj._id, selectedKits);
+                onClose();
+              }}
+              disabled={!selectedKeycapObj || selectedKits.length === 0}
+            >
+              Add Keycaps
+            </AddButton>
           </>
-        ) : selectedKeycap ? (
-          <p>No kits available for this set.</p>
-        ) : null}
+        ) : (
+          // Manual Entry Content
+          <>
+            <Input
+              type="text"
+              name="name"
+              placeholder="Keycap Name *"
+              value={manualKeycapData.name}
+              onChange={handleManualChange}
+              required
+            />
+            <Input
+              type="text"
+              name="kitName"
+              placeholder="Kit Name *"
+              value={manualKeycapData.kits[0].name}
+              onChange={(event) =>
+                handleKitChange(0, "name", event.target.value)
+              }
+              required
+            />
+            <Input
+              type="url"
+              name="kitImage"
+              placeholder="Kit Image URL *"
+              value={manualKeycapData.kits[0].image}
+              onChange={(event) =>
+                handleKitChange(0, "image", event.target.value)
+              }
+              required
+            />
+            <Input
+              type="url"
+              name="render"
+              placeholder="Render Image URL *"
+              value={manualKeycapData.render}
+              onChange={handleManualChange}
+              required
+            />
+            <Input
+              type="text"
+              name="manufacturer"
+              placeholder="Manufacturer (e.g., GMK)"
+              value={manualKeycapData.manufacturer}
+              onChange={handleManualChange}
+            />
+            <Input
+              type="text"
+              name="material"
+              placeholder="Material (e.g., ABS)"
+              value={manualKeycapData.material}
+              onChange={handleManualChange}
+            />
+            <Input
+              type="text"
+              name="profile"
+              placeholder="Profile (e.g., Cherry)"
+              value={manualKeycapData.profile}
+              onChange={handleManualChange}
+            />
+            <Input
+              type="text"
+              name="profileHeight"
+              placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
+              value={manualKeycapData.profileHeight}
+              onChange={handleManualChange}
+            />
+            <Input
+              type="text"
+              name="designer"
+              placeholder="Designer"
+              value={manualKeycapData.designer}
+              onChange={handleManualChange}
+            />
+            <Input
+              type="url"
+              name="geekhacklink"
+              placeholder="Geekhack Link"
+              value={manualKeycapData.geekhacklink}
+              onChange={handleManualChange}
+            />
 
-        {/* Display Selected Items */}
-        {selectedKeycap && (
-          <p>
-            <strong>Set:</strong> {selectedKeycap}
-          </p>
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
+            <AddButton onClick={handleManualSubmit}>Add Keycap</AddButton>
+          </>
         )}
-        {selectedKits.length > 0 && (
-          <p>
-            <strong>Selected Kits:</strong> {selectedKits.join(", ")}
-          </p>
-        )}
-
-        {selectedKeycap && selectedKits.length === 0 && (
-          <HelperText>
-            Please select at least one kit before adding this keycap set.
-          </HelperText>
-        )}
-
-        <CancelButton onClick={onClose}>Cancel</CancelButton>
-        <AddButton
-          onClick={() => {
-            if (!selectedKeycap) return;
-
-            onAddKeycap(selectedKeycapObj._id, selectedKits);
-            onClose();
-          }}
-          disabled={!selectedKeycapObj || selectedKits.length === 0}
-        >
-          Add Keycaps
-        </AddButton>
       </ModalWrapper>
     </>,
     document.getElementById("portal")
@@ -218,4 +385,35 @@ const HelperText = styled.p`
   margin-top: 10px;
   text-align: center;
   font-style: italic;
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+`;
+
+const TabButton = styled.button`
+  flex: 1;
+  padding: 10px;
+  background: ${(props) => (props.$isActive ? "#f0f8ff" : "#f5f5f5")};
+  border: none;
+  border-bottom: 3px solid
+    ${(props) => (props.$isActive ? "#007bff" : "transparent")};
+  cursor: pointer;
+  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) => (props.$isActive ? "#f0f8ff" : "#e9e9e9")};
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 `;
