@@ -60,18 +60,19 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST" || req.method === "PUT") {
-      const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
+      const { keycapDefinitionId, selectedKits, selectedColors, notes } =
+        req.body;
 
-      if (!keycapSetId || !selectedKits) {
-        res
-          .status(400)
-          .json({ message: "Keycap ID and selected kits are required." });
+      if (!keycapDefinitionId || !selectedKits) {
+        res.status(400).json({
+          message: "Keycap definition ID and selected kits are required.",
+        });
         return;
       }
 
       const updatedKeycaps = await UserKeycap.findOneAndUpdate(
-        { userId, keycapSetId },
-        { keycapSetId, selectedKits, selectedColors, notes },
+        { userId, keycapDefinitionId },
+        { keycapDefinitionId, selectedKits, selectedColors, notes },
         { new: true, upsert: true }
       );
 
@@ -82,18 +83,18 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
-      const { keycapSetId } = req.body;
+      const { keycapDefinitionId } = req.body;
 
-      if (!keycapSetId) {
+      if (!keycapDefinitionId) {
         res
           .status(400)
-          .json({ message: "Keycap ID is required for deletion." });
+          .json({ message: "Keycap definition ID is required for deletion." });
         return;
       }
 
       await UserKeycap.findOneAndDelete({
         userId: req.query.userId || "guest_user",
-        keycapSetId,
+        keycapDefinitionId,
       });
 
       res.status(200).json({ message: "Keycapset removed successfully." });

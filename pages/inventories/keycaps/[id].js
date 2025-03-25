@@ -37,7 +37,9 @@ export default function KeyCapDetail() {
     mutate,
   } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
-  const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
+  const userKeycap = userKeycaps?.find(
+    (item) => item.keycapDefinitionId === id
+  );
 
   const selectedColors = userKeycap?.selectedColors ?? [];
   const notes = userKeycap?.notes ?? [];
@@ -112,7 +114,7 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapSetId: id,
+        keycapDefinitionId: id,
         selectedKits: userKeycap.selectedKits,
         selectedColors: updatedColors,
       }),
@@ -138,7 +140,7 @@ export default function KeyCapDetail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: "guest_user",
-          keycapSetId: id,
+          keycapDefinitionId: id,
           selectedKits: userKeycap.selectedKits,
           selectedColors: userKeycap.selectedColors,
           notes: updatedNotes,
@@ -155,7 +157,7 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapSetId: id,
+        keycapDefinitionId: id,
         selectedKits: editedKits,
         selectedColors: editedColors,
         notes: editedNotes,
@@ -184,7 +186,7 @@ export default function KeyCapDetail() {
     );
   }
 
-  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
+  const kitsAvailable = keycaps.kits ?? [];
   const selectedKits = userKeycap?.selectedKits ?? [];
 
   return (
@@ -205,10 +207,10 @@ export default function KeyCapDetail() {
           ) : (
             <h1>{keycaps.name}</h1>
           )}
-          {keycaps.render_pics?.length > 0 && (
+          {keycaps.render && (
             <HeaderImage>
               <Image
-                src={keycaps.render_pics[0]}
+                src={keycaps.render}
                 alt={keycaps.name}
                 fill
                 style={{ objectFit: "cover" }}
@@ -221,7 +223,7 @@ export default function KeyCapDetail() {
         <SectionHeading>Details</SectionHeading>
         <BoxContainer>
           <li>
-            <strong>Manufacturer:</strong> {keycaps.keycapstype}
+            <strong>Manufacturer:</strong> {keycaps.manufacturer}
           </li>
           <li>
             <strong>Material: </strong> {keycaps.material}
@@ -231,14 +233,14 @@ export default function KeyCapDetail() {
           </li>
 
           <li>
-            <strong>Profile Height:</strong> {keycaps.profile_height}
+            <strong>Profile Height:</strong> {keycaps.profileHeight}
           </li>
           <li>
             <strong>Designer:</strong> {keycaps.designer}
           </li>
           <li>
             <strong>Geekhack Thread:</strong>{" "}
-            <ExternalLink href={keycaps.link} target="_blank">
+            <ExternalLink href={keycaps.geekhacklink} target="_blank">
               Visit Geekhack
             </ExternalLink>
           </li>
@@ -261,9 +263,9 @@ export default function KeyCapDetail() {
                     checked={isCurrentlySelected}
                     onChange={() => handleKitSelection(kit.name)}
                   />
-                  {kit.pic ? (
+                  {kit.image ? (
                     <Image
-                      src={kit.pic}
+                      src={kit.image}
                       alt={kit.name}
                       width={116}
                       height={67}
@@ -293,12 +295,12 @@ export default function KeyCapDetail() {
                 <KitCard
                   key={kit.name}
                   onClick={() =>
-                    setSelectedImage({ url: kit.pic, name: kit.name })
+                    setSelectedImage({ url: kit.image, name: kit.name })
                   }
                 >
-                  {kit.pic ? (
+                  {kit.image ? (
                     <Image
-                      src={kit.pic}
+                      src={kit.image}
                       alt={kit.name}
                       width={116}
                       height={67}
