@@ -12,6 +12,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   useEffect(() => {
     if (open) {
       setSelectedKeycap(""); //Resets selected keycaps when modal is opened
+      setSelectedKits([]); // Also reset selected kits
     }
   }, [open]);
 
@@ -28,8 +29,8 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
     (keycap) => keycap.name === selectedKeycap
   );
 
-  const kitsAvailable =
-    selectedKeycapObj?.kits?.flatMap((kit) => kit.price_list) ?? [];
+  // Updated to use the new data structure - kits are now directly available
+  const kitsAvailable = selectedKeycapObj?.kits || [];
 
   // Code for Checkbox Selection
   const handleKitSelection = (event) => {
@@ -78,9 +79,9 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                     checked={selectedKits.includes(kit.name)}
                     onChange={handleKitSelection}
                   />
-                  {kit.pic && (
+                  {kit.image && (
                     <Image
-                      src={kit.pic}
+                      src={kit.image}
                       alt={kit.name}
                       width={50}
                       height={50}
@@ -102,7 +103,6 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
         ) : null}
 
         {/* Display Selected Items */}
-
         {selectedKeycap && (
           <p>
             <strong>Set:</strong> {selectedKeycap}

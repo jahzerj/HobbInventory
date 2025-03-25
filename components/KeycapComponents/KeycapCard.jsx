@@ -5,6 +5,39 @@ import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import DeleteIcon from "../icons/DeleteIcon";
 
+// Move the keyframes and ShimmerEffect outside the component
+const shimmerAnimation = keyframes`
+  to {
+    background-position: 315px 0;
+  }
+`;
+
+const ShimmerEffect = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #fff 50%,
+      transparent 100%
+    );
+    background-size: 315px 100%;
+    background-position: -315px 0;
+    background-repeat: no-repeat;
+    animation: ${shimmerAnimation} 1.5s infinite;
+  }
+`;
+
 export default function KeycapCard({
   itemObj,
   fullItemData,
@@ -20,13 +53,14 @@ export default function KeycapCard({
 
   const selectedKits = keycapObj.selectedKits ?? [];
 
-  // Get kit data with both image and name in the same order
+  // Updated to work with the new data structure
+  // Now kits are directly in the object, no need for kits[0].price_list
   const selectedKitData =
-    fullKeycapData?.kits?.[0]?.price_list
+    keycapObj.kits
       ?.filter((kit) => selectedKits.includes(kit.name))
       ?.map((kit) => ({
         name: kit.name,
-        pic: kit.pic || "/no_image_available.jpg",
+        pic: kit.image || "/no_image_available.jpg", // Map image to pic for backwards compatibility
       })) ?? [];
 
   // Determine if we should show navigation elements
@@ -58,40 +92,9 @@ export default function KeycapCard({
   const cardProps = hasMultipleImages ? swipeHandlers : {};
 
   const handleCardClick = () => {
-    router.push(`/inventories/keycaps/${keycapObj.keycapSetId._id}`);
+    // Updated to use keycapDefinitionId instead of keycapSetId._id
+    router.push(`/inventories/keycaps/${keycapObj.keycapDefinitionId}`);
   };
-
-  const shimmerAnimation = keyframes`
-    to {
-      background-position: 315px 0;
-    }
-  `;
-
-  const ShimmerEffect = styled.div`
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: #ddd;
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        #fff 50%,
-        transparent 100%
-      );
-      background-size: 315px 100%;
-      background-position: -315px 0;
-      background-repeat: no-repeat;
-      animation: ${shimmerAnimation} 1.5s infinite;
-    }
-  `;
 
   return (
     <StyledCard {...cardProps} onClick={handleCardClick}>
@@ -102,6 +105,7 @@ export default function KeycapCard({
               src={selectedKitData[imageIndex].pic}
               alt={selectedKitData[imageIndex].name}
               fill
+              sizes="(min-width: 600px) 500px, 80vw"
               style={{ objectFit: "cover" }}
               priority
               draggable={false}
@@ -109,9 +113,10 @@ export default function KeycapCard({
           </ImageWrapper>
           <CardContent>
             <div>
-              <CardTitle>{keycapObj.keycapSetId?.name}</CardTitle>
+              {/* Updated to use name directly instead of keycapSetId.name */}
+              <CardTitle>{keycapObj.name}</CardTitle>
 
-              {/* Dots moved below title */}
+              {/* Dots moved below title - unchanged */}
               {hasMultipleImages && (
                 <DotsContainer>
                   {selectedKitData.map((_, index) => (
@@ -131,7 +136,7 @@ export default function KeycapCard({
               )}
             </div>
 
-            {/* Only show carousel buttons if there are multiple images */}
+            {/* Only show carousel buttons if there are multiple images - unchanged */}
             {hasMultipleImages && (
               <>
                 <CarouselButton
@@ -179,7 +184,8 @@ export default function KeycapCard({
       )}
       {isEditMode && (
         <DeleteInventoryItemButton
-          onClick={(event) => onDelete(keycapObj.keycapSetId._id, event)}
+          // Updated to use keycapDefinitionId
+          onClick={(event) => onDelete(keycapObj.keycapDefinitionId, event)}
           aria-label="Delete Keycap Button"
         >
           <DeleteIcon />

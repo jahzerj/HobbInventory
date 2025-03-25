@@ -1,13 +1,13 @@
 import dbConnect from "@/db/connect";
-import Keycapset from "@/db/models/Keycapset";
+import Keycapdefinition from "@/db/models/Keycapdefinition";
 
 export default async function handler(req, res) {
   await dbConnect();
 
   try {
     if (req.method === "GET") {
-      const keycapset = await Keycapset.find().populate("kits");
-      res.status(200).json(keycapset);
+      const keycaps = await Keycapdefinition.find();
+      res.status(200).json(keycaps);
       return;
     }
   } catch (error) {
