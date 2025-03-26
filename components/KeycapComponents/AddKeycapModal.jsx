@@ -74,7 +74,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   };
 
   const handleAddKit = () => {
-    if (keycapData.kits.length < 5) {
+    if (keycapData.kits.length < 8) {
       setKeycapData((prevData) => ({
         ...prevData,
         kits: [...prevData.kits, { name: "", image: "" }],
@@ -311,16 +311,39 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
 
               {keycapData.kits.map((kit, index) => (
                 <div key={index}>
-                  <Input
-                    type="text"
-                    name={`kitName${index}`}
-                    placeholder="Kit Name *"
-                    value={kit.name}
-                    onChange={(event) =>
-                      handleKitChange(index, "name", event.target.value)
-                    }
-                    required
-                  />
+                  <KitInputRow>
+                    {index > 0 && (
+                      <KitButton
+                        $remove
+                        onClick={() => {
+                          const newKits = [...keycapData.kits];
+                          newKits.splice(index, 1);
+                          setKeycapData((prevData) => ({
+                            ...prevData,
+                            kits: newKits,
+                          }));
+                        }}
+                      >
+                        -
+                      </KitButton>
+                    )}
+                    <KitInput
+                      type="text"
+                      name={`kitName${index}`}
+                      placeholder="Kit Name *"
+                      value={kit.name}
+                      onChange={(event) =>
+                        handleKitChange(index, "name", event.target.value)
+                      }
+                      required
+                    />
+                    {index === keycapData.kits.length - 1 &&
+                      keycapData.kits.length < 8 && (
+                        <KitButton $add onClick={handleAddKit}>
+                          +
+                        </KitButton>
+                      )}
+                  </KitInputRow>
                   <Input
                     type="url"
                     name={`kitImage${index}`}
@@ -333,13 +356,6 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                   />
                 </div>
               ))}
-
-              <KitAddButton
-                onClick={handleAddKit}
-                disabled={keycapData.kits.length >= 5}
-              >
-                +
-              </KitAddButton>
 
               <Input
                 type="url"
@@ -595,17 +611,43 @@ const AdditionalFieldsContainer = styled.div`
   margin-top: 10px;
 `;
 
-const KitAddButton = styled.button`
-  background: #007bff;
-  border: 1px solid white;
+const KitInputRow = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+`;
+
+const KitInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 0;
+`;
+
+const KitButton = styled.button`
+  background: ${(props) =>
+    props.$add ? "#007bff" : props.$remove ? "#dc3545" : "#007bff"};
+  border: none;
   border-radius: 50%;
-  font-size: 20px;
+  font-size: 16px;
   color: white;
-  padding: 2px;
-  width: 15px;
-  height: 15px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
+  position: absolute;
+  z-index: 5;
+
+  /* Position the button outside the input field */
+  ${(props) => (props.$add ? `right: -30px;` : `left: -30px;`)}
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;

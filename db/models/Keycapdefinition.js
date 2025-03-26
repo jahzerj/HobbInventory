@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const keycapdefinitionSchema = new Schema({
   name: { type: String, required: true },
-  manufacturer: { type: String, required: true },
+  manufacturer: { type: String },
   profile: { type: String },
   material: { type: String },
   profileHeight: { type: String },

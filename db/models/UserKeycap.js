@@ -7,7 +7,7 @@ const userKeycapSchema = new Schema({
 
   // Keycap details
   name: { type: String, required: true },
-  manufacturer: { type: String, required: true },
+  manufacturer: { type: String },
   profile: { type: String, required: true },
   material: { type: String },
   profileHeight: { type: String },
