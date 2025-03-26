@@ -6,6 +6,11 @@ import CloseButtonIcon from "../icons/ClosebuttonIcon";
 export default function KitImageModal({ open, onClose, imageUrl, kitName }) {
   if (!open) return null;
 
+  // Ensure the component works even if given a kit object instead of direct URL
+  // (handles potential changes in how the component is called)
+  const imageSource =
+    typeof imageUrl === "object" ? imageUrl.image || imageUrl.pic : imageUrl;
+
   return createPortal(
     <>
       <Overlay />
@@ -16,7 +21,7 @@ export default function KitImageModal({ open, onClose, imageUrl, kitName }) {
         <h2>{kitName}</h2>
         <ImageContainer>
           <StyledImage
-            src={imageUrl}
+            src={imageSource}
             alt={kitName}
             width={400}
             height={225}

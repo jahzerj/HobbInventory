@@ -1,36 +1,80 @@
 import dbConnect from "@/db/connect";
-import UserKeycaps from "@/db/models/UserKeycaps";
-import Keycapset from "@/db/models/Keycapset";
+import UserKeycap from "@/db/models/UserKeycap";
+import Keycapdefinition from "@/db/models/Keycapdefinition";
 
 export default async function handler(req, res) {
   await dbConnect();
+  const userId = req.query.userId || "guest_user";
 
   try {
-    const userId = req.query.userId || "guest_user"; // Use guest ID if none is provided
-
     if (req.method === "GET") {
-      const userKeycaps = await UserKeycaps.find({ userId }).populate(
-        "keycapSetId"
-      );
-      res.status(200).json(userKeycaps);
-      return;
+      const userKeycaps = await UserKeycap.find({ userId });
+      return res.status(200).json(userKeycaps);
     }
 
     if (req.method === "POST" || req.method === "PUT") {
-      const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
+      const {
+        userId,
+        keycapDefinitionId,
+        name,
+        manufacturer,
+        profile,
+        material,
+        profileHeight,
+        designer,
+        geekhacklink,
+        render,
+        kits,
+        selectedKits,
+        selectedColors = [],
+        notes = [],
+      } = req.body;
 
-      if (!keycapSetId || !selectedKits) {
-        res
-          .status(400)
-          .json({ message: "Keycap ID and selected kits are required." });
+      if (!keycapDefinitionId && !name) {
+        res.status(400).json({
+          message:
+            "Either keycap definition ID or keycap details are required.",
+        });
         return;
       }
 
-      const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
-        { userId, keycapSetId },
-        { keycapSetId, selectedKits, selectedColors, notes },
+      // Create a new keycap definition if one wasn't provided
+      let definitionId = keycapDefinitionId;
+      if (!definitionId) {
+        const newDefinition = await Keycapdefinition.create({
+          name,
+          manufacturer,
+          profile,
+          material,
+          profileHeight,
+          designer,
+          geekhacklink,
+          render,
+          kits,
+        });
+        definitionId = newDefinition._id;
+      }
+
+      const updatedKeycaps = await UserKeycap.findOneAndUpdate(
+        { userId, keycapDefinitionId: definitionId },
+        {
+          userId,
+          keycapDefinitionId: definitionId,
+          name,
+          manufacturer,
+          profile,
+          material,
+          profileHeight,
+          designer,
+          geekhacklink,
+          render,
+          kits,
+          selectedKits,
+          selectedColors,
+          notes,
+        },
         { new: true, upsert: true }
-      ).populate("keycapSetId");
+      );
 
       res
         .status(200)
@@ -39,18 +83,18 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
-      const { keycapSetId } = req.body;
+      const { keycapDefinitionId } = req.body;
 
-      if (!keycapSetId) {
+      if (!keycapDefinitionId) {
         res
           .status(400)
-          .json({ message: "Keycap ID is required for deletion." });
+          .json({ message: "Keycap definition ID is required for deletion." });
         return;
       }
 
-      await UserKeycaps.findOneAndDelete({
+      await UserKeycap.findOneAndDelete({
         userId: req.query.userId || "guest_user",
-        keycapSetId,
+        keycapDefinitionId,
       });
 
       res.status(200).json({ message: "Keycapset removed successfully." });
@@ -58,33 +102,9 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error." });
+    res.status(500).json({ message: "Internal Server Error" });
     return;
   }
 
   res.status(405).json({ message: "Method not allowed." });
 }
-
-
-// if (req.method === "POST" || req.method === "PUT") {
-//   const { keycapSetId, selectedKits, selectedColors, notes } = req.body;
-
-//   if (!keycapSetId) {
-//     return res.status(400).json({ message: "Keycap ID is required." });
-//   }
-
-//   const existingKeycap = await UserKeycaps.findOne({ userId, keycapSetId });
-
-//   const updatedKeycaps = await UserKeycaps.findOneAndUpdate(
-//     { userId, keycapSetId },
-//     {
-//       keycapSetId,
-//       selectedKits: selectedKits ?? existingKeycap?.selectedKits, // ✅ Preserve existing kits if not provided
-//       selectedColors: selectedColors ?? existingKeycap?.selectedColors, // ✅ Preserve existing colors
-//       notes: notes ?? existingKeycap?.notes, // ✅ Preserve existing notes
-//     },
-//     { new: true, upsert: true }
-//   );
-
-//   res.status(200).json({ message: "Keycap selection updated.", updatedKeycaps });
-// }

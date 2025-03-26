@@ -1,5 +1,5 @@
 import dbConnect from "@/db/connect";
-import Keycapset from "@/db/models/Keycapset";
+import Keycapdefinition from "@/db/models/Keycapdefinition";
 
 export default async function handler(req, res) {
   await dbConnect();
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "GET") {
-      const keycap = await Keycapset.findById(id).populate("kits");
+      const keycap = await Keycapdefinition.findById(id);
 
       if (!keycap) {
         return res.status(404).json({ message: "Keycap not found." });
@@ -25,6 +25,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: "Internal Server Error." });
   }
 }
-
-
-

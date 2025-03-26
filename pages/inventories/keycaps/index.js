@@ -1,6 +1,6 @@
 import Link from "next/link";
 import AddButton from "@/components/KeycapComponents/AddButton";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
@@ -30,31 +30,40 @@ export default function Keycaps() {
   }, [keycaps]);
 
   //Function for adding keycap ID to the userKeycaps array
-  const handleAddKeycap = async (keycapId, selectedKits) => {
-    if (!userKeycaps.includes(keycapId)) {
-      const updatedKeycaps = [...userKeycaps, keycapId];
-      setUserKeycaps(updatedKeycaps);
+  const handleAddKeycap = useCallback(
+    async (keycapToAdd) => {
+      if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
 
-      //Save update in DB
-      const response = await fetch("/api/inventories/userkeycaps", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "guest_user",
-          keycapSetId: keycapId,
-          selectedKits,
-        }),
-      });
+      try {
+        // Update UI optimistically
+        setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
 
-      if (response.ok) {
+        // Send complete keycap data to API
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(keycapToAdd),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add keycap");
+        }
+
+        // Refresh data from server to ensure accuracy
         mutate();
-      } else {
-        console.error("Failed to add keycap:", await response.json());
+      } catch (error) {
+        // Revert UI change on error
+        setUserKeycaps((prev) =>
+          prev.filter((id) => id !== keycapToAdd.keycapDefinitionId)
+        );
+        console.error("Failed to add keycap:", error);
       }
-    }
-  };
+    },
+    [userKeycaps, mutate]
+  );
 
-  const getDeleteConfirmation = (itemType) => {
+  // Make getDeleteConfirmation a memoized function with useCallback
+  const getDeleteConfirmation = useCallback((itemType) => {
     return window.confirm(
       `Are you sure you want to remove this ${itemType}?\n\n` +
         `This will permanently remove:\n` +
@@ -63,33 +72,44 @@ export default function Keycaps() {
         `• Selected colors\n` +
         `• Any personal notes that you have added`
     );
-  };
+  }, []);
 
-  const handleDeleteKeycap = async (keycapSetId, event) => {
-    event.stopPropagation();
+  // Now update handleDeleteKeycap with useCallback
+  const handleDeleteKeycap = useCallback(
+    async (keycapId, event) => {
+      event.stopPropagation();
 
-    if (!getDeleteConfirmation("keycapset")) return;
+      if (!getDeleteConfirmation("keycapset")) return;
 
-    // Remove from UI
-    setUserKeycaps((prevKeycaps) =>
-      prevKeycaps.filter((id) => id !== keycapSetId)
-    );
+      try {
+        // Optimistic UI update
+        setUserKeycaps((prev) => prev.filter((id) => id !== keycapId));
 
-    const response = await fetch("/api/inventories/userkeycaps", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, keycapSetId }),
-    });
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            keycapDefinitionId: keycapId, // Updated field name
+          }),
+        });
 
-    if (response.ok) {
-      mutate();
-    } else {
-      console.error("Failed to delete keycap:", await response.json());
-    }
-  };
+        if (!response.ok) {
+          throw new Error("Failed to delete keycap");
+        }
 
-  // Multiselect filtered keycaps
-  const getFilteredKeycaps = (keycapsData, selectedColorArray) => {
+        mutate();
+      } catch (error) {
+        console.error("Failed to delete keycap:", error);
+        // Force refetch to restore accurate state on error
+        mutate();
+      }
+    },
+    [getDeleteConfirmation, userId, mutate]
+  );
+
+  // Memoized color filtering function
+  const getFilteredKeycaps = useCallback((keycapsData, selectedColorArray) => {
     if (!keycapsData) return [];
 
     // If "all" is selected or no colors are selected, return all keycaps
@@ -98,16 +118,13 @@ export default function Keycaps() {
     }
 
     // Return keycaps that have at least one of the selected colors
-    return keycapsData.filter((keycap) => {
-      if (!keycap.selectedColors) return false;
-      return keycap.selectedColors.some((color) =>
-        selectedColorArray.includes(color)
-      );
-    });
-  };
+    return keycapsData.filter((keycap) =>
+      keycap.selectedColors?.some((color) => selectedColorArray.includes(color))
+    );
+  }, []);
 
   // Function to handle color selection
-  const handleColorSelect = (color) => {
+  const handleColorSelect = useCallback((color) => {
     setSelectedColors((prev) => {
       // If selecting "all", clear other selections
       if (color === "all") {
@@ -128,15 +145,15 @@ export default function Keycaps() {
         return [...prev, color];
       }
     });
-  };
+  }, []);
 
   // Mouse wheel horizontal scrolling
-  const handleWheel = (event) => {
+  const handleWheel = useCallback((event) => {
     if (colorScrollRef.current) {
       event.preventDefault();
       colorScrollRef.current.scrollLeft += event.deltaY;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const scrollContainer = colorScrollRef.current;
@@ -151,21 +168,36 @@ export default function Keycaps() {
         scrollContainer.removeEventListener("wheel", handleWheel);
       }
     };
-  }, []);
+  }, [handleWheel]);
 
   const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
 
   // Get all unique colors once
-  const uniqueColors = [
-    "all",
-    ...Array.from(
-      new Set(keycaps?.flatMap((keycap) => keycap.selectedColors || []))
-    ),
-  ];
+  const uniqueColors = keycaps
+    ? [
+        "all",
+        ...Array.from(
+          new Set(keycaps.flatMap((keycap) => keycap.selectedColors || []))
+        ),
+      ]
+    : ["all"];
 
-  const findKeycapData = (inventoryData, itemObj) => {
-    return inventoryData?.find((item) => item._id === itemObj.keycapSetId._id);
-  };
+  // Simplified and memoized finder function
+  const findKeycapData = useCallback((inventoryData, itemObj) => {
+    return inventoryData?.find(
+      (item) => item._id === itemObj.keycapDefinitionId
+    );
+  }, []);
+
+  // Handle opening/closing modal
+  const handleOpenModal = useCallback(() => setIsOpen(true), []);
+  const handleCloseModal = useCallback(() => setIsOpen(false), []);
+
+  // Handle toggling edit mode
+  const handleToggleEdit = useCallback(
+    () => setIsEditMode((prevMode) => !prevMode),
+    []
+  );
 
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps)
@@ -183,7 +215,7 @@ export default function Keycaps() {
 
       <AddKeycapModal
         open={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={handleCloseModal}
         onAddKeycap={handleAddKeycap}
       />
 
@@ -229,10 +261,10 @@ export default function Keycaps() {
           )}
         </CardContainer>
       </StyledContainer>
-      <AddButton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
+      <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
       <EditInventoryButton
         isEditMode={isEditMode}
-        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
+        onToggleEdit={handleToggleEdit}
       />
     </>
   );

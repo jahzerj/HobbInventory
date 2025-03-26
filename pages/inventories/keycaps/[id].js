@@ -37,7 +37,9 @@ export default function KeyCapDetail() {
     mutate,
   } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
-  const userKeycap = userKeycaps?.find((item) => item.keycapSetId?._id === id);
+  const userKeycap = userKeycaps?.find(
+    (item) => item.keycapDefinitionId === id
+  );
 
   const selectedColors = userKeycap?.selectedColors ?? [];
   const notes = userKeycap?.notes ?? [];
@@ -50,6 +52,25 @@ export default function KeyCapDetail() {
   const [innerWidth, setInnerWidth] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [editedManufacturer, setEditedManufacturer] = useState(
+    userKeycap?.manufacturer || keycaps?.manufacturer || ""
+  );
+  const [editedMaterial, setEditedMaterial] = useState(
+    userKeycap?.material || keycaps?.material || ""
+  );
+  const [editedProfile, setEditedProfile] = useState(
+    userKeycap?.profile || keycaps?.profile || ""
+  );
+  const [editedProfileHeight, setEditedProfileHeight] = useState(
+    userKeycap?.profileHeight || keycaps?.profileHeight || ""
+  );
+  const [editedDesigner, setEditedDesigner] = useState(
+    userKeycap?.designer || keycaps?.designer || ""
+  );
+  const [editedGeekhackLink, setEditedGeekhackLink] = useState(
+    userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
+  );
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInnerWidth(window.innerWidth);
@@ -61,6 +82,25 @@ export default function KeyCapDetail() {
       setEditedNotes(userKeycap.notes);
     }
   }, [userKeycap?.notes]);
+
+  useEffect(() => {
+    if (userKeycap && keycaps) {
+      setEditedKits(userKeycap.selectedKits || []);
+      setEditedColors(userKeycap.selectedColors || []);
+      setEditedManufacturer(
+        userKeycap.manufacturer || keycaps.manufacturer || ""
+      );
+      setEditedMaterial(userKeycap.material || keycaps.material || "");
+      setEditedProfile(userKeycap.profile || keycaps.profile || "");
+      setEditedProfileHeight(
+        userKeycap.profileHeight || keycaps.profileHeight || ""
+      );
+      setEditedDesigner(userKeycap.designer || keycaps.designer || "");
+      setEditedGeekhackLink(
+        userKeycap.geekhacklink || keycaps.geekhacklink || ""
+      );
+    }
+  }, [userKeycap, keycaps]);
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -112,7 +152,7 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapSetId: id,
+        keycapDefinitionId: id,
         selectedKits: userKeycap.selectedKits,
         selectedColors: updatedColors,
       }),
@@ -138,7 +178,7 @@ export default function KeyCapDetail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: "guest_user",
-          keycapSetId: id,
+          keycapDefinitionId: id,
           selectedKits: userKeycap.selectedKits,
           selectedColors: userKeycap.selectedColors,
           notes: updatedNotes,
@@ -155,10 +195,16 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapSetId: id,
+        keycapDefinitionId: id,
         selectedKits: editedKits,
         selectedColors: editedColors,
         notes: editedNotes,
+        manufacturer: editedManufacturer,
+        material: editedMaterial,
+        profile: editedProfile,
+        profileHeight: editedProfileHeight,
+        designer: editedDesigner,
+        geekhacklink: editedGeekhackLink,
       }),
     });
     await mutate();
@@ -169,6 +215,18 @@ export default function KeyCapDetail() {
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
     setEditedNotes([...notes]);
+    setEditedManufacturer(
+      userKeycap?.manufacturer || keycaps?.manufacturer || ""
+    );
+    setEditedMaterial(userKeycap?.material || keycaps?.material || "");
+    setEditedProfile(userKeycap?.profile || keycaps?.profile || "");
+    setEditedProfileHeight(
+      userKeycap?.profileHeight || keycaps?.profileHeight || ""
+    );
+    setEditedDesigner(userKeycap?.designer || keycaps?.designer || "");
+    setEditedGeekhackLink(
+      userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
+    );
     setIsEditMode(false);
   };
 
@@ -184,7 +242,7 @@ export default function KeyCapDetail() {
     );
   }
 
-  const kitsAvailable = keycaps.kits?.flatMap((kit) => kit.price_list) ?? [];
+  const kitsAvailable = keycaps.kits ?? [];
   const selectedKits = userKeycap?.selectedKits ?? [];
 
   return (
@@ -205,10 +263,10 @@ export default function KeyCapDetail() {
           ) : (
             <h1>{keycaps.name}</h1>
           )}
-          {keycaps.render_pics?.length > 0 && (
+          {keycaps.render && (
             <HeaderImage>
               <Image
-                src={keycaps.render_pics[0]}
+                src={keycaps.render}
                 alt={keycaps.name}
                 fill
                 style={{ objectFit: "cover" }}
@@ -221,26 +279,91 @@ export default function KeyCapDetail() {
         <SectionHeading>Details</SectionHeading>
         <BoxContainer>
           <li>
-            <strong>Manufacturer:</strong> {keycaps.keycapstype}
+            <strong>Manufacturer:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedManufacturer}
+                onChange={(e) => setEditedManufacturer(e.target.value)}
+                placeholder="Manufacturer (e.g., GMK)"
+              />
+            ) : (
+              userKeycap.manufacturer || keycaps.manufacturer || "Not specified"
+            )}
           </li>
           <li>
-            <strong>Material: </strong> {keycaps.material}
+            <strong>Material:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedMaterial}
+                onChange={(e) => setEditedMaterial(e.target.value)}
+                placeholder="Material (e.g., ABS)"
+              />
+            ) : (
+              userKeycap.material || keycaps.material || "Not specified"
+            )}
           </li>
           <li>
-            <strong>Profile:</strong> {keycaps.profile}
+            <strong>Profile:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedProfile}
+                onChange={(e) => setEditedProfile(e.target.value)}
+                placeholder="Profile (e.g., Cherry)"
+              />
+            ) : (
+              userKeycap.profile || keycaps.profile || "Not specified"
+            )}
           </li>
-
           <li>
-            <strong>Profile Height:</strong> {keycaps.profile_height}
+            <strong>Profile Height:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedProfileHeight}
+                onChange={(e) => setEditedProfileHeight(e.target.value)}
+                placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
+              />
+            ) : (
+              userKeycap.profileHeight ||
+              keycaps.profileHeight ||
+              "Not specified"
+            )}
           </li>
           <li>
-            <strong>Designer:</strong> {keycaps.designer}
+            <strong>Designer:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedDesigner}
+                onChange={(e) => setEditedDesigner(e.target.value)}
+                placeholder="Designer"
+              />
+            ) : (
+              userKeycap.designer || keycaps.designer || "Not specified"
+            )}
           </li>
           <li>
             <strong>Geekhack Thread:</strong>{" "}
-            <ExternalLink href={keycaps.link} target="_blank">
-              Visit Geekhack
-            </ExternalLink>
+            {isEditMode ? (
+              <StyledInput
+                type="url"
+                value={editedGeekhackLink}
+                onChange={(e) => setEditedGeekhackLink(e.target.value)}
+                placeholder="Geekhack Link"
+              />
+            ) : userKeycap.geekhacklink || keycaps.geekhacklink ? (
+              <ExternalLink
+                href={userKeycap.geekhacklink || keycaps.geekhacklink}
+                target="_blank"
+              >
+                Visit Geekhack
+              </ExternalLink>
+            ) : (
+              "Not specified"
+            )}
           </li>
         </BoxContainer>
         <SectionHeading>Your Kits</SectionHeading>
@@ -261,9 +384,9 @@ export default function KeyCapDetail() {
                     checked={isCurrentlySelected}
                     onChange={() => handleKitSelection(kit.name)}
                   />
-                  {kit.pic ? (
+                  {kit.image ? (
                     <Image
-                      src={kit.pic}
+                      src={kit.image}
                       alt={kit.name}
                       width={116}
                       height={67}
@@ -293,12 +416,12 @@ export default function KeyCapDetail() {
                 <KitCard
                   key={kit.name}
                   onClick={() =>
-                    setSelectedImage({ url: kit.pic, name: kit.name })
+                    setSelectedImage({ url: kit.image, name: kit.name })
                   }
                 >
-                  {kit.pic ? (
+                  {kit.image ? (
                     <Image
-                      src={kit.pic}
+                      src={kit.image}
                       alt={kit.name}
                       width={116}
                       height={67}
