@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 
-
 export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedKeycap, setSelectedKeycap] = useState("");
@@ -112,13 +111,24 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
       // For manual entry, set the selectedKits to be the kit names
       const kitNames = keycapData.kits.map((kit) => kit.name);
 
-      // Create the keycap to add
+      // Create a complete keycap object with all fields
       const keycapToAdd = {
-        ...keycapData,
+        userId: "guest_user",
+        name: keycapData.name,
+        manufacturer: keycapData.manufacturer,
+        profile: keycapData.profile || "",
+        material: keycapData.material || "",
+        profileHeight: keycapData.profileHeight || "",
+        designer: keycapData.designer || "",
+        geekhacklink: keycapData.geekhacklink || "",
+        render: keycapData.render,
+        kits: keycapData.kits,
         selectedKits: kitNames,
+        selectedColors: [],
+        notes: [],
       };
 
-      // Add to inventory
+      // Add to inventory (send complete object)
       onAddKeycap(keycapToAdd);
     } else if (activeTab === "dropdown") {
       // Validation for dropdown selection
@@ -137,25 +147,25 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
         return;
       }
 
-      // Create the keycap to add
+      // Create the keycap to add with all fields
       const keycapToAdd = {
         userId: "guest_user",
         keycapDefinitionId: selectedKeycapObj._id,
         name: selectedKeycapObj.name,
         manufacturer: selectedKeycapObj.manufacturer,
-        profile: selectedKeycapObj.profile,
-        material: selectedKeycapObj.material,
-        profileHeight: selectedKeycapObj.profileHeight,
-        designer: selectedKeycapObj.designer,
-        geekhacklink: selectedKeycapObj.geekhacklink,
+        profile: selectedKeycapObj.profile || "",
+        material: selectedKeycapObj.material || "",
+        profileHeight: selectedKeycapObj.profileHeight || "",
+        designer: selectedKeycapObj.designer || "",
+        geekhacklink: selectedKeycapObj.geekhacklink || "",
         render: selectedKeycapObj.render,
-        kits: selectedKeycapObj.kits,
+        kits: selectedKeycapObj.kits || [],
         selectedKits: selectedKits,
         selectedColors: [],
         notes: [],
       };
 
-      // Add to inventory
+      // Add to inventory (send complete object)
       onAddKeycap(keycapToAdd);
     }
 
