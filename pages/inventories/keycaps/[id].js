@@ -52,6 +52,25 @@ export default function KeyCapDetail() {
   const [innerWidth, setInnerWidth] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [editedManufacturer, setEditedManufacturer] = useState(
+    userKeycap?.manufacturer || keycaps?.manufacturer || ""
+  );
+  const [editedMaterial, setEditedMaterial] = useState(
+    userKeycap?.material || keycaps?.material || ""
+  );
+  const [editedProfile, setEditedProfile] = useState(
+    userKeycap?.profile || keycaps?.profile || ""
+  );
+  const [editedProfileHeight, setEditedProfileHeight] = useState(
+    userKeycap?.profileHeight || keycaps?.profileHeight || ""
+  );
+  const [editedDesigner, setEditedDesigner] = useState(
+    userKeycap?.designer || keycaps?.designer || ""
+  );
+  const [editedGeekhackLink, setEditedGeekhackLink] = useState(
+    userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
+  );
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInnerWidth(window.innerWidth);
@@ -63,6 +82,25 @@ export default function KeyCapDetail() {
       setEditedNotes(userKeycap.notes);
     }
   }, [userKeycap?.notes]);
+
+  useEffect(() => {
+    if (userKeycap && keycaps) {
+      setEditedKits(userKeycap.selectedKits || []);
+      setEditedColors(userKeycap.selectedColors || []);
+      setEditedManufacturer(
+        userKeycap.manufacturer || keycaps.manufacturer || ""
+      );
+      setEditedMaterial(userKeycap.material || keycaps.material || "");
+      setEditedProfile(userKeycap.profile || keycaps.profile || "");
+      setEditedProfileHeight(
+        userKeycap.profileHeight || keycaps.profileHeight || ""
+      );
+      setEditedDesigner(userKeycap.designer || keycaps.designer || "");
+      setEditedGeekhackLink(
+        userKeycap.geekhacklink || keycaps.geekhacklink || ""
+      );
+    }
+  }, [userKeycap, keycaps]);
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -161,6 +199,12 @@ export default function KeyCapDetail() {
         selectedKits: editedKits,
         selectedColors: editedColors,
         notes: editedNotes,
+        manufacturer: editedManufacturer,
+        material: editedMaterial,
+        profile: editedProfile,
+        profileHeight: editedProfileHeight,
+        designer: editedDesigner,
+        geekhacklink: editedGeekhackLink,
       }),
     });
     await mutate();
@@ -171,6 +215,18 @@ export default function KeyCapDetail() {
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
     setEditedNotes([...notes]);
+    setEditedManufacturer(
+      userKeycap?.manufacturer || keycaps?.manufacturer || ""
+    );
+    setEditedMaterial(userKeycap?.material || keycaps?.material || "");
+    setEditedProfile(userKeycap?.profile || keycaps?.profile || "");
+    setEditedProfileHeight(
+      userKeycap?.profileHeight || keycaps?.profileHeight || ""
+    );
+    setEditedDesigner(userKeycap?.designer || keycaps?.designer || "");
+    setEditedGeekhackLink(
+      userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
+    );
     setIsEditMode(false);
   };
 
@@ -223,26 +279,91 @@ export default function KeyCapDetail() {
         <SectionHeading>Details</SectionHeading>
         <BoxContainer>
           <li>
-            <strong>Manufacturer:</strong> {keycaps.manufacturer}
+            <strong>Manufacturer:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedManufacturer}
+                onChange={(e) => setEditedManufacturer(e.target.value)}
+                placeholder="Manufacturer (e.g., GMK)"
+              />
+            ) : (
+              userKeycap.manufacturer || keycaps.manufacturer || "Not specified"
+            )}
           </li>
           <li>
-            <strong>Material: </strong> {keycaps.material}
+            <strong>Material:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedMaterial}
+                onChange={(e) => setEditedMaterial(e.target.value)}
+                placeholder="Material (e.g., ABS)"
+              />
+            ) : (
+              userKeycap.material || keycaps.material || "Not specified"
+            )}
           </li>
           <li>
-            <strong>Profile:</strong> {keycaps.profile}
+            <strong>Profile:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedProfile}
+                onChange={(e) => setEditedProfile(e.target.value)}
+                placeholder="Profile (e.g., Cherry)"
+              />
+            ) : (
+              userKeycap.profile || keycaps.profile || "Not specified"
+            )}
           </li>
-
           <li>
-            <strong>Profile Height:</strong> {keycaps.profileHeight}
+            <strong>Profile Height:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedProfileHeight}
+                onChange={(e) => setEditedProfileHeight(e.target.value)}
+                placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
+              />
+            ) : (
+              userKeycap.profileHeight ||
+              keycaps.profileHeight ||
+              "Not specified"
+            )}
           </li>
           <li>
-            <strong>Designer:</strong> {keycaps.designer}
+            <strong>Designer:</strong>{" "}
+            {isEditMode ? (
+              <StyledInput
+                type="text"
+                value={editedDesigner}
+                onChange={(e) => setEditedDesigner(e.target.value)}
+                placeholder="Designer"
+              />
+            ) : (
+              userKeycap.designer || keycaps.designer || "Not specified"
+            )}
           </li>
           <li>
             <strong>Geekhack Thread:</strong>{" "}
-            <ExternalLink href={keycaps.geekhacklink} target="_blank">
-              Visit Geekhack
-            </ExternalLink>
+            {isEditMode ? (
+              <StyledInput
+                type="url"
+                value={editedGeekhackLink}
+                onChange={(e) => setEditedGeekhackLink(e.target.value)}
+                placeholder="Geekhack Link"
+              />
+            ) : userKeycap.geekhacklink || keycaps.geekhacklink ? (
+              <ExternalLink
+                href={userKeycap.geekhacklink || keycaps.geekhacklink}
+                target="_blank"
+              >
+                Visit Geekhack
+              </ExternalLink>
+            ) : (
+              "Not specified"
+            )}
           </li>
         </BoxContainer>
         <SectionHeading>Your Kits</SectionHeading>

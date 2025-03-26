@@ -212,7 +212,7 @@ export default function SwitchDetail() {
               {userSwitch.manufacturer} {userSwitch.name}
             </h1>
           )}
-          <SwtichHeaderImage>
+          <SwitchHeaderImage>
             <Image
               src={userSwitch.image}
               alt={userSwitch.name}
@@ -221,7 +221,7 @@ export default function SwitchDetail() {
               style={{ objectFit: "cover" }}
               priority
             />
-          </SwtichHeaderImage>
+          </SwitchHeaderImage>
         </HeaderSection>
 
         <h3>Details</h3>
@@ -434,7 +434,7 @@ export default function SwitchDetail() {
   );
 }
 
-const SwtichHeaderImage = styled.div`
+const SwitchHeaderImage = styled.div`
   width: 200px;
   height: 200px;
   border-radius: 10px;
