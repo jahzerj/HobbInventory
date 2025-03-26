@@ -13,19 +13,66 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST" || req.method === "PUT") {
-      const { keycapDefinitionId, selectedKits, selectedColors, notes } =
-        req.body;
+      const {
+        userId,
+        keycapDefinitionId,
+        name,
+        manufacturer,
+        profile,
+        material,
+        profileHeight,
+        designer,
+        geekhacklink,
+        render,
+        kits,
+        selectedKits,
+        selectedColors = [],
+        notes = [],
+      } = req.body;
 
-      if (!keycapDefinitionId || !selectedKits) {
+      if (!keycapDefinitionId && !name) {
         res.status(400).json({
-          message: "Keycap definition ID and selected kits are required.",
+          message:
+            "Either keycap definition ID or keycap details are required.",
         });
         return;
       }
 
+      // Create a new keycap definition if one wasn't provided
+      let definitionId = keycapDefinitionId;
+      if (!definitionId) {
+        const newDefinition = await Keycapdefinition.create({
+          name,
+          manufacturer,
+          profile,
+          material,
+          profileHeight,
+          designer,
+          geekhacklink,
+          render,
+          kits,
+        });
+        definitionId = newDefinition._id;
+      }
+
       const updatedKeycaps = await UserKeycap.findOneAndUpdate(
-        { userId, keycapDefinitionId },
-        { keycapDefinitionId, selectedKits, selectedColors, notes },
+        { userId, keycapDefinitionId: definitionId },
+        {
+          userId,
+          keycapDefinitionId: definitionId,
+          name,
+          manufacturer,
+          profile,
+          material,
+          profileHeight,
+          designer,
+          geekhacklink,
+          render,
+          kits,
+          selectedKits,
+          selectedColors,
+          notes,
+        },
         { new: true, upsert: true }
       );
 
