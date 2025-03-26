@@ -32,10 +32,11 @@ export default function InventoryHub() {
             <Emoji>🎛️</Emoji> Switches
           </CategoryCard>
         </CategoryLink>
-        <CategoryCard disabled>
-          <Emoji>⌨️</Emoji> Keyboard Kits <br />
-          (🚧 Coming Soon)
-        </CategoryCard>
+        <CategoryLink href="/inventories/keyboards">
+          <CategoryCard>
+            <Emoji>⌨️</Emoji> Keyboard Kits
+          </CategoryCard>
+        </CategoryLink>
       </CategorySection>
     </Container>
   );
