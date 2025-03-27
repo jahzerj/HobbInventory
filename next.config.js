@@ -39,6 +39,7 @@ const nextConfig = {
       "akkogear.eu",
       "unikeyboards.com",
       "www.ashkeebs.com",
+      "images.unsplash.com",
     ],
   },
 };

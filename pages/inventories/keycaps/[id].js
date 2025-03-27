@@ -284,7 +284,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="text"
                 value={editedManufacturer}
-                onChange={(e) => setEditedManufacturer(e.target.value)}
+                onChange={(event) => setEditedManufacturer(event.target.value)}
                 placeholder="Manufacturer (e.g., GMK)"
               />
             ) : (
@@ -297,7 +297,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="text"
                 value={editedMaterial}
-                onChange={(e) => setEditedMaterial(e.target.value)}
+                onChange={(event) => setEditedMaterial(event.target.value)}
                 placeholder="Material (e.g., ABS)"
               />
             ) : (
@@ -310,7 +310,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="text"
                 value={editedProfile}
-                onChange={(e) => setEditedProfile(e.target.value)}
+                onChange={(event) => setEditedProfile(event.target.value)}
                 placeholder="Profile (e.g., Cherry)"
               />
             ) : (
@@ -323,7 +323,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="text"
                 value={editedProfileHeight}
-                onChange={(e) => setEditedProfileHeight(e.target.value)}
+                onChange={(event) => setEditedProfileHeight(event.target.value)}
                 placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
               />
             ) : (
@@ -338,7 +338,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="text"
                 value={editedDesigner}
-                onChange={(e) => setEditedDesigner(e.target.value)}
+                onChange={(event) => setEditedDesigner(event.target.value)}
                 placeholder="Designer"
               />
             ) : (
@@ -351,7 +351,7 @@ export default function KeyCapDetail() {
               <StyledInput
                 type="url"
                 value={editedGeekhackLink}
-                onChange={(e) => setEditedGeekhackLink(e.target.value)}
+                onChange={(event) => setEditedGeekhackLink(event.target.value)}
                 placeholder="Geekhack Link"
               />
             ) : userKeycap.geekhacklink || keycaps.geekhacklink ? (
