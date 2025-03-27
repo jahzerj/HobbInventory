@@ -14,7 +14,6 @@ export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
-  const [userSwitches, setUserSwitches] = useState([]);
   const [typeFilter, setTypeFilter] = useState("all");
 
   const {
@@ -22,12 +21,6 @@ export default function Switches() {
     error,
     mutate,
   } = useSWR(`/api/inventories/userswitches?userId=${userId}`);
-
-  useEffect(() => {
-    if (switches) {
-      setUserSwitches(switches);
-    }
-  }, [switches]);
 
   const handleAddSwitch = async (newSwitch) => {
     const tempId = nanoid();
@@ -67,8 +60,9 @@ export default function Switches() {
     );
     if (!confirmDelete) return;
 
-    setUserSwitches((prevSwitches) =>
-      prevSwitches.filter((s) => s._id !== switchId)
+    mutate(
+      switches.filter((s) => s._id !== switchId),
+      false
     );
 
     try {
@@ -78,13 +72,14 @@ export default function Switches() {
         body: JSON.stringify({ userId, switchId }),
       });
 
-      if (response.ok) {
-        await mutate();
-      } else {
-        console.error("Failed to delete switch:", await response.json());
+      if (!response.ok) {
+        throw new Error("Failed to delete switch");
       }
+
+      await mutate();
     } catch (error) {
       console.error("Error deleting switch.", error);
+      await mutate();
     }
   };
 
@@ -99,10 +94,6 @@ export default function Switches() {
   };
 
   const filteredSwitches = getFilteredSwitches(switches, typeFilter);
-
-  const findSwitchData = (inventoryData, itemObj) => {
-    return inventoryData?.find((item) => item._id === itemObj._id);
-  };
 
   if (error) return <p>Error loading switches</p>;
   if (!switches)
@@ -146,8 +137,6 @@ export default function Switches() {
                 isEditMode={isEditMode}
                 onDelete={handleDeleteSwitch}
                 ItemComponent={SwitchCard}
-                dataEndpoint="/api/inventories/switches"
-                findFullItemData={findSwitchData}
               />
             </SwitchGrid>
           ) : (

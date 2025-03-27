@@ -38,8 +38,9 @@ const ShimmerEffect = styled.div`
   }
 `;
 
-export default function KeycapCard({
+export default function KeyboardCard({
   itemObj,
+  fullItemData,
   isEditMode,
   onDelete,
 }) {
@@ -48,6 +49,7 @@ export default function KeycapCard({
 
   // Rename for domain clarity
   const keycapObj = itemObj;
+  const fullKeycapData = fullItemData;
 
   const selectedKits = keycapObj.selectedKits ?? [];
 

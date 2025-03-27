@@ -17,7 +17,7 @@ const keyboardkitSchema = new Schema({
     required: true,
   },
   plateMaterial: { type: String },
-  mounting: { type: String },
+  mounting: [{ type: String }],
   typingAngle: { type: String },
   frontHeight: { type: String },
   surfaceFinish: { type: String },

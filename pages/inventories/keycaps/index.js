@@ -182,13 +182,6 @@ export default function Keycaps() {
       ]
     : ["all"];
 
-  // Simplified and memoized finder function
-  const findKeycapData = useCallback((inventoryData, itemObj) => {
-    return inventoryData?.find(
-      (item) => item._id === itemObj.keycapDefinitionId
-    );
-  }, []);
-
   // Handle opening/closing modal
   const handleOpenModal = useCallback(() => setIsOpen(true), []);
   const handleCloseModal = useCallback(() => setIsOpen(false), []);
@@ -255,8 +248,6 @@ export default function Keycaps() {
               isEditMode={isEditMode}
               onDelete={handleDeleteKeycap}
               ItemComponent={KeycapCard}
-              dataEndpoint="/api/inventories/keycaps"
-              findFullItemData={findKeycapData}
             />
           )}
         </CardContainer>
