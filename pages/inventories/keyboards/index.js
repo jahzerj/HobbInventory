@@ -1,8 +1,38 @@
 import Link from "next/link";
 import styled from "styled-components";
 import MenuIcon from "@/components/icons/MenuIcon";
+import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
+import AddButton from "@/components/KeyboardComponents/AddButton";
+import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import { useState } from "react";
 
 export default function Keyboards() {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Mock data - later this will come from your API
+  const mockKeyboards = [
+    {
+      userId: "guest_user",
+      name: "Dune65",
+      designer: "Kenny from Grit",
+      layout: "65%",
+      blocker: "Winkeyless",
+      photos: [
+        "https://i.imgur.com/wg1Geuu.jpeg",
+        "https://i.imgur.com/i6jpkss.jpeg",
+      ],
+      _id: "mock_id_1", // Added _id for the key prop
+    },
+  ];
+
+  // Simplified handlers - these will be expanded later
+  const handleOpenModal = () => setIsOpen(true);
+  const handleDeleteKeyboard = (keyboardId, event) => {
+    event.stopPropagation();
+    console.log("Delete keyboard:", keyboardId);
+  };
+
   return (
     <>
       <HomeBurger href="/">
@@ -12,13 +42,30 @@ export default function Keyboards() {
       <StyledContainer>
         <h1>Keyboard Inventory</h1>
 
-        <CardContainer>
-          <EmptyStateMessage>
-            <p>No keyboards added yet!</p>
-            <p>Click the ➕ button to add a keyboard to your inventory</p>
-          </EmptyStateMessage>
+        <CardContainer $itemCount={mockKeyboards.length}>
+          {mockKeyboards.length === 0 ? (
+            <EmptyStateMessage>
+              <p>No keyboards added yet!</p>
+              <p>Click the ➕ button to add a keyboard to your inventory</p>
+            </EmptyStateMessage>
+          ) : (
+            mockKeyboards.map((keyboard) => (
+              <KeyboardCard
+                key={keyboard._id}
+                itemObj={keyboard}
+                isEditMode={isEditMode}
+                onDelete={handleDeleteKeyboard}
+              />
+            ))
+          )}
         </CardContainer>
       </StyledContainer>
+
+      <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
+      <EditInventoryButton
+        isEditMode={isEditMode}
+        onToggleEdit={() => setIsEditMode((prev) => !prev)}
+      />
     </>
   );
 }
@@ -112,44 +159,48 @@ const StyledSpan = styled.span`
 `;
 
 // Mock data for keyboard card development
-export const mockKeyboardData = {
-  userId: "guest_user",
-  name: "Dune65",
-  designer: "Kenny from Grit",
-  layout: "65%",
-  blocker: "Winkeyless", // The post mentions WKL layout option
-  switchType: "MX",
-  plateMaterial: "Aluminum",
-  mounting: ["Leaf Spring Top Mount", "Gasket Mount"],
-  typingAngle: "8°",
-  frontHeight: "16.5mm",
-  surfaceFinish: "Anodization",
-  color: "Sand Gold", // One of their colorways
-  weightMaterial: "Brass", // Post mentions brass bottom case
-  buildWeight: "Not specified",
-  pcbOptions: {
-    thickness: "1.6mm", // Specifically mentioned in post
-    material: "FR4", // Mentioned as black core PCB
-    backspace: ["Full BS", "Split BS"], // Both options supported per layout image
-    layoutStandard: ["ISO", "ANSI"], // Both mentioned as supported
-    leftShift: ["Split LS", "Full LS"],
-    capslock: ["NormalCapslock", "SteppedCapslock"],
-    rightShift: ["Split Right Shift", "Full Right Shift"],
-    numpad: {
-      enter: [], // No numpad on 65%
-      plus: [],
-      zero: [],
-      orientation: [],
+export const mockKeyboardData = [
+  {
+    userId: "guest_user",
+    name: "Dune65",
+    designer: "Kenny from Grit",
+    layout: "65%",
+    blocker: "Winkeyless", // The post mentions WKL layout option
+    switchType: "MX",
+    plateMaterial: "Aluminum",
+    mounting: ["Leaf Spring Top Mount", "Gasket Mount"],
+    typingAngle: "8°",
+    frontHeight: "16.5mm",
+    surfaceFinish: "Anodization",
+    color: "Sand Gold", // One of their colorways
+    weightMaterial: "Brass", // Post mentions brass bottom case
+    buildWeight: "Not specified",
+    photos: ["https://i.imgur.com/wg1Geuu.jpeg"],
+    _id: "mock_id_1",
+    pcbOptions: {
+      thickness: "1.6mm", // Specifically mentioned in post
+      material: "FR4", // Mentioned as black core PCB
+      backspace: ["Full BS", "Split BS"], // Both options supported per layout image
+      layoutStandard: ["ISO", "ANSI"], // Both mentioned as supported
+      leftShift: ["Split LS", "Full LS"],
+      capslock: ["NormalCapslock", "SteppedCapslock"],
+      rightShift: ["Split Right Shift", "Full Right Shift"],
+      numpad: {
+        enter: [], // No numpad on 65%
+        plus: [],
+        zero: [],
+        orientation: [],
+      },
+      spacebar: ["7u", "6.25u"], // Post mentions both WK (6.25U) and WKL (7U) options
+      flexCuts: false, // Specifically mentioned as "without flex-cuts"
     },
-    spacebar: ["7u", "6.25u"], // Post mentions both WK (6.25U) and WKL (7U) options
-    flexCuts: false, // Specifically mentioned as "without flex-cuts"
+    notes: [
+      {
+        _id: "note1",
+        text: "Dual mounting style with Leaf Spring Top Mount and Gasket Mount options",
+        timestamp: new Date(),
+      },
+    ],
+    keyboardKitId: "67af15ccba07c6a2595b0977", // Example MongoDB ObjectId
   },
-  notes: [
-    {
-      _id: "note1",
-      text: "Dual mounting style with Leaf Spring Top Mount and Gasket Mount options",
-      timestamp: new Date(),
-    },
-  ],
-  keyboardKitId: "67af15ccba07c6a2595b0977", // Example MongoDB ObjectId
-};
+];

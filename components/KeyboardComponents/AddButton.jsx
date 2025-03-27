@@ -44,7 +44,7 @@ export default function AddButtton({ onOpenModal, isEditMode }) {
       aria-label="Add Keycaps Button"
       $isEditMode={isEditMode}
     >
-      {isExpanded ? " Add keycaps +" : "+"}
+      {isExpanded ? " Add Keyboard +" : "+"}
     </StyledButton>
   );
 }
