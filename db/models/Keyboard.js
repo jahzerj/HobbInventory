@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const keyboardkitSchema = new Schema({
+const keyboardSchema = new Schema({
   name: { type: String, required: true },
   designer: { type: String, required: true },
   layout: { type: String, required: true },
@@ -16,7 +16,7 @@ const keyboardkitSchema = new Schema({
     enum: ["MX", "EC", "HE", "Alps"],
     required: true,
   },
-  plateMaterial: { type: String },
+  plateMaterial: [{ type: String }],
   mounting: [{ type: String }],
   typingAngle: { type: String },
   frontHeight: { type: String },
@@ -99,8 +99,7 @@ const keyboardkitSchema = new Schema({
   },
 });
 
-const KeyboardKit =
-  mongoose.models.KeyboardKit ||
-  mongoose.model("KeyboardKit", keyboardkitSchema);
+const Keyboard =
+  mongoose.models.Keyboard || mongoose.model("KeyboardKit", keyboardSchema);
 
-export default KeyboardKit;
+export default Keyboard;

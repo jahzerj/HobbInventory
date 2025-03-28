@@ -95,28 +95,23 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
             />
           </ImageWrapper>
           <CardContent>
-            <div>
-              <CardTitle>{keyboardObj.name}</CardTitle>
-
-              {hasMultipleImages && (
-                <DotsContainer>
-                  {photos.map((_, index) => (
-                    <Dot
-                      key={index}
-                      $active={index === imageIndex}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setImageIndex(index);
-                      }}
-                    >
-                      •
-                    </Dot>
-                  ))}
-                </DotsContainer>
-              )}
-            </div>
-
+            {hasMultipleImages && (
+              <DotsContainer>
+                {photos.map((_, index) => (
+                  <Dot
+                    key={index}
+                    $active={index === imageIndex}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setImageIndex(index);
+                    }}
+                  >
+                    •
+                  </Dot>
+                ))}
+              </DotsContainer>
+            )}
             {hasMultipleImages && (
               <>
                 <CarouselButton
@@ -149,14 +144,48 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
             <ShimmerEffect />
           </ImageWrapper>
           <CardContent>
-            <div>
-              <CardTitle>&nbsp;</CardTitle>
-            </div>
+            {hasMultipleImages && (
+              <DotsContainer>
+                {photos.map((_, index) => (
+                  <Dot
+                    key={index}
+                    $active={index === imageIndex}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setImageIndex(index);
+                    }}
+                  >
+                    •
+                  </Dot>
+                ))}
+              </DotsContainer>
+            )}
+            {hasMultipleImages && (
+              <>
+                <CarouselButton
+                  className="prev"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handlePrevImage();
+                  }}
+                >
+                  ←
+                </CarouselButton>
+                <CarouselButton
+                  className="next"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleNextImage();
+                  }}
+                >
+                  →
+                </CarouselButton>
+              </>
+            )}
           </CardContent>
-
-          <DesignerNameContainer>
-            <DesignerName>&nbsp;</DesignerName>
-          </DesignerNameContainer>
         </>
       )}
       {isEditMode && (
@@ -169,10 +198,11 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
       )}
       <DesignerNameContainer>
         <DesignerName>{keyboardObj.designer}</DesignerName>
+        <KeyboardName>{keyboardObj.name}</KeyboardName>
+        <LayoutLabel>
+          {itemObj.layout} {itemObj.blocker}
+        </LayoutLabel>
       </DesignerNameContainer>
-      <LayoutLabel>
-        {itemObj.layout} {itemObj.blocker}
-      </LayoutLabel>
     </StyledCard>
   );
 }
@@ -185,7 +215,7 @@ const StyledCard = styled.li`
   min-width: 360px;
   max-width: 600px;
   border: 0 solid white;
-  border-bottom-width: 6rem;
+  border-bottom-width: 7rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
   cursor: pointer;
@@ -210,39 +240,14 @@ const CardContent = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(100% - 1rem);
+  height: calc(100% - 0.1rem);
   display: flex;
   flex-direction: column;
   border-radius: 30px 30px 0 0;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 10px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0) 30%
-  );
   z-index: 1;
-`;
-
-const CardTitle = styled.h3`
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  margin: 0;
-`;
-
-const LayoutLabel = styled.div`
-  position: absolute;
-  bottom: -10px;
-  left: 10px;
-  padding: 2px 12px;
-  font-size: 12px;
-  color: black;
-  font-weight: bold;
-
-  min-width: 80px;
-  text-align: center;
-  white-space: nowrap;
 `;
 
 const ImageWrapper = styled.div`
@@ -250,7 +255,7 @@ const ImageWrapper = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(100% - 1rem);
+  height: calc(100% - 0.1rem);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   border-radius: 30px 30px 0 0;
   overflow: hidden;
@@ -262,33 +267,60 @@ const ImageWrapper = styled.div`
   background-color: transparent;
 `;
 
+const DesignerNameContainer = styled.div`
+  position: absolute;
+  bottom: -90px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  z-index: 1;
+`;
+
 const DesignerName = styled.p`
-  text-align: center;
-  font-size: 1.1rem;
-  margin: 5px 0;
-  color: #333;
-  text-shadow: none;
+  font-size: 0.6rem;
+  color: #666;
+  margin: 0;
   font-weight: 500;
 `;
 
+const KeyboardName = styled.h3`
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+`;
+
+const LayoutLabel = styled.div`
+  font-size: 0.8rem;
+  color: #444;
+  font-weight: 400;
+  margin: 0;
+`;
+
 const DotsContainer = styled.div`
-  margin-top: -8px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   z-index: 3;
   padding: 2px 8px;
   border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
 `;
 
 const Dot = styled.span`
   font-size: 1.2rem;
   margin: 0 3px;
   cursor: pointer;
-  color: ${(props) => (props.$active ? "white" : "#ccc")};
+  color: ${(props) => (props.$active ? "white" : "rgba(255, 255, 255, 0.5)")};
 `;
 
 const CarouselButton = styled.button`
   position: absolute;
-  top: 50%;
+  top: 70%;
   transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.5);
   color: white;
@@ -331,16 +363,4 @@ const DeleteInventoryItemButton = styled.button`
   &:hover {
     background-color: rgb(162, 24, 24);
   }
-`;
-
-const DesignerNameContainer = styled.div`
-  position: absolute;
-  bottom: -40px;
-  left: 10px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  background: transparent;
-  padding: 0;
-  z-index: 1;
 `;

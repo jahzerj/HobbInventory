@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const userkeyboardkitSchema = new Schema(
+const userkeyboardSchema = new Schema(
   {
     userId: { type: String, required: true },
     name: { type: String, required: true },
@@ -18,7 +18,7 @@ const userkeyboardkitSchema = new Schema(
       enum: ["MX", "EC", "HE", "Alps"],
       required: true,
     },
-    plateMaterial: { type: String },
+    plateMaterial: [{ type: String }],
     mounting: [{ type: String }],
     typingAngle: { type: String },
     frontHeight: { type: String },
@@ -99,11 +99,32 @@ const userkeyboardkitSchema = new Schema(
       ],
       flexCuts: { type: Boolean, default: false },
     },
-    notes: [
+    builds: [
       {
-        _id: { type: String, required: true },
-        text: { type: String, maxlength: 100 },
-        timestamp: { type: Date, default: Date.now },
+        name: { type: String, required: true },
+        plate: { type: String, required: true },
+        switches: [
+          {
+            switchId: { type: Schema.Types.ObjectId, ref: "UserSwitch" },
+            quantity: { type: Number },
+            position: { type: String },
+          },
+        ],
+        stabilizers: {
+          type: { type: String, enum: ["Screw-in", "Snap-in", "Plate-mount"] },
+          brand: String,
+          lubed: { type: Boolean, default: false },
+        },
+        modifications: [
+          {
+            type: String,
+            description: String,
+            date: { type: Date, default: Date.now },
+          },
+        ],
+        photos: [String],
+        active: { type: Boolean, default: true },
+        buildDate: { type: Date, default: Date.now },
       },
     ],
     keyboardKitId: { type: Schema.Types.ObjectId, ref: "KeyboardKit" },
@@ -111,8 +132,8 @@ const userkeyboardkitSchema = new Schema(
   { timestamps: true }
 );
 
-const UserKeyboardKit =
-  mongoose.models.UserKeyboardKit ||
-  mongoose.model("UserKeyboardKit", userkeyboardkitSchema);
+const UserKeyboard =
+  mongoose.models.UserKeyboard ||
+  mongoose.model("UserKeyboardKit", userkeyboardSchema);
 
-export default UserKeyboardKit;
+export default UserKeyboard;

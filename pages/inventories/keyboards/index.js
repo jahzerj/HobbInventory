@@ -162,12 +162,13 @@ const StyledSpan = styled.span`
 export const mockKeyboardData = [
   {
     userId: "guest_user",
+    _id: "mock_id_1",
     name: "Dune65",
     designer: "Kenny from Grit",
     layout: "65%",
     blocker: "Winkeyless", // The post mentions WKL layout option
     switchType: "MX",
-    plateMaterial: "Aluminum",
+    plateMaterial: ["Aluminum", "Polycarbonate"],
     mounting: ["Leaf Spring Top Mount", "Gasket Mount"],
     typingAngle: "8°",
     frontHeight: "16.5mm",
@@ -176,7 +177,6 @@ export const mockKeyboardData = [
     weightMaterial: "Brass", // Post mentions brass bottom case
     buildWeight: "Not specified",
     photos: ["https://i.imgur.com/wg1Geuu.jpeg"],
-    _id: "mock_id_1",
     pcbOptions: {
       thickness: "1.6mm", // Specifically mentioned in post
       material: "FR4", // Mentioned as black core PCB
@@ -201,6 +201,53 @@ export const mockKeyboardData = [
         timestamp: new Date(),
       },
     ],
-    keyboardKitId: "67af15ccba07c6a2595b0977", // Example MongoDB ObjectId
+  },
+  {
+    userId: "guest_user",
+    name: "Derivative R1",
+    designer: "JJWKB",
+    layout: "60%",
+    blocker: "Winkeyless", // Supports WK/WKL/HHKB
+    switchType: "MX",
+    plateMaterial: "Aluminum", // Full/Half aluminum options available
+    mounting: [
+      "O-ring Gasket Mount",
+      "Top Mount",
+      "Relief Mount",
+      "Gasket Relief Mount",
+    ],
+    typingAngle: "6.5°", // Specified in technical details
+    frontHeight: "22.4mm", // EKH mentioned in specs
+    surfaceFinish: "Anodization",
+    color: "Mercury", // One of the color options: Mercury (Silver)
+    weightMaterial: "Stainless Steel 304", // Mentioned in materials
+    buildWeight: "1200g", // ~1200g / 2.70 lbs built
+    photos: ["https://i.imgur.com/example.jpg"], // You'll need to replace with actual image
+    _id: "mock_id_2",
+    pcbOptions: {
+      thickness: "1.6mm",
+      material: "FR4",
+      backspace: ["Full BS", "Split BS"], // PCB supports split backspace
+      layoutStandard: ["ANSI"], // Plates only support ANSI
+      leftShift: ["Split LS", "Full LS"], // PCB supports split left shift
+      capslock: ["NormalCapslock"],
+      rightShift: ["Split Right Shift", "Full Right Shift"], // PCB supports split right shift
+      numpad: {
+        enter: [], // No numpad on 60%
+        plus: [],
+        zero: [],
+        orientation: [],
+      },
+      spacebar: ["7u"], // WK and WKL options available
+      flexCuts: false,
+    },
+    notes: [
+      {
+        _id: "note2",
+        text: "Features three mounting options and comes with 50A O-ring by default. Additional 30A and 70A O-rings available.",
+        timestamp: new Date(),
+      },
+    ],
+    keyboardKitId: "67af15ccba07c6a2595b0978",
   },
 ];
