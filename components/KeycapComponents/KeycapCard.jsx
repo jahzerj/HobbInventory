@@ -38,11 +38,7 @@ const ShimmerEffect = styled.div`
   }
 `;
 
-export default function KeycapCard({
-  itemObj,
-  isEditMode,
-  onDelete,
-}) {
+export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
   const router = useRouter();
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -110,30 +106,6 @@ export default function KeycapCard({
             />
           </ImageWrapper>
           <CardContent>
-            <div>
-              {/* Updated to use name directly instead of keycapSetId.name */}
-              <CardTitle>{keycapObj.name}</CardTitle>
-
-              {/* Dots moved below title - unchanged */}
-              {hasMultipleImages && (
-                <DotsContainer>
-                  {selectedKitData.map((_, index) => (
-                    <Dot
-                      key={index}
-                      $active={index === imageIndex}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setImageIndex(index);
-                      }}
-                    >
-                      •
-                    </Dot>
-                  ))}
-                </DotsContainer>
-              )}
-            </div>
-
             {/* Only show carousel buttons if there are multiple images - unchanged */}
             {hasMultipleImages && (
               <>
@@ -161,7 +133,29 @@ export default function KeycapCard({
             )}
 
             <div>
+              <CardTitle>{keycapObj.name}</CardTitle>
+            </div>
+            <div>
               <KitName>{selectedKitData[imageIndex].name}</KitName>
+
+              {/* Dots moved below title - unchanged */}
+              {hasMultipleImages && (
+                <DotsContainer>
+                  {selectedKitData.map((_, index) => (
+                    <Dot
+                      key={index}
+                      $active={index === imageIndex}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setImageIndex(index);
+                      }}
+                    >
+                      •
+                    </Dot>
+                  ))}
+                </DotsContainer>
+              )}
             </div>
           </CardContent>
         </>

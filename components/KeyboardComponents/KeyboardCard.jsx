@@ -308,7 +308,6 @@ const DotsContainer = styled.div`
   z-index: 3;
   padding: 2px 8px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.3);
 `;
 
 const Dot = styled.span`

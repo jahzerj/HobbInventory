@@ -274,6 +274,7 @@ const CardContainer = styled.div`
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  -webkit-tap-highlight-color: transparent;
 
   @media (min-width: 900px) {
     /* Only use grid layout when we have multiple items */
