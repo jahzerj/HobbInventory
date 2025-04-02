@@ -10,22 +10,6 @@ export default function Keyboards() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Mock data - later this will come from your API
-  const mockKeyboards = [
-    {
-      userId: "guest_user",
-      name: "Dune65",
-      designer: "Kenny from Grit",
-      layout: "65%",
-      blocker: "Winkeyless",
-      photos: [
-        "https://i.imgur.com/wg1Geuu.jpeg",
-        "https://i.imgur.com/i6jpkss.jpeg",
-      ],
-      _id: "mock_id_1", // Added _id for the key prop
-    },
-  ];
-
   // Simplified handlers - these will be expanded later
   const handleOpenModal = () => setIsOpen(true);
   const handleDeleteKeyboard = (keyboardId, event) => {
@@ -40,16 +24,16 @@ export default function Keyboards() {
       </HomeBurger>
 
       <StyledContainer>
-        <h1>Keyboard Inventory</h1>
+        <LongTitle>Keyboard Inventory</LongTitle>
 
-        <CardContainer $itemCount={mockKeyboards.length}>
-          {mockKeyboards.length === 0 ? (
+        <CardContainer $itemCount={mockKeyboardData.length}>
+          {mockKeyboardData.length === 0 ? (
             <EmptyStateMessage>
               <p>No keyboards added yet!</p>
               <p>Click the ➕ button to add a keyboard to your inventory</p>
             </EmptyStateMessage>
           ) : (
-            mockKeyboards.map((keyboard) => (
+            mockKeyboardData.map((keyboard) => (
               <KeyboardCard
                 key={keyboard._id}
                 itemObj={keyboard}
@@ -84,6 +68,7 @@ const CardContainer = styled.div`
   flex-direction: column;
   align-items: center;
   -webkit-tap-highlight-color: transparent;
+  margin-bottom: 50px;
 
   @media (min-width: 900px) {
     /* Only use grid layout when we have multiple items */
@@ -137,6 +122,12 @@ const LoaderWrapper = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
+`;
+
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
+  }
 `;
 
 const StyledSpan = styled.span`
@@ -205,12 +196,13 @@ export const mockKeyboardData = [
   },
   {
     userId: "guest_user",
+    _id: "mock_id_2",
     name: "Derivative R1",
     designer: "JJWKB",
     layout: "60%",
-    blocker: "Winkeyless", // Supports WK/WKL/HHKB
+    blocker: "Winkey", // Supports WK/WKL/HHKB
     switchType: "MX",
-    plateMaterial: "Aluminum", // Full/Half aluminum options available
+    plateMaterial: ["Aluminum", "Polycarbonate"], // Full/Half aluminum options available
     mounting: [
       "O-ring Gasket Mount",
       "Top Mount",
@@ -220,10 +212,10 @@ export const mockKeyboardData = [
     typingAngle: "6.5°", // Specified in technical details
     frontHeight: "22.4mm", // EKH mentioned in specs
     surfaceFinish: "Anodization",
-    color: "Mercury", // One of the color options: Mercury (Silver)
+    color: "Amphibian", // One of the color options: Mercury (Silver)
     weightMaterial: "Stainless Steel 304", // Mentioned in materials
     buildWeight: "1200g", // ~1200g / 2.70 lbs built
-    photos: ["https://i.imgur.com/example.jpg"], // You'll need to replace with actual image
+    photos: ["https://i.imgur.com/KhTVEmZ.png"], // You'll need to replace with actual image
     _id: "mock_id_2",
     pcbOptions: {
       thickness: "1.6mm",

@@ -20,73 +20,6 @@ import {
   SectionHeading,
 } from "@/components/SharedComponents/DetailPageStyles";
 
-// Add these styled components
-const BuildSection = styled.div`
-  margin-bottom: 20px;
-
-  h4 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-`;
-
-const BuildContainer = styled.div`
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 360px;
-  max-width: 430px;
-`;
-
-const BuildLayout = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  align-items: flex-start;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const BuildPhotoContainer = styled.div`
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  height: 250px;
-  width: 250px;
-`;
-
-const BuildDetails = styled.div`
-  text-align: left;
-`;
-
-const BuildInfoItem = styled.div`
-  margin-bottom: 16px;
-
-  strong {
-    display: block;
-    margin-bottom: 4px;
-    color: #333;
-  }
-`;
-
-const SwitchListItem = styled.div`
-  margin-bottom: 8px;
-  font-size: 14px;
-`;
-
-const Modification = styled.div`
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
 export default function KeyboardDetail() {
   const router = useRouter();
   const { id } = router.query;
@@ -827,5 +760,71 @@ const StyledCheckboxGroup = styled.div`
   input[type="checkbox"] {
     width: 16px;
     height: 16px;
+  }
+`;
+
+const BuildSection = styled.div`
+  margin-bottom: 20px;
+
+  h4 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+`;
+
+const BuildContainer = styled.div`
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 360px;
+  max-width: 430px;
+`;
+
+const BuildLayout = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const BuildPhotoContainer = styled.div`
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  height: 250px;
+  width: 250px;
+`;
+
+const BuildDetails = styled.div`
+  text-align: left;
+`;
+
+const BuildInfoItem = styled.div`
+  margin-bottom: 16px;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #333;
+  }
+`;
+
+const SwitchListItem = styled.div`
+  margin-bottom: 8px;
+  font-size: 14px;
+`;
+
+const Modification = styled.div`
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
   }
 `;
