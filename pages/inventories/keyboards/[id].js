@@ -36,7 +36,8 @@ const BuildContainer = styled.div`
   padding: 20px;
   margin: 20px 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 100%;
+  width: 360px;
+  max-width: 430px;
 `;
 
 const BuildLayout = styled.div`
@@ -51,20 +52,15 @@ const BuildLayout = styled.div`
 `;
 
 const BuildPhotoContainer = styled.div`
-  flex: 0 0 250px;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
   height: 250px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    margin-bottom: 16px;
-  }
+  width: 250px;
 `;
 
 const BuildDetails = styled.div`
-  flex: 1;
+  text-align: left;
 `;
 
 const BuildInfoItem = styled.div`
@@ -550,9 +546,6 @@ export default function KeyboardDetail() {
 
           <BuildSection>
             <h4>Switches</h4>
-            <StyledLink href="/inventories/switches" target="_blank">
-              Browse Switches Inventory
-            </StyledLink>
             <StyledCheckboxGroup>
               {userSwitches && userSwitches.length > 0 ? (
                 userSwitches.map((switchItem) => (
