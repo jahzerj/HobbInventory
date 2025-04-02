@@ -8,6 +8,7 @@ const userkeyboardSchema = new Schema(
     name: { type: String, required: true },
     designer: { type: String, required: true },
     layout: { type: String, required: true },
+    renders: [{ type: String, required: true }],
     blocker: {
       type: String,
       enum: ["Winkey", "Winkeyless", "HHKB"],
@@ -127,7 +128,6 @@ const userkeyboardSchema = new Schema(
         buildDate: { type: Date, default: Date.now },
       },
     ],
-    keyboardKitId: { type: Schema.Types.ObjectId, ref: "KeyboardKit" },
   },
   { timestamps: true }
 );

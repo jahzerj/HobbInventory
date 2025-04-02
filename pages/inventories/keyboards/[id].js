@@ -213,10 +213,10 @@ export default function KeyboardDetail() {
         ) : (
           <h1>{keyboard.name}</h1>
         )}
-        {keyboard.photos[0] && (
+        {keyboard.renders && (
           <HeaderImage>
             <Image
-              src={keyboard.photos[0]}
+              src={keyboard.renders[0]}
               alt={keyboard.name}
               fill
               style={{ objectFit: "cover" }}
@@ -552,9 +552,9 @@ export default function KeyboardDetail() {
         <BuildContainer>
           <BuildLayout>
             <BuildPhotoContainer>
-              {keyboard.photos && keyboard.photos[0] ? (
+              {keyboard.builds?.[0]?.photos?.[0] ? (
                 <Image
-                  src={keyboard.photos[0]}
+                  src={keyboard.builds[0].photos[0]}
                   alt={`${keyboard.name} build photo`}
                   fill
                   style={{ objectFit: "cover" }}

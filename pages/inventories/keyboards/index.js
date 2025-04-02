@@ -116,18 +116,17 @@ const EmptyStateMessage = styled.div`
     color: #666;
   }
 `;
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
+  }
+`;
 
 const LoaderWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-`;
-
-const LongTitle = styled.h1`
-  @media screen and (max-width: 390px) {
-    font-size: 28px;
-  }
 `;
 
 const StyledSpan = styled.span`
@@ -158,39 +157,63 @@ export const mockKeyboardData = [
     name: "Dune65",
     designer: "Kenny from Grit",
     layout: "65%",
-    blocker: "Winkeyless", // The post mentions WKL layout option
+    renders: [
+      "https://i.imgur.com/wg1Geuu.jpeg",
+      "https://i.imgur.com/i6jpkss.jpeg",
+    ],
+    blocker: "Winkeyless",
     switchType: "MX",
     plateMaterial: ["Aluminum", "Polycarbonate"],
     mounting: ["Leaf Spring Top Mount", "Gasket Mount"],
     typingAngle: "8°",
     frontHeight: "16.5mm",
     surfaceFinish: "Anodization",
-    color: "Sand Gold", // One of their colorways
-    weightMaterial: "Brass", // Post mentions brass bottom case
+    color: "Sand Gold",
+    weightMaterial: "Brass",
     buildWeight: "Not specified",
-    photos: ["https://i.imgur.com/wg1Geuu.jpeg"],
     pcbOptions: {
-      thickness: "1.6mm", // Specifically mentioned in post
-      material: "FR4", // Mentioned as black core PCB
-      backspace: ["Full BS", "Split BS"], // Both options supported per layout image
-      layoutStandard: ["ISO", "ANSI"], // Both mentioned as supported
+      thickness: "1.6mm",
+      material: "FR4",
+      backspace: ["Full BS", "Split BS"],
+      layoutStandard: ["ISO", "ANSI"],
       leftShift: ["Split LS", "Full LS"],
       capslock: ["NormalCapslock", "SteppedCapslock"],
       rightShift: ["Split Right Shift", "Full Right Shift"],
       numpad: {
-        enter: [], // No numpad on 65%
+        enter: [],
         plus: [],
         zero: [],
         orientation: [],
       },
-      spacebar: ["7u", "6.25u"], // Post mentions both WK (6.25U) and WKL (7U) options
-      flexCuts: false, // Specifically mentioned as "without flex-cuts"
+      spacebar: ["7u", "6.25u"],
+      flexCuts: false,
     },
-    notes: [
+    builds: [
       {
-        _id: "note1",
-        text: "Dual mounting style with Leaf Spring Top Mount and Gasket Mount options",
-        timestamp: new Date(),
+        name: "Initial Build",
+        plate: "Aluminum",
+        switches: [
+          {
+            switchId: "some_switch_objectid",
+            quantity: 67,
+            position: "All positions",
+          },
+        ],
+        stabilizers: {
+          type: "Screw-in",
+          brand: "Durock V2",
+          lubed: true,
+        },
+        modifications: [
+          {
+            type: "Initial Build",
+            description: "Stock configuration",
+            date: "2024-03-19T00:00:00.000Z",
+          },
+        ],
+        photos: ["https://i.imgur.com/EbIdAxU.jpeg"],
+        active: true,
+        buildDate: "2024-03-19T00:00:00.000Z",
       },
     ],
   },
@@ -200,47 +223,76 @@ export const mockKeyboardData = [
     name: "Derivative R1",
     designer: "JJWKB",
     layout: "60%",
-    blocker: "Winkey", // Supports WK/WKL/HHKB
+    renders: [
+      "https://i.imgur.com/KhTVEmZ.png",
+      "https://i.imgur.com/2UErHhw.png",
+      "https://i.imgur.com/mU4WF4g.png",
+    ],
+    blocker: "Winkey",
     switchType: "MX",
-    plateMaterial: ["Aluminum", "Polycarbonate"], // Full/Half aluminum options available
+    plateMaterial: ["Aluminum", "Polycarbonate"],
     mounting: [
       "O-ring Gasket Mount",
       "Top Mount",
       "Relief Mount",
       "Gasket Relief Mount",
     ],
-    typingAngle: "6.5°", // Specified in technical details
-    frontHeight: "22.4mm", // EKH mentioned in specs
+    typingAngle: "6.5°",
+    frontHeight: "22.4mm",
     surfaceFinish: "Anodization",
-    color: "Amphibian", // One of the color options: Mercury (Silver)
-    weightMaterial: "Stainless Steel 304", // Mentioned in materials
-    buildWeight: "1200g", // ~1200g / 2.70 lbs built
-    photos: ["https://i.imgur.com/KhTVEmZ.png"], // You'll need to replace with actual image
-    _id: "mock_id_2",
+    color: "Amphibian",
+    weightMaterial: "Stainless Steel 304",
+    buildWeight: "1200g",
     pcbOptions: {
       thickness: "1.6mm",
       material: "FR4",
-      backspace: ["Full BS", "Split BS"], // PCB supports split backspace
-      layoutStandard: ["ANSI"], // Plates only support ANSI
-      leftShift: ["Split LS", "Full LS"], // PCB supports split left shift
-      capslock: ["NormalCapslock"],
-      rightShift: ["Split Right Shift", "Full Right Shift"], // PCB supports split right shift
+      backspace: ["Full BS", "Split BS"],
+      layoutStandard: ["ANSI"],
+      leftShift: ["Split LS", "Full LS"],
+      rightShift: ["Split Right Shift", "Full Right Shift"],
       numpad: {
-        enter: [], // No numpad on 60%
+        enter: [],
         plus: [],
         zero: [],
         orientation: [],
       },
-      spacebar: ["7u"], // WK and WKL options available
+      spacebar: ["7u"],
       flexCuts: false,
     },
     notes: [
       {
         _id: "note2",
         text: "Features three mounting options and comes with 50A O-ring by default. Additional 30A and 70A O-rings available.",
-        timestamp: new Date(),
+        timestamp: "2024-03-19T00:00:00.000Z",
       },
     ],
-    keyboardKitId: "67af15ccba07c6a2595b0978",
+    builds: [
+      {
+        name: "Initial Build",
+        plate: "Aluminum",
+        switches: [
+          {
+            switchId: "some_switch_objectid",
+            quantity: 61,
+            position: "All positions",
+          },
+        ],
+        stabilizers: {
+          type: "Screw-in",
+          brand: "Durock V2",
+          lubed: true,
+        },
+        modifications: [
+          {
+            type: "Initial Build",
+            description: "Stock configuration",
+            date: "2024-03-19T00:00:00.000Z",
+          },
+        ],
+        photos: ["https://i.imgur.com/YbxAoDS.png"],
+        active: true,
+        buildDate: "2024-03-19T00:00:00.000Z",
+      },
+    ],
   },
 ];

@@ -46,7 +46,7 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
   const keyboardObj = itemObj;
 
   // Get the photos array, with a fallback to empty array
-  const photos = keyboardObj.photos ?? [];
+  const photos = keyboardObj.renders ?? [];
 
   // Determine if we should show navigation elements
   const hasMultipleImages = photos.length > 1;
