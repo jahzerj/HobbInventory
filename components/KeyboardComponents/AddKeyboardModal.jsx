@@ -1,145 +1,145 @@
 import { createPortal } from "react-dom";
-import { useState } from "react";
+import useSWR from "swr";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
-import SwitchCard from "./SwitchCard";
-import useSWR from "swr";
 
-export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
+export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
   const [activeTab, setActiveTab] = useState("manual");
-  const [selectedManufacturer, setSelectedManufacturer] = useState("");
-  const [selectedSwitchId, setSelectedSwitchId] = useState("");
+  const [selectedKeyboard, setSelectedKeyboard] = useState("");
+  const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
+    useState(false);
+  const [noteText, setNoteText] = useState("");
 
-  const { data: dbSwitches, error: dbSwitchesError } = useSWR(
-    activeTab === "dropdown" ? "/api/inventories/switches" : null
+  const [keyboardData, setKeyboardData] = useState({
+    name: "",
+    designer: "",
+    layout: "",
+    renders: [""],
+    blocker: "",
+    switchType: "",
+    plateMaterial: [],
+    mounting: [],
+    typingAngle: "",
+    frontHeight: "",
+    surfaceFinish: "",
+    color: "",
+    weightMaterial: "",
+    buildWeight: "",
+    pcbOptions: {
+      thickness: "1.6mm",
+      material: "FR4",
+      backspace: [],
+      layoutStandard: [],
+      leftShift: [],
+      capslock: [],
+      rightShift: [],
+      numpad: {
+        enter: [],
+        plus: [],
+        zero: [],
+        orientation: [],
+      },
+      spacebar: [],
+      flexCuts: false,
+    },
+    builds: [],
+    notes: [],
+  });
+
+  const { data: dbKeyboards, error: dbKeyboardsError } = useSWR(
+    activeTab === "dropdown" ? "/api/inventories/keyboards" : null
   );
 
-  //Get unique manufacturers and sort alphabetically
-  const manufacturers = dbSwitches
-    ? [...new Set(dbSwitches.map((sw) => sw.manufacturer))].sort()
-    : [];
-
-  //Get Switches filtered by selected manufacturer
-  const filteredSwitches = dbSwitches
-    ? dbSwitches
-        .filter((sw) => sw.manufacturer === selectedManufacturer)
-        .sort((a, b) => a.name.localeCompare(b.name))
-    : [];
-
-  const handleManufacturerChange = (event) => {
-    const manufacturer = event.target.value;
-    setSelectedManufacturer(manufacturer);
-    setSelectedSwitchId(""); //resets switch selection when manufacturer changes
-  };
-
-  const handleSwitchChange = (event) => {
-    const switchId = event.target.value;
-    setSelectedSwitchId(switchId);
-
-    if (switchId) {
-      const selectedSwitch = dbSwitches.find((sw) => sw._id === switchId);
-      if (selectedSwitch) {
-        //populate selectedSwitch data to switchData
-        setSwitchData({
-          name: selectedSwitch.name,
-          manufacturer: selectedSwitch.manufacturer,
-          image: selectedSwitch.image,
-          quantity: 1,
-          switchType: selectedSwitch.switchType,
-          factoryLubed: selectedSwitch.factoryLubed || false,
-          springWeight: selectedSwitch.springWeight || "",
-          topMaterial: selectedSwitch.topMaterial || "",
-          bottomMaterial: selectedSwitch.bottomMaterial || "",
-          stemMaterial: selectedSwitch.stemMaterial || "",
-          isLubed: selectedSwitch.isLubed || false,
-          isFilmed: selectedSwitch.isFilmed || false,
-          notes: [],
-        });
-      }
+  useEffect(() => {
+    if (open) {
+      resetForm();
     }
-  };
+  }, [open]);
 
   const resetForm = () => {
-    setSelectedManufacturer("");
-    setSelectedSwitchId("");
-    setSwitchData({
+    setSelectedKeyboard("");
+    setKeyboardData({
       name: "",
-      manufacturer: "",
-      image: "",
-      quantity: 1,
+      designer: "",
+      layout: "",
+      renders: [""],
+      blocker: "",
       switchType: "",
-      factoryLubed: false,
-      springWeight: "",
-      topMaterial: "",
-      bottomMaterial: "",
-      stemMaterial: "",
-      isLubed: false,
-      isFilmed: false,
+      plateMaterial: [],
+      mounting: [],
+      typingAngle: "",
+      frontHeight: "",
+      surfaceFinish: "",
+      color: "",
+      weightMaterial: "",
+      buildWeight: "",
+      pcbOptions: {
+        thickness: "1.6mm",
+        material: "FR4",
+        backspace: [],
+        layoutStandard: [],
+        leftShift: [],
+        capslock: [],
+        rightShift: [],
+        numpad: {
+          enter: [],
+          plus: [],
+          zero: [],
+          orientation: [],
+        },
+        spacebar: [],
+        flexCuts: false,
+      },
+      builds: [],
       notes: [],
     });
     setNoteText("");
     setIsAdditionalFieldsVisible(false);
   };
 
-  const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
-    useState(false);
-  const [switchData, setSwitchData] = useState({
-    name: "",
-    manufacturer: "",
-    image: "",
-    quantity: 1,
-    switchType: "",
-    factoryLubed: false,
-    springWeight: "",
-    topMaterial: "",
-    bottomMaterial: "",
-    stemMaterial: "",
-    isLubed: false,
-    isFilmed: false,
-    notes: [],
-  });
-
-  const [noteText, setNoteText] = useState("");
-
-  if (!open) return null;
-
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
-    // Add length validation for text fields
+    // Validation for length
     if (name === "name" && value.length > 40) {
-      alert("Switch name cannot exceed 40 characters.");
+      alert("Keyboard name cannot exceed 40 characters.");
       return;
     }
 
-    if (name === "manufacturer" && value.length > 25) {
-      alert("Manufacturer name cannot exceed 25 characters.");
-      return;
-    }
-
-    if (name === "image") {
+    // For renders (URL validation)
+    if (name === "render") {
       const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
       if (!urlRegex.test(value) && value !== "") {
         alert(
-          "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp"
+          "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp)"
         );
         return;
       }
+
+      setKeyboardData((prevData) => ({
+        ...prevData,
+        renders: [value],
+      }));
+      return;
     }
 
-    // Add quantity validation
-    if (name === "quantity") {
-      const numValue = parseInt(value) || 0;
-      if (numValue > 9999) {
-        setSwitchData((prevData) => ({
-          ...prevData,
-          [name]: 9999,
-        }));
-        return;
-      }
+    // Handle PCB options
+    if (name.startsWith("pcbOptions.")) {
+      const option = name.split(".")[1];
+      setKeyboardData((prevData) => ({
+        ...prevData,
+        pcbOptions: {
+          ...prevData.pcbOptions,
+          [option]: type === "checkbox" ? checked : value,
+        },
+      }));
+      return;
     }
 
-    setSwitchData((prevData) => ({
+    // Handle regular fields
+    setKeyboardData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -148,7 +148,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
   const handleAddNote = () => {
     if (noteText.trim() === "") return;
 
-    setSwitchData((prevData) => ({
+    setKeyboardData((prevData) => ({
       ...prevData,
       notes: [
         ...prevData.notes,
@@ -165,57 +165,97 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
   const handleSubmit = () => {
     if (activeTab === "manual") {
-      // Validation for manual entry
+      //Validation for manual entry
       if (
-        !switchData.name ||
-        !switchData.manufacturer ||
-        !switchData.image ||
-        !switchData.switchType
+        !keyboardData.name ||
+        !keyboardData.designer ||
+        !keyboardData.layout ||
+        !keyboardData.renders[0] ||
+        !keyboardData.blocker ||
+        !keyboardData.switchType
       ) {
         alert(
-          "Please fill out all required fields: Name, Manufacturer, Image, and Switch Type."
+          "Please fill out all required fields: Name, Designer, Layout, Render, Blocker, and Switch Type."
         );
         return;
       }
+
+      // Create the keyboard to add
+      const keyboardToAdd = {
+        userId: "guest_user",
+        name: keyboardData.name,
+        designer: keyboardData.designer,
+        layout: keyboardData.layout,
+        renders: keyboardData.renders.filter((url) => url !== ""),
+        blocker: keyboardData.blocker,
+        switchType: keyboardData.switchType,
+        plateMaterial: keyboardData.plateMaterial,
+        mounting: keyboardData.mounting,
+        typingAngle: keyboardData.typingAngle,
+        frontHeight: keyboardData.frontHeight,
+        surfaceFinish: keyboardData.surfaceFinish,
+        color: keyboardData.color,
+        weightMaterial: keyboardData.weightMaterial,
+        buildWeight: keyboardData.buildWeight,
+        pcbOptions: keyboardData.pcbOptions,
+        builds: keyboardData.builds,
+        notes: [],
+      };
+
+      onAddKeyboard(keyboardToAdd);
     } else if (activeTab === "dropdown") {
-      // Validation for dropdown selection
-      if (!selectedSwitchId) {
-        alert("Please select a manufacturer and switch.");
+      //Validation for dropdown entry
+      if (!selectedKeyboard) {
+        alert("Please select a keyboard from the dropdown.");
         return;
       }
+
+      const selectedKeyboardObj = dbKeyboards.find(
+        (keyboard) => keyboard.name === selectedKeyboard
+      );
+
+      if (!selectedKeyboardObj) {
+        alert("Error: Could not find selected keyboard.");
+        return;
+      }
+
+      //Create the keyboard to add with all fields
+      const keyboardToAdd = {
+        userId: "guest_user",
+        name: selectedKeyboardObj.name,
+        designer: selectedKeyboardObj.designer,
+        layout: selectedKeyboardObj.layout,
+        renders: selectedKeyboardObj.renders,
+        blocker: selectedKeyboardObj.blocker,
+        switchType: selectedKeyboardObj.switchType,
+        plateMaterial: selectedKeyboardObj.plateMaterial,
+        mounting: selectedKeyboardObj.mounting,
+        typingAngle: selectedKeyboardObj.typingAngle,
+        frontHeight: selectedKeyboardObj.frontHeight,
+        surfaceFinish: selectedKeyboardObj.surfaceFinish,
+        color: selectedKeyboardObj.color,
+        weightMaterial: selectedKeyboardObj.weightMaterial,
+        buildWeight: selectedKeyboardObj.buildWeight,
+        pcbOptions: selectedKeyboardObj.pcbOptions,
+        builds: selectedKeyboardObj.builds,
+        notes: [],
+      };
+
+      onAddKeyboard(keyboardToAdd);
     }
-
-    onAddSwitch(switchData);
-
     resetForm();
     onClose();
   };
 
-  const isPreviewVisible =
-    switchData.name &&
-    switchData.manufacturer &&
-    switchData.image &&
-    switchData.switchType;
+  if (!open) return null;
 
   return createPortal(
     <>
       <Overlay />
       <ModalWrapper>
-        <Title>Add Switch to Inventory</Title>
+        <Title>Add Keyboard to Inventory</Title>
 
-        {/* Tab Navigation */}
         <TabContainer>
-          <TabButton
-            $isActive={activeTab === "manual"}
-            onClick={() => {
-              if (activeTab !== "manual") {
-                resetForm();
-                setActiveTab("manual");
-              }
-            }}
-          >
-            Manual Entry
-          </TabButton>
           <TabButton
             $isActive={activeTab === "dropdown"}
             onClick={() => {
@@ -227,80 +267,164 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
           >
             Select from Database
           </TabButton>
+          <TabButton
+            $isActive={activeTab === "manual"}
+            onClick={() => {
+              if (activeTab !== "manual") {
+                resetForm();
+                setActiveTab("manual");
+              }
+            }}
+          >
+            Manual Entry
+          </TabButton>
         </TabContainer>
 
-        {/* Tab Content */}
-        {activeTab === "manual" ? (
-          // Manual Entry Tab Content
-          <>
-            <Input
-              type="text"
-              name="name"
-              placeholder="Switch Name *"
-              value={switchData.name}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              type="text"
-              name="manufacturer"
-              placeholder="Manufacturer *"
-              value={switchData.manufacturer}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              type="url"
-              name="image"
-              placeholder="Image URL *"
-              value={switchData.image}
-              onChange={handleChange}
-              pattern="https?://.*"
-              required
-            />
-
-            <Select
-              name="switchType"
-              value={switchData.switchType}
-              onChange={handleChange}
-            >
-              <option value="">Select Switch Type *</option>
-              <option value="Linear">Linear</option>
-              <option value="Tactile">Tactile</option>
-              <option value="Clicky">Clicky</option>
-            </Select>
-
-            {isPreviewVisible && (
+        {activeTab === "dropdown" ? (
+          <TabContent>
+            {dbKeyboardsError ? (
+              <p>Error loading keyboards. Please try again.</p>
+            ) : !dbKeyboards ? (
+              <p>Loading keyboards...</p>
+            ) : (
               <>
-                <h3>Preview</h3>
-                <PreviewWrapper>
-                  <SwitchCard
-                    itemObj={{
-                      _id: "preview",
-                      ...switchData,
-                    }}
-                    isEditMode={false}
-                    onDelete={() => {}}
-                  />
-                </PreviewWrapper>
+                <FormGroup>
+                  <Label>Keyboard</Label>
+                  <DropDownSelect
+                    value={selectedKeyboard}
+                    onChange={(event) =>
+                      setSelectedKeyboard(event.target.value)
+                    }
+                  >
+                    <option value="">-- Choose a keyboard --</option>
+                    {dbKeyboards
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((keyboard) => (
+                        <option key={keyboard._id} value={keyboard.name}>
+                          {keyboard.name}
+                        </option>
+                      ))}
+                  </DropDownSelect>
+                </FormGroup>
+
+                {selectedKeyboard && (
+                  <KeyboardPreview>
+                    {dbKeyboards.find(
+                      (keyboard) => keyboard.name === selectedKeyboard
+                    )?.renders[0] && (
+                      <Image
+                        src={
+                          dbKeyboards.find(
+                            (keyboard) => keyboard.name === selectedKeyboard
+                          ).renders[0]
+                        }
+                        alt={selectedKeyboard}
+                        width={300}
+                        height={200}
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "5px",
+                        }}
+                        priority
+                      />
+                    )}
+                    <KeyboardDetails>
+                      <p>
+                        <strong>Designer:</strong>{" "}
+                        {
+                          dbKeyboards.find(
+                            (keyboard) => keyboard.name === selectedKeyboard
+                          ).designer
+                        }
+                      </p>
+                      <p>
+                        <strong>Layout:</strong>{" "}
+                        {
+                          dbKeyboards.find(
+                            (keyboard) => keyboard.name === selectedKeyboard
+                          ).layout
+                        }
+                      </p>
+                    </KeyboardDetails>
+                  </KeyboardPreview>
+                )}
               </>
             )}
+          </TabContent>
+        ) : (
+          <TabContent>
+            <FormGroup>
+              <Label>Keyboard Details</Label>
+              <Input
+                type="text"
+                name="name"
+                placeholder="Keyboard Name *"
+                value={keyboardData.name}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                type="text"
+                name="designer"
+                placeholder="Designer *"
+                value={keyboardData.designer}
+                onChange={handleChange}
+                required
+              />
+              <Select
+                name="layout"
+                value={keyboardData.layout}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Layout *</option>
+                <option value="40%">40%</option>
+                <option value="60%">60%</option>
+                <option value="65%">65%</option>
+                <option value="75%">75%</option>
+                <option value="TKL">TKL</option>
+                <option value="1800">1800</option>
+                <option value="Full Size">Full Size</option>
+              </Select>
+              <Input
+                type="url"
+                name="render"
+                placeholder="Render Image URL *"
+                value={keyboardData.renders[0]}
+                onChange={handleChange}
+                required
+              />
+              <Select
+                name="blocker"
+                value={keyboardData.blocker}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Blocker Type *</option>
+                <option value="Winkey">Winkey</option>
+                <option value="Winkeyless">Winkeyless</option>
+                <option value="HHKB">HHKB</option>
+              </Select>
+              <Select
+                name="switchType"
+                value={keyboardData.switchType}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Switch Type *</option>
+                <option value="MX">MX</option>
+                <option value="EC">EC</option>
+                <option value="HE">HE</option>
+                <option value="Alps">Alps</option>
+              </Select>
+            </FormGroup>
 
             <ToggleAdditionalFieldsButton
               onClick={() => {
+                if (isAdditionalFieldsVisible) {
+                  resetForm();
+                }
                 setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
-                setSwitchData((prevData) => ({
-                  ...prevData,
-                  quantity: 1,
-                  factoryLubed: false,
-                  springWeight: "",
-                  topMaterial: "",
-                  bottomMaterial: "",
-                  stemMaterial: "",
-                  isLubed: false,
-                  isFilmed: false,
-                  notes: [],
-                }));
               }}
             >
               {isAdditionalFieldsVisible
@@ -310,248 +434,102 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
             {isAdditionalFieldsVisible && (
               <AdditionalFieldsContainer>
-                <label htmlFor="quantity">Quantity</label>
                 <Input
-                  type="number"
-                  name="quantity"
-                  placeholder="Quantity"
-                  min="0"
-                  max="9999"
-                  value={switchData.quantity}
+                  type="text"
+                  name="color"
+                  placeholder="Color (e.g., Navy Blue)"
+                  value={keyboardData.color}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="surfaceFinish"
+                  placeholder="Surface Finish (e.g., Anodization)"
+                  value={keyboardData.surfaceFinish}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="typingAngle"
+                  placeholder="Typing Angle (e.g., 7°)"
+                  value={keyboardData.typingAngle}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="frontHeight"
+                  placeholder="Front Height (e.g., 19mm)"
+                  value={keyboardData.frontHeight}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="weightMaterial"
+                  placeholder="Weight Material (e.g., Brass, Stainless Steel)"
+                  value={keyboardData.weightMaterial}
+                  onChange={handleChange}
+                />
+                <Input
+                  type="text"
+                  name="buildWeight"
+                  placeholder="Build Weight (e.g., 1.5kg)"
+                  value={keyboardData.buildWeight}
                   onChange={handleChange}
                 />
 
-                <Input
-                  type="text"
-                  name="springWeight"
-                  placeholder="Spring Weight"
-                  value={switchData.springWeight}
+                <h4>PCB Options</h4>
+                <Select
+                  name="pcbOptions.thickness"
+                  value={keyboardData.pcbOptions.thickness}
                   onChange={handleChange}
-                />
-                <Input
-                  type="text"
-                  name="topMaterial"
-                  placeholder="Top Housing Material"
-                  value={switchData.topMaterial}
+                >
+                  <option value="1.2mm">1.2mm</option>
+                  <option value="1.6mm">1.6mm</option>
+                </Select>
+
+                <Select
+                  name="pcbOptions.material"
+                  value={keyboardData.pcbOptions.material}
                   onChange={handleChange}
-                />
-                <Input
-                  type="text"
-                  name="bottomMaterial"
-                  placeholder="Bottom Housing Material"
-                  value={switchData.bottomMaterial}
-                  onChange={handleChange}
-                />
-                <Input
-                  type="text"
-                  name="stemMaterial"
-                  placeholder="Stem Material"
-                  value={switchData.stemMaterial}
-                  onChange={handleChange}
-                />
+                >
+                  <option value="FR4">FR4</option>
+                  <option value="CEM">CEM</option>
+                </Select>
+
                 <CheckboxContainer>
                   <label>
                     <input
                       type="checkbox"
-                      name="factoryLubed"
-                      checked={switchData.factoryLubed}
+                      name="pcbOptions.flexCuts"
+                      checked={keyboardData.pcbOptions.flexCuts}
                       onChange={handleChange}
                     />
-                    Factory Lubed
+                    Flex Cuts
                   </label>
                 </CheckboxContainer>
 
-                <CheckboxContainer>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="isLubed"
-                      checked={switchData.isLubed}
-                      onChange={handleChange}
-                    />
-                    Hand Lubed
-                  </label>
-                </CheckboxContainer>
-                <CheckboxContainer>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="isFilmed"
-                      checked={switchData.isFilmed}
-                      onChange={handleChange}
-                    />
-                    Filmed
-                  </label>
-                </CheckboxContainer>
-
+                <h4>Notes</h4>
                 <TextArea
                   name="notesText"
                   placeholder="Add a note..."
                   value={noteText}
                   onChange={(event) => setNoteText(event.target.value)}
                 />
-                <AddButton onClick={handleAddNote}> Add Note</AddButton>
+                <AddNoteButton onClick={handleAddNote} type="button">
+                  Add Note
+                </AddNoteButton>
 
-                <h4>User Notes</h4>
-                <NotesContainer>
-                  {switchData.notes.length > 0 ? (
-                    switchData.notes.map((note) => (
-                      <NoteItem key={nanoid()}>
+                {keyboardData.notes.length > 0 && (
+                  <NotesContainer>
+                    {keyboardData.notes.map((note) => (
+                      <NoteItem key={note._id || nanoid()}>
                         {note.text} (
                         {new Date(note.timestamp).toLocaleDateString()})
                       </NoteItem>
-                    ))
-                  ) : (
-                    <p>No notes for this switch.</p>
-                  )}
-                </NotesContainer>
-              </AdditionalFieldsContainer>
-            )}
-          </>
-        ) : (
-          // Dropdown Selection Tab Content
-          <TabContent>
-            <p>Choose a switch to add to your inventory:</p>
-
-            {dbSwitchesError ? (
-              <p>Error loading switches. Please try again.</p>
-            ) : !dbSwitches ? (
-              <LoaderWrapper>
-                <StyledSpan />
-              </LoaderWrapper>
-            ) : (
-              <>
-                {/* Step 1: Select Manufacturer */}
-                <FormGroup>
-                  <Label>Manufacturer</Label>
-                  <Select
-                    value={selectedManufacturer}
-                    onChange={handleManufacturerChange}
-                  >
-                    <option value="">-- Select Manufacturer --</option>
-                    {manufacturers.map((manufacturer) => (
-                      <option key={manufacturer} value={manufacturer}>
-                        {manufacturer}
-                      </option>
                     ))}
-                  </Select>
-                </FormGroup>
-
-                {/* Step 2: Select Switch (only shown if manufacturer is selected) */}
-                {selectedManufacturer && (
-                  <FormGroup>
-                    <Label>Switch</Label>
-                    <Select
-                      value={selectedSwitchId}
-                      onChange={handleSwitchChange}
-                    >
-                      <option value="">-- Select Switch --</option>
-                      {filteredSwitches.map((sw) => (
-                        <option key={sw._id} value={sw._id}>
-                          {sw.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </FormGroup>
+                  </NotesContainer>
                 )}
-
-                {/* Step 3: Quantity and Preview (only shown if switch is selected) */}
-                {selectedSwitchId && (
-                  <>
-                    <FormGroup>
-                      <Label>Quantity</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="9999"
-                        value={switchData.quantity}
-                        onChange={(event) => {
-                          const value = Math.min(
-                            9999,
-                            Math.max(0, parseInt(event.target.value) || 0)
-                          );
-                          setSwitchData((prev) => ({
-                            ...prev,
-                            quantity: value,
-                          }));
-                        }}
-                      />
-                    </FormGroup>
-
-                    <FormGroup>
-                      <CheckboxContainer>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={switchData.isLubed}
-                            onChange={(event) =>
-                              setSwitchData((prev) => ({
-                                ...prev,
-                                isLubed: event.target.checked,
-                              }))
-                            }
-                          />
-                          Hand Lubed
-                        </label>
-                      </CheckboxContainer>
-
-                      <CheckboxContainer>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={switchData.isFilmed}
-                            onChange={(event) =>
-                              setSwitchData((prev) => ({
-                                ...prev,
-                                isFilmed: event.target.checked,
-                              }))
-                            }
-                          />
-                          Filmed
-                        </label>
-                      </CheckboxContainer>
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label>Notes</Label>
-                      <TextArea
-                        placeholder="Add a note..."
-                        value={noteText}
-                        onChange={(event) => setNoteText(event.target.value)}
-                      />
-                      <AddNoteButton onClick={handleAddNote} type="button">
-                        Add Note
-                      </AddNoteButton>
-                    </FormGroup>
-
-                    {switchData.notes.length > 0 && (
-                      <>
-                        <h4>Notes</h4>
-                        <NotesContainer>
-                          {switchData.notes.map((note) => (
-                            <NoteItem key={nanoid()}>
-                              {note.text} (
-                              {new Date(note.timestamp).toLocaleDateString()})
-                            </NoteItem>
-                          ))}
-                        </NotesContainer>
-                      </>
-                    )}
-
-                    <h3>Preview</h3>
-                    <PreviewWrapper>
-                      <SwitchCard
-                        itemObj={{
-                          _id: "preview",
-                          ...switchData,
-                        }}
-                        isEditMode={false}
-                        onDelete={() => {}}
-                      />
-                    </PreviewWrapper>
-                  </>
-                )}
-              </>
+              </AdditionalFieldsContainer>
             )}
           </TabContent>
         )}
@@ -562,14 +540,16 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
             onClick={handleSubmit}
             disabled={
               (activeTab === "manual" &&
-                (!switchData.name ||
-                  !switchData.manufacturer ||
-                  !switchData.image ||
-                  !switchData.switchType)) ||
-              (activeTab === "dropdown" && !selectedSwitchId)
+                (!keyboardData.name ||
+                  !keyboardData.designer ||
+                  !keyboardData.layout ||
+                  !keyboardData.renders[0] ||
+                  !keyboardData.blocker ||
+                  !keyboardData.switchType)) ||
+              (activeTab === "dropdown" && !selectedKeyboard)
             }
           >
-            Add Switch
+            Add Keyboard
           </AddButton>
         </ButtonContainer>
       </ModalWrapper>
@@ -592,6 +572,7 @@ const ModalWrapper = styled.section`
   max-height: 80vh;
   overflow-y: auto;
 `;
+
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -602,31 +583,48 @@ const Overlay = styled.div`
   z-index: 1000;
 `;
 
-const CancelButton = styled.button`
-  padding: 10px 15px;
-  border: none;
-  background-color: #ff4d4d;
-  color: white;
-  border-radius: 5px;
-  font-size: 16px;
-  margin-top: 15px;
-  width: 49%;
+const Title = styled.h2`
   text-align: center;
-  cursor: pointer;
-  margin-right: 2px;
 `;
-const AddButton = styled.button`
-  padding: 10px 15px;
+
+const TabContainer = styled.div`
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+`;
+
+const TabButton = styled.button`
+  flex: 1;
+  padding: 10px;
+  background: ${(props) => (props.$isActive ? "#f0f8ff" : "#f5f5f5")};
   border: none;
-  background-color: #007bff;
-  color: white;
-  border-radius: 5px;
-  font-size: 16px;
-  margin-top: 15px;
-  width: 49%;
-  text-align: center;
+  border-bottom: 3px solid
+    ${(props) => (props.$isActive ? "#007bff" : "transparent")};
   cursor: pointer;
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) => (props.$isActive ? "#f0f8ff" : "#e9e9e9")};
+  }
+`;
+
+const TabContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 16px;
+  width: 100%;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
 `;
 
 const Input = styled.input`
@@ -642,12 +640,45 @@ const Select = styled.select`
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
+  border: 1px solid #ccc;
 `;
 
-const CheckboxContainer = styled.div`
+const DropDownSelect = styled(Select)`
+  background-color: #f9f9f9;
+  font-size: 16px;
+`;
+
+const KeyboardPreview = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-top: 20px;
+`;
+
+const KeyboardDetails = styled.div`
+  width: 100%;
+  text-align: left;
+
+  p {
+    margin: 5px 0;
+  }
+`;
+
+const ToggleAdditionalFieldsButton = styled.button`
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  margin: 10px 0;
+`;
+
+const AdditionalFieldsContainer = styled.div`
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
 `;
 
 const TextArea = styled.textarea`
@@ -655,11 +686,7 @@ const TextArea = styled.textarea`
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
+  min-height: 80px;
 `;
 
 const NotesContainer = styled.ul`
@@ -695,125 +722,36 @@ const NoteItem = styled.li`
   width: 100%;
 `;
 
-const PreviewWrapper = styled.div`
-  width: 100%;
-  max-width: 250px;
-  margin: 0 auto 20px;
+const ButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
 `;
 
-const AdditionalFieldsContainer = styled.div`
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
-`;
-const ToggleAdditionalFieldsButton = styled.button`
-  background: none;
+const CancelButton = styled.button`
+  padding: 10px 15px;
   border: none;
-  color: #007bff;
-  cursor: pointer;
-  text-decoration: underline;
-  margin: 10px 0;
-`;
-
-const Title = styled.h2`
+  background-color: #ff4d4d;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 49%;
   text-align: center;
+  cursor: pointer;
+  margin-right: 2px;
 `;
 
-const TabContainer = styled.div`
-  display: flex;
-  width: 100%;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 20px;
-`;
-
-const TabButton = styled.button`
-  flex: 1;
-  padding: 10px;
-  background: ${(props) => (props.$isActive ? "#f0f8ff" : "#f5f5f5")};
+const AddButton = styled.button`
+  padding: 10px 15px;
   border: none;
-  border-bottom: 3px solid
-    ${(props) => (props.$isActive ? "#007bff" : "transparent")};
-  cursor: pointer;
-  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => (props.$isActive ? "#f0f8ff" : "#e9e9e9")};
-  }
-`;
-
-const TabContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  text-align: center;
-`;
-
-const SelectSwitchButton = styled.button`
-  padding: 12px 24px;
   background-color: #007bff;
   color: white;
-  border: none;
-  border-radius: 25px;
+  border-radius: 5px;
   font-size: 16px;
+  width: 49%;
+  text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    background-color: #0069d9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-  width: 100%;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-`;
-
-const StyledSpan = styled.span`
-  width: 32px;
-  height: 32px;
-  border: 3px solid #fff;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-  border-color: #007bff;
-  border-bottom-color: transparent;
-
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `;
 
 const AddNoteButton = styled.button`
@@ -825,6 +763,7 @@ const AddNoteButton = styled.button`
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-bottom: 15px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
   &:hover {
@@ -836,4 +775,11 @@ const AddNoteButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
 `;
