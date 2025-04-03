@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";

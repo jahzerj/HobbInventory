@@ -3,7 +3,7 @@ import AddButton from "@/components/KeycapComponents/AddButton";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
@@ -74,7 +74,6 @@ export default function Keycaps() {
     );
   }, []);
 
-  // Now update handleDeleteKeycap with useCallback
   const handleDeleteKeycap = useCallback(
     async (keycapId, event) => {
       event.stopPropagation();
@@ -230,19 +229,16 @@ export default function Keycaps() {
 
         <CardContainer $itemCount={filteredKeycaps?.length || 0}>
           {keycaps?.length === 0 ? (
-            // No keycaps added at all
             <EmptyStateMessage>
               <p>No keycaps added yet!</p>
               <p>Click the ➕ button to add a keycap set to your inventory</p>
             </EmptyStateMessage>
           ) : filteredKeycaps?.length === 0 ? (
-            // Keycaps exist but none match the current filter
             <EmptyStateMessage>
               <p>No keycaps found with the selected color!</p>
               <p>Try selecting a different color filter</p>
             </EmptyStateMessage>
           ) : (
-            // Keycaps exist and match the current filter
             <InventoryList
               data={filteredKeycaps}
               isEditMode={isEditMode}
@@ -252,6 +248,7 @@ export default function Keycaps() {
           )}
         </CardContainer>
       </StyledContainer>
+
       <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
       <EditInventoryButton
         isEditMode={isEditMode}
@@ -275,6 +272,7 @@ const CardContainer = styled.div`
   flex-direction: column;
   align-items: center;
   -webkit-tap-highlight-color: transparent;
+  margin-bottom: 50px;
 
   @media (min-width: 900px) {
     /* Only use grid layout when we have multiple items */

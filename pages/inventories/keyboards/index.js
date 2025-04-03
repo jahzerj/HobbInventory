@@ -3,7 +3,7 @@ import AddButton from "@/components/KeyboardComponents/AddButton";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
@@ -106,10 +106,6 @@ export default function Keyboards() {
     [getDeleteConfirmation, userId, mutate]
   );
 
-  // Handle opening/closing modal
-  const handleOpenModal = useCallback(() => setIsOpen(true), []);
-  const handleCloseModal = useCallback(() => setIsOpen(false), []);
-
   // Memoized layout filtering function
   const getFilteredKeyboards = useCallback(
     (keyboardsData, selectedLayoutArray) => {
@@ -186,8 +182,17 @@ export default function Keyboards() {
       ]
     : ["all"];
 
-  // Get filtered keyboards
   const filteredKeyboards = getFilteredKeyboards(keyboards, selectedLayouts);
+
+  // Handle opening/closing modal
+  const handleOpenModal = useCallback(() => setIsOpen(true), []);
+  const handleCloseModal = useCallback(() => setIsOpen(false), []);
+
+  // Handle toggling edit mode
+  const handleToggleEdit = useCallback(
+    () => setIsEditMode((prevMode) => !prevMode),
+    []
+  );
 
   if (error) return <p>Error loading keyboards...</p>;
   if (!keyboards)
@@ -249,7 +254,7 @@ export default function Keyboards() {
       <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
       <EditInventoryButton
         isEditMode={isEditMode}
-        onToggleEdit={() => setIsEditMode((prev) => !prev)}
+        onToggleEdit={handleToggleEdit}
       />
     </>
   );
