@@ -134,6 +134,6 @@ const userkeyboardSchema = new Schema(
 
 const UserKeyboard =
   mongoose.models.UserKeyboard ||
-  mongoose.model("UserKeyboardKit", userkeyboardSchema);
+  mongoose.model("UserKeyboard", userkeyboardSchema);
 
 export default UserKeyboard;

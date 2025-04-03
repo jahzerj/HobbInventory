@@ -1,21 +1,201 @@
 import Link from "next/link";
-import styled from "styled-components";
-import MenuIcon from "@/components/icons/MenuIcon";
-import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
 import AddButton from "@/components/KeyboardComponents/AddButton";
+import { useEffect, useState, useRef, useCallback } from "react";
+import styled from "styled-components";
+import useSWR from "swr";
 import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
-import { useState } from "react";
+import MenuIcon from "@/components/icons/MenuIcon";
+import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
+import InventoryList from "@/components/SharedComponents/InventoryList";
+import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
 
 export default function Keyboards() {
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [userKeyboards, setUserKeyboards] = useState([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedLayouts, setSelectedLayouts] = useState(["all"]);
+  const layoutScrollRef = useRef(null);
+  const userId = "guest_user";
 
-  // Simplified handlers - these will be expanded later
-  const handleOpenModal = () => setIsOpen(true);
-  const handleDeleteKeyboard = (keyboardId, event) => {
-    event.stopPropagation();
-    console.log("Delete keyboard:", keyboardId);
-  };
+  const {
+    data: keyboards,
+    error,
+    mutate,
+  } = useSWR(`/api/inventories/userkeyboards?userId=${userId}`);
+
+  useEffect(() => {
+    if (keyboards) {
+      setUserKeyboards(keyboards.map((keyboard) => keyboard._id));
+    }
+  }, [keyboards]);
+
+  const handleAddKeyboard = useCallback(
+    async (keyboardToAdd) => {
+      if (userKeyboards.includes(keyboardToAdd.keyboardId)) return;
+
+      try {
+        // Update UI optimistically
+        setUserKeyboards((prev) => [...prev, keyboardToAdd.keyboardId]);
+
+        const response = await fetch("/api/inventories/userkeyboards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(keyboardToAdd),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add keyboard");
+        }
+
+        // Refresh data from server to ensure accuracy
+        mutate();
+      } catch (error) {
+        // Revert UI change on error
+        setUserKeyboards((prev) =>
+          prev.filter((id) => id !== keyboardToAdd.keyboardId)
+        );
+        console.error("Failed to add keyboard:", error);
+      }
+    },
+    [userKeyboards, mutate]
+  );
+
+  // Make getDeleteConfirmation a memoized function with useCallback
+  const getDeleteConfirmation = useCallback((itemType) => {
+    return window.confirm(
+      `Are you sure you want to remove this ${itemType}?\n\n` +
+        `This will permanently remove:\n` +
+        `• This ${itemType}\n` +
+        `• Selected switches\n` +
+        `• Selected builds\n` +
+        `• Selected keycaps\n` +
+        `• Any personal notes that you have added`
+    );
+  }, []);
+
+  const handleDeleteKeyboard = useCallback(
+    async (keyboardId, event) => {
+      event.stopPropagation();
+
+      if (!getDeleteConfirmation("keyboard")) return;
+
+      try {
+        // Optimistic UI update
+        setUserKeyboards((prev) => prev.filter((id) => id !== keyboardId));
+
+        const response = await fetch("/api/inventories/userkeyboards", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            keyboardId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete keyboard");
+        }
+
+        mutate();
+      } catch (error) {
+        console.error("Failed to delete keyboard:", error);
+        // Force refetch to restore accurate state on error
+        mutate();
+      }
+    },
+    [getDeleteConfirmation, userId, mutate]
+  );
+
+  // Handle opening/closing modal
+  const handleOpenModal = useCallback(() => setIsOpen(true), []);
+  const handleCloseModal = useCallback(() => setIsOpen(false), []);
+
+  // Memoized layout filtering function
+  const getFilteredKeyboards = useCallback(
+    (keyboardsData, selectedLayoutArray) => {
+      if (!keyboardsData) return [];
+
+      // If "all" is selected or no layouts are selected, return all keyboards
+      if (
+        selectedLayoutArray.includes("all") ||
+        selectedLayoutArray.length === 0
+      ) {
+        return keyboardsData;
+      }
+
+      // Return keyboards that match the selected layout
+      return keyboardsData.filter((keyboard) =>
+        selectedLayoutArray.includes(keyboard.layout)
+      );
+    },
+    []
+  );
+
+  // Function to handle layout selection
+  const handleLayoutSelect = useCallback((layout) => {
+    setSelectedLayouts((prev) => {
+      // If selecting "all", clear other selections
+      if (layout === "all") {
+        return ["all"];
+      }
+
+      // If currently "all" is selected and selecting another layout, remove "all"
+      if (prev.includes("all") && layout !== "all") {
+        return [layout];
+      }
+
+      // Toggle selection
+      if (prev.includes(layout)) {
+        const newSelection = prev.filter((l) => l !== layout);
+        // If no layouts left, select "all"
+        return newSelection.length === 0 ? ["all"] : newSelection;
+      } else {
+        return [...prev, layout];
+      }
+    });
+  }, []);
+
+  // Mouse wheel horizontal scrolling
+  const handleWheel = useCallback((event) => {
+    if (layoutScrollRef.current) {
+      event.preventDefault();
+      layoutScrollRef.current.scrollLeft += event.deltaY;
+    }
+  }, []);
+
+  useEffect(() => {
+    const scrollContainer = layoutScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("wheel", handleWheel, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, [handleWheel]);
+
+  // Get all unique layouts
+  const uniqueLayouts = keyboards
+    ? [
+        "all",
+        ...Array.from(new Set(keyboards.map((keyboard) => keyboard.layout))),
+      ]
+    : ["all"];
+
+  // Get filtered keyboards
+  const filteredKeyboards = getFilteredKeyboards(keyboards, selectedLayouts);
+
+  if (error) return <p>Error loading keyboards...</p>;
+  if (!keyboards)
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
 
   return (
     <>
@@ -23,24 +203,45 @@ export default function Keyboards() {
         <MenuIcon />
       </HomeBurger>
 
+      <AddKeyboardModal
+        open={isOpen}
+        onClose={handleCloseModal}
+        onAddKeyboard={handleAddKeyboard}
+      />
+
       <StyledContainer>
         <LongTitle>Keyboard Inventory</LongTitle>
 
-        <CardContainer $itemCount={mockKeyboardData.length}>
-          {mockKeyboardData.length === 0 ? (
+        <LayoutFilterContainer ref={layoutScrollRef}>
+          {uniqueLayouts.map((layout) => (
+            <LayoutPill
+              key={layout}
+              $isSelected={selectedLayouts.includes(layout)}
+              onClick={() => handleLayoutSelect(layout)}
+            >
+              {layout === "all" ? "All Layouts" : layout}
+            </LayoutPill>
+          ))}
+        </LayoutFilterContainer>
+
+        <CardContainer $itemCount={filteredKeyboards?.length || 0}>
+          {keyboards?.length === 0 ? (
             <EmptyStateMessage>
               <p>No keyboards added yet!</p>
               <p>Click the ➕ button to add a keyboard to your inventory</p>
             </EmptyStateMessage>
+          ) : filteredKeyboards?.length === 0 ? (
+            <EmptyStateMessage>
+              <p>No keyboards found with the selected layout!</p>
+              <p>Try selecting a different layout filter</p>
+            </EmptyStateMessage>
           ) : (
-            mockKeyboardData.map((keyboard) => (
-              <KeyboardCard
-                key={keyboard._id}
-                itemObj={keyboard}
-                isEditMode={isEditMode}
-                onDelete={handleDeleteKeyboard}
-              />
-            ))
+            <InventoryList
+              data={filteredKeyboards}
+              isEditMode={isEditMode}
+              onDelete={handleDeleteKeyboard}
+              ItemComponent={KeyboardCard}
+            />
           )}
         </CardContainer>
       </StyledContainer>
@@ -146,6 +347,51 @@ const StyledSpan = styled.span`
     100% {
       transform: rotate(360deg);
     }
+  }
+`;
+
+// Add these styled components
+const LayoutFilterContainer = styled.div`
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px 15px;
+  gap: 10px;
+  position: sticky;
+  top: 40px;
+  z-index: 100;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const LayoutPill = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  padding: 8px 16px;
+  border-radius: 50px;
+  white-space: nowrap;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: ${(props) => (props.$isSelected ? "#007bff" : "#f0f0f0")};
+  color: ${(props) => (props.$isSelected ? "white" : "#333")};
+  border: 2px solid #007bff;
+  box-shadow: ${(props) =>
+    props.$isSelected ? "0 2px 5px rgba(0,0,0,0.2)" : "none"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
 

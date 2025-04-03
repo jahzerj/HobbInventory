@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         stemMaterial,
         isLubed,
         isFilmed,
-        notes,
+        notes = [],
       } = req.body;
 
       if (req.method === "POST") {

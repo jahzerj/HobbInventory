@@ -170,8 +170,6 @@ export default function Keycaps() {
     };
   }, [handleWheel]);
 
-  const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
-
   // Get all unique colors once
   const uniqueColors = keycaps
     ? [
@@ -181,6 +179,8 @@ export default function Keycaps() {
         ),
       ]
     : ["all"];
+
+  const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
 
   // Handle opening/closing modal
   const handleOpenModal = useCallback(() => setIsOpen(true), []);
@@ -213,7 +213,7 @@ export default function Keycaps() {
       />
 
       <StyledContainer>
-        <h1>Keycap Inventory</h1>
+        <LongTitle>Keycap Inventory</LongTitle>
 
         <ColorFilterContainer ref={colorScrollRef}>
           {uniqueColors.map((color) => (
@@ -337,7 +337,7 @@ const ColorFilterContainer = styled.div`
   padding: 10px 15px;
   gap: 10px;
   position: sticky;
-  top: 40px; // place it under the burger menu
+  top: 40px;
   z-index: 100;
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; //IE and Edge
@@ -400,5 +400,11 @@ const EmptyStateMessage = styled.div`
 
   p:last-child {
     color: #666;
+  }
+`;
+
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
   }
 `;
