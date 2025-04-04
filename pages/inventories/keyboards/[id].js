@@ -26,9 +26,11 @@ export default function KeyboardDetail() {
 
   //Fetching userkeyboard details
 
-  const { data: userKeyboards, error: userKeyboardError } = useSWR(
-    id ? `/api/inventories/userkeyboards?userId=guest_user` : null
-  );
+  const {
+    data: userKeyboards,
+    error: userKeyboardError,
+    mutate,
+  } = useSWR(id ? `/api/inventories/userkeyboards?userId=guest_user` : null);
 
   const userKeyboard = userKeyboards?.find((item) => item._id === id);
 
@@ -194,7 +196,7 @@ export default function KeyboardDetail() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update keyboard");
+        throw new Error(responseData.message || "Failed to update keyboard");
       }
 
       // Trigger SWR to revalidate data

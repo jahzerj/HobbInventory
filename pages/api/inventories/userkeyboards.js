@@ -1,6 +1,5 @@
 import dbConnect from "@/db/connect";
 import UserKeyboard from "@/db/models/UserKeyboard";
-import Keyboard from "@/db/models/Keyboard";
 
 export default async function handler(req, res) {
   await dbConnect();
@@ -43,6 +42,7 @@ export default async function handler(req, res) {
         !switchType ||
         !renders
       ) {
+        console.error("Missing required fields");
         res.status(400).json({
           message:
             "Missing required fields: Name, Designer, Layout, Blocker, Switch Type and Renders",
@@ -50,83 +50,38 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Check if keyboard came from dropdown selection
-      if (keyboardId) {
-        // For keyboards from the dropdown, verify it exists in the master database
-        const keyboardExists = await Keyboard.findById(keyboardId);
-        if (!keyboardExists) {
-          return res
-            .status(404)
-            .json({ message: "Keyboard not found in database" });
-        }
+      // Create or update the UserKeyboard entry
+      const updatedKeyboard = await UserKeyboard.findOneAndUpdate(
+        { userId, name }, // Find by userId and name
+        {
+          userId,
+          keyboardId, // This can be null for manual entries
+          name,
+          designer,
+          layout,
+          renders,
+          blocker,
+          switchType,
+          plateMaterial,
+          mounting,
+          typingAngle,
+          frontHeight,
+          surfaceFinish,
+          color,
+          weightMaterial,
+          buildWeight,
+          pcbOptions,
+          builds,
+          notes,
+        },
+        { new: true, upsert: true }
+      );
 
-        // Use the existing keyboard ID
-        const updatedKeyboard = await UserKeyboard.findOneAndUpdate(
-          { userId, keyboardId },
-          {
-            userId,
-            keyboardId,
-            name,
-            designer,
-            layout,
-            renders,
-            blocker,
-            switchType,
-            plateMaterial,
-            mounting,
-            typingAngle,
-            frontHeight,
-            surfaceFinish,
-            color,
-            weightMaterial,
-            buildWeight,
-            pcbOptions,
-            builds,
-            notes,
-          },
-          { new: true, upsert: true }
-        );
-
-        res.status(200).json({
-          message: "Keyboard selection updated.",
-          updatedKeyboard,
-        });
-        return;
-      } else {
-        // For manually entered keyboards, don't create a master keyboard
-        // Just create a UserKeyboard with no reference to master collection
-        const updatedKeyboard = await UserKeyboard.findOneAndUpdate(
-          { userId, name }, // Find by name for manually entered keyboards
-          {
-            userId,
-            // No keyboardId field set - this is a user-only keyboard
-            name,
-            designer,
-            layout,
-            renders,
-            blocker,
-            switchType,
-            plateMaterial,
-            mounting,
-            typingAngle,
-            frontHeight,
-            surfaceFinish,
-            color,
-            weightMaterial,
-            buildWeight,
-            pcbOptions,
-            builds,
-            notes,
-          },
-          { new: true, upsert: true }
-        );
-
-        res.status(200).json({
-          message: "Keyboard added to your collection.",
-          updatedKeyboard,
-        });
-        return;
-      }
+      res.status(200).json({
+        message: "Keyboard added or updated in your collection.",
+        updatedKeyboard,
+      });
+      return;
     }
 
     if (req.method === "DELETE") {
@@ -148,7 +103,7 @@ export default async function handler(req, res) {
       return;
     }
   } catch (error) {
-    console.error(error);
+    console.error("Internal Server Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
     return;
   }
