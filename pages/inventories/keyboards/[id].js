@@ -6,7 +6,7 @@ import EditButton from "@/components/KeycapComponents/EditButton";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
-import { mockKeyboardData } from "./index"; // Import mock data
+
 import {
   DetailPageContainer,
   StyledLink,
@@ -24,46 +24,52 @@ export default function KeyboardDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  // For now, we'll use mock data instead of SWR
-  const keyboard = mockKeyboardData?.find((item) => item._id === id);
-  const notes = keyboard?.notes ?? [];
+  //Fetching userkeyboard details
+
+  const { data: userKeyboards, error: userKeyboardError } = useSWR(
+    id ? `/api/inventories/userkeyboards?userId=guest_user` : null
+  );
+
+  const userKeyboard = userKeyboards?.find((item) => item._id === id);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [innerWidth, setInnerWidth] = useState(0);
 
   // State for editable fields
-  const [editedName, setEditedName] = useState(keyboard?.name || "");
+  const [editedName, setEditedName] = useState(userKeyboard?.name || "");
   const [editedDesigner, setEditedDesigner] = useState(
-    keyboard?.designer || ""
+    userKeyboard?.designer || ""
   );
-  const [editedLayout, setEditedLayout] = useState(keyboard?.layout || "");
-  const [editedBlocker, setEditedBlocker] = useState(keyboard?.blocker || "");
+  const [editedLayout, setEditedLayout] = useState(userKeyboard?.layout || "");
+  const [editedBlocker, setEditedBlocker] = useState(
+    userKeyboard?.blocker || ""
+  );
   const [editedSwitchType, setEditedSwitchType] = useState(
-    keyboard?.switchType || ""
+    userKeyboard?.switchType || ""
   );
   const [editedPlateMaterial, setEditedPlateMaterial] = useState(
-    keyboard?.plateMaterial || []
+    userKeyboard?.plateMaterial || []
   );
   const [editedMounting, setEditedMounting] = useState(
-    keyboard?.mounting || []
+    userKeyboard?.mounting || []
   );
   const [editedTypingAngle, setEditedTypingAngle] = useState(
-    keyboard?.typingAngle || ""
+    userKeyboard?.typingAngle || ""
   );
   const [editedFrontHeight, setEditedFrontHeight] = useState(
-    keyboard?.frontHeight || ""
+    userKeyboard?.frontHeight || ""
   );
   const [editedSurfaceFinish, setEditedSurfaceFinish] = useState(
-    keyboard?.surfaceFinish || ""
+    userKeyboard?.surfaceFinish || ""
   );
-  const [editedColor, setEditedColor] = useState(keyboard?.color || "");
+  const [editedColor, setEditedColor] = useState(userKeyboard?.color || "");
   const [editedWeightMaterial, setEditedWeightMaterial] = useState(
-    keyboard?.weightMaterial || ""
+    userKeyboard?.weightMaterial || ""
   );
   const [editedBuildWeight, setEditedBuildWeight] = useState(
-    keyboard?.buildWeight || ""
+    userKeyboard?.buildWeight || ""
   );
-  const [editedPhotos, setEditedPhotos] = useState(keyboard?.photos || []);
+  const [editedPhotos, setEditedPhotos] = useState(userKeyboard?.photos || []);
 
   // Add these state variables near the other state declarations
   const [editedBuildName, setEditedBuildName] = useState("");
@@ -78,16 +84,18 @@ export default function KeyboardDetail() {
   );
 
   // Add state for builds
-  const [editedBuilds, setEditedBuilds] = useState(keyboard?.builds || []);
+  const [editedBuilds, setEditedBuilds] = useState(userKeyboard?.builds || []);
   const [selectedSwitches, setSelectedSwitches] = useState([]);
 
   // Add these new state variables
-  const [editedPlate, setEditedPlate] = useState(keyboard?.currentPlate || "");
+  const [editedPlate, setEditedPlate] = useState(
+    userKeyboard?.currentPlate || ""
+  );
   const [editedSwitches, setEditedSwitches] = useState(
-    keyboard?.installedSwitches || []
+    userKeyboard?.installedSwitches || []
   );
   const [editedModifications, setEditedModifications] = useState(
-    keyboard?.modifications || []
+    userKeyboard?.modifications || []
   );
 
   useEffect(() => {
@@ -97,30 +105,48 @@ export default function KeyboardDetail() {
   }, []);
 
   useEffect(() => {
-    if (keyboard) {
-      setEditedName(keyboard.name || "");
-      setEditedDesigner(keyboard.designer || "");
-      setEditedLayout(keyboard.layout || "");
-      setEditedBlocker(keyboard.blocker || "");
-      setEditedSwitchType(keyboard.switchType || "");
-      setEditedPlateMaterial(keyboard.plateMaterial || []);
-      setEditedMounting(keyboard.mounting || []);
-      setEditedTypingAngle(keyboard.typingAngle || "");
-      setEditedFrontHeight(keyboard.frontHeight || "");
-      setEditedSurfaceFinish(keyboard.surfaceFinish || "");
-      setEditedColor(keyboard.color || "");
-      setEditedWeightMaterial(keyboard.weightMaterial || "");
-      setEditedBuildWeight(keyboard.buildWeight || "");
-      setEditedPhotos(keyboard.photos || []);
-      setEditedPlate(keyboard.currentPlate || "");
-      setEditedSwitches(keyboard.installedSwitches || []);
-      setEditedModifications(keyboard.modifications || []);
+    if (userKeyboard) {
+      setEditedName(userKeyboard.name || "");
+      setEditedDesigner(userKeyboard.designer || "");
+      setEditedLayout(userKeyboard.layout || "");
+      setEditedBlocker(userKeyboard.blocker || "");
+      setEditedSwitchType(userKeyboard.switchType || "");
+      setEditedPlateMaterial(userKeyboard.plateMaterial || []);
+      setEditedMounting(userKeyboard.mounting || []);
+      setEditedTypingAngle(userKeyboard.typingAngle || "");
+      setEditedFrontHeight(userKeyboard.frontHeight || "");
+      setEditedSurfaceFinish(userKeyboard.surfaceFinish || "");
+      setEditedColor(userKeyboard.color || "");
+      setEditedWeightMaterial(userKeyboard.weightMaterial || "");
+      setEditedBuildWeight(userKeyboard.buildWeight || "");
+      setEditedPhotos(userKeyboard.photos || []);
+      setEditedPlate(userKeyboard.currentPlate || "");
+      setEditedSwitches(userKeyboard.installedSwitches || []);
+      setEditedModifications(userKeyboard.modifications || []);
     }
-  }, [keyboard]);
+  }, [userKeyboard]);
 
   const handleNotesUpdate = async (updatedNotes) => {
-    // This would be replaced with actual API call in production
-    console.log("Updating notes:", updatedNotes);
+    try {
+      const response = await fetch("/api/inventories/userkeyboards", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          keyboardId: id,
+          notes: updatedNotes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update notes");
+      }
+
+      mutate();
+    } catch (error) {
+      console.error("Error updating notes:", error);
+      alert("Failed to save notes. Please try again.");
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -141,18 +167,66 @@ export default function KeyboardDetail() {
 
     const updatedBuilds = [...editedBuilds, newBuild];
 
-    // This would be replaced with actual API call in production
-    console.log("Saving changes with builds:", updatedBuilds);
-    setIsEditMode(false);
+    try {
+      const response = await fetch("/api/inventories/userkeyboards", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "guest_user",
+          keyboardId: id,
+          name: editedName,
+          designer: editedDesigner,
+          layout: editedLayout,
+          renders: userKeyboard.renders,
+          blocker: editedBlocker,
+          switchType: editedSwitchType,
+          plateMaterial: editedPlateMaterial,
+          mounting: editedMounting,
+          typingAngle: editedTypingAngle,
+          frontHeight: editedFrontHeight,
+          surfaceFinish: editedSurfaceFinish,
+          color: editedColor,
+          weightMaterial: editedWeightMaterial,
+          buildWeight: editedBuildWeight,
+          pcbOptions: userKeyboard.pcbOptions,
+          builds: updatedBuilds,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update keyboard");
+      }
+
+      // Trigger SWR to revalidate data
+      mutate();
+      setIsEditMode(false);
+    } catch (error) {
+      console.error("Error updating keyboard:", error);
+      alert("Failed to save changes. Please try again.");
+    }
   };
 
   const handleCancelEdits = () => {
     setIsEditMode(false);
     // Reset all edited states to original values
-    if (keyboard) {
-      setEditedName(keyboard.name || "");
-      setEditedDesigner(keyboard.designer || "");
-      // ... reset all other fields
+    if (userKeyboard) {
+      setEditedName(userKeyboard.name || "");
+      setEditedDesigner(userKeyboard.designer || "");
+      setEditedLayout(userKeyboard.layout || "");
+      setEditedBlocker(userKeyboard.blocker || "");
+      setEditedSwitchType(userKeyboard.switchType || "");
+      setEditedPlateMaterial(userKeyboard.plateMaterial || []);
+      setEditedMounting(userKeyboard.mounting || []);
+      setEditedTypingAngle(userKeyboard.typingAngle || "");
+      setEditedFrontHeight(userKeyboard.frontHeight || "");
+      setEditedSurfaceFinish(userKeyboard.surfaceFinish || "");
+      setEditedColor(userKeyboard.color || "");
+      setEditedWeightMaterial(userKeyboard.weightMaterial || "");
+      setEditedBuildWeight(userKeyboard.buildWeight || "");
+      setEditedPhotos(userKeyboard.photos || []);
+      setEditedPlate(userKeyboard.currentPlate || "");
+      setEditedSwitches(userKeyboard.installedSwitches || []);
+      setEditedModifications(userKeyboard.modifications || []);
     }
   };
 
@@ -163,11 +237,21 @@ export default function KeyboardDetail() {
         ? prev.filter((id) => id !== switchId)
         : [...prev, switchId]
     );
+    // Also update selectedSwitches for the new build
+    setSelectedSwitches((prev) =>
+      prev.includes(switchId)
+        ? prev.filter((id) => id !== switchId)
+        : [...prev, switchId]
+    );
   };
 
   // Add these handler functions
   const handleAddPhoto = () => {
-    // Implement photo upload logic
+    // Placeholder implementation
+    const newPhotoUrl = prompt("Enter photo URL:", "");
+    if (newPhotoUrl && newPhotoUrl.trim() !== "") {
+      setEditedPhotos([...editedPhotos, newPhotoUrl.trim()]);
+    }
   };
 
   const handleRemovePhoto = (index) => {
@@ -188,7 +272,7 @@ export default function KeyboardDetail() {
     );
   };
 
-  if (!keyboard) {
+  if (!userKeyboard) {
     return (
       <LoaderWrapper>
         <StyledSpan />
@@ -209,15 +293,15 @@ export default function KeyboardDetail() {
 
       <HeaderSection>
         {isEditMode ? (
-          <h1>Editing {keyboard.name}</h1>
+          <h1>Editing {userKeyboard.name}</h1>
         ) : (
-          <h1>{keyboard.name}</h1>
+          <h1>{userKeyboard.name}</h1>
         )}
-        {keyboard.renders && (
+        {userKeyboard.renders && (
           <HeaderImage>
             <Image
-              src={keyboard.renders[0]}
-              alt={keyboard.name}
+              src={userKeyboard.renders[0]}
+              alt={userKeyboard.name}
               fill
               style={{ objectFit: "cover" }}
               priority
@@ -418,41 +502,42 @@ export default function KeyboardDetail() {
         ) : (
           <>
             <li>
-              <strong>Designer:</strong> {keyboard.designer}
+              <strong>Designer:</strong> {userKeyboard.designer}
             </li>
             <li>
-              <strong>Layout:</strong> {keyboard.layout}
+              <strong>Layout:</strong> {userKeyboard.layout}
             </li>
             <li>
-              <strong>Blocker:</strong> {keyboard.blocker}
+              <strong>Blocker:</strong> {userKeyboard.blocker}
             </li>
             <li>
-              <strong>Switch Type:</strong> {keyboard.switchType}
+              <strong>Switch Type:</strong> {userKeyboard.switchType}
             </li>
             <li>
               <strong>Plate Material: </strong>
-              {keyboard.plateMaterial.join(", ")}
+              {userKeyboard.plateMaterial.join(", ")}
             </li>
             <li>
-              <strong>Mounting Style:</strong> {keyboard.mounting.join(", ")}
+              <strong>Mounting Style:</strong>{" "}
+              {userKeyboard.mounting.join(", ")}
             </li>
             <li>
-              <strong>Typing Angle:</strong> {keyboard.typingAngle}
+              <strong>Typing Angle:</strong> {userKeyboard.typingAngle}
             </li>
             <li>
-              <strong>Front Height:</strong> {keyboard.frontHeight}
+              <strong>Front Height:</strong> {userKeyboard.frontHeight}
             </li>
             <li>
-              <strong>Surface Finish:</strong> {keyboard.surfaceFinish}
+              <strong>Surface Finish:</strong> {userKeyboard.surfaceFinish}
             </li>
             <li>
-              <strong>Color:</strong> {keyboard.color}
+              <strong>Color:</strong> {userKeyboard.color}
             </li>
             <li>
-              <strong>Weight Material:</strong> {keyboard.weightMaterial}
+              <strong>Weight Material:</strong> {userKeyboard.weightMaterial}
             </li>
             <li>
-              <strong>Build Weight:</strong> {keyboard.buildWeight}
+              <strong>Build Weight:</strong> {userKeyboard.buildWeight}
             </li>
           </>
         )}
@@ -469,7 +554,7 @@ export default function KeyboardDetail() {
               onChange={(event) => setEditedPlate(event.target.value)}
             >
               <option value="">-- Select Plate --</option>
-              {keyboard.plateMaterial.map((plate) => (
+              {userKeyboard.plateMaterial.map((plate) => (
                 <option key={plate} value={plate}>
                   {plate}
                 </option>
@@ -552,10 +637,10 @@ export default function KeyboardDetail() {
         <BuildContainer>
           <BuildLayout>
             <BuildPhotoContainer>
-              {keyboard.builds?.[0]?.photos?.[0] ? (
+              {userKeyboard.builds?.[0]?.photos?.[0] ? (
                 <Image
-                  src={keyboard.builds[0].photos[0]}
-                  alt={`${keyboard.name} build photo`}
+                  src={userKeyboard.builds[0].photos[0]}
+                  alt={`${userKeyboard.name} build photo`}
                   fill
                   style={{ objectFit: "cover" }}
                 />
@@ -578,14 +663,14 @@ export default function KeyboardDetail() {
             <BuildDetails>
               <BuildInfoItem>
                 <strong>Plate:</strong>
-                {keyboard.currentPlate || "Not specified"}
+                {userKeyboard.currentPlate || "Not specified"}
               </BuildInfoItem>
 
               <BuildInfoItem>
                 <strong>Switches:</strong>
-                {keyboard.installedSwitches &&
-                keyboard.installedSwitches.length > 0
-                  ? keyboard.installedSwitches.map((switchData, index) => (
+                {userKeyboard.installedSwitches &&
+                userKeyboard.installedSwitches.length > 0
+                  ? userKeyboard.installedSwitches.map((switchData, index) => (
                       <SwitchListItem
                         key={switchData.id || switchData._id || index}
                       >
@@ -600,8 +685,9 @@ export default function KeyboardDetail() {
 
               <BuildInfoItem>
                 <strong>Modifications:</strong>
-                {keyboard.modifications && keyboard.modifications.length > 0
-                  ? keyboard.modifications.map((mod, index) => (
+                {userKeyboard.modifications &&
+                userKeyboard.modifications.length > 0
+                  ? userKeyboard.modifications.map((mod, index) => (
                       <Modification key={index}>{mod}</Modification>
                     ))
                   : "No modifications recorded"}
