@@ -88,7 +88,7 @@ export default function Keyboards() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId,
-            keyboardId,
+            keyboardId: keyboardId,
           }),
         });
 

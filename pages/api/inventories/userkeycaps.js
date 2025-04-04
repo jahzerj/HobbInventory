@@ -30,58 +30,85 @@ export default async function handler(req, res) {
         notes = [],
       } = req.body;
 
-      if (!keycapDefinitionId && !name) {
+      if (!name) {
         res.status(400).json({
-          message:
-            "Either keycap definition ID or keycap details are required.",
+          message: "Keycap name is required.",
         });
         return;
       }
 
-      // Create a new keycap definition if one wasn't provided
-      let definitionId = keycapDefinitionId;
-      if (!definitionId) {
-        const newDefinition = await Keycapdefinition.create({
-          name,
-          manufacturer,
-          profile,
-          material,
-          profileHeight,
-          designer,
-          geekhacklink,
-          render,
-          kits,
+      // Check if keycap came from dropdown selection
+      if (keycapDefinitionId) {
+        // For keycaps from the dropdown, verify it exists in the master database
+        const keycapExists = await Keycapdefinition.findById(
+          keycapDefinitionId
+        );
+        if (!keycapExists) {
+          return res
+            .status(404)
+            .json({ message: "Keycap set not found in database" });
+        }
+
+        // Use the existing keycap definition ID
+        const updatedKeycaps = await UserKeycap.findOneAndUpdate(
+          { userId, keycapDefinitionId },
+          {
+            userId,
+            keycapDefinitionId,
+            name,
+            manufacturer,
+            profile,
+            material,
+            profileHeight,
+            designer,
+            geekhacklink,
+            render,
+            kits,
+            selectedKits,
+            selectedColors,
+            notes,
+          },
+          { new: true, upsert: true }
+        );
+
+        res.status(200).json({
+          message: "Keycap selection updated.",
+          updatedKeycaps,
         });
-        definitionId = newDefinition._id;
+        return;
+      } else {
+        // For manually entered keycaps, don't create a master keycap definition
+        // Just create a UserKeycap with no reference to master collection
+        const updatedKeycaps = await UserKeycap.findOneAndUpdate(
+          { userId, name }, // Find by name for manually entered keycaps
+          {
+            userId,
+            // No keycapDefinitionId field set - this is a user-only keycap
+            name,
+            manufacturer,
+            profile,
+            material,
+            profileHeight,
+            designer,
+            geekhacklink,
+            render,
+            kits,
+            selectedKits,
+            selectedColors,
+            notes,
+          },
+          { new: true, upsert: true }
+        );
+
+        res.status(200).json({
+          message: "Keycap added to your collection.",
+          updatedKeycaps,
+        });
+        return;
       }
-
-      const updatedKeycaps = await UserKeycap.findOneAndUpdate(
-        { userId, keycapDefinitionId: definitionId },
-        {
-          userId,
-          keycapDefinitionId: definitionId,
-          name,
-          manufacturer,
-          profile,
-          material,
-          profileHeight,
-          designer,
-          geekhacklink,
-          render,
-          kits,
-          selectedKits,
-          selectedColors,
-          notes,
-        },
-        { new: true, upsert: true }
-      );
-
-      res
-        .status(200)
-        .json({ message: "Keycap selection updated.", updatedKeycaps });
-      return;
     }
 
+    // ...existing DELETE logic is fine...
     if (req.method === "DELETE") {
       const { keycapDefinitionId } = req.body;
 
