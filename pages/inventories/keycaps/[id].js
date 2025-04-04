@@ -180,6 +180,7 @@ export default function KeyCapDetail() {
         body: JSON.stringify({
           userId: "guest_user",
           keycapDefinitionId: id,
+          name: keycaps.name,
           selectedKits: userKeycap.selectedKits,
           selectedColors: userKeycap.selectedColors,
           notes: updatedNotes,
