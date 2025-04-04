@@ -4,11 +4,15 @@ import styled from "styled-components";
 import { nanoid } from "nanoid";
 import SwitchCard from "./SwitchCard";
 import useSWR from "swr";
+import Image from "next/image";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
   const [activeTab, setActiveTab] = useState("manual");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedSwitchId, setSelectedSwitchId] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const { data: dbSwitches, error: dbSwitchesError } = useSWR(
     activeTab === "dropdown" ? "/api/inventories/switches" : null
@@ -162,6 +166,53 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
 
     setNoteText("");
   };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setImageFile(file);
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Set the secure_url from Cloudinary response to the switch image URL
+        setSwitchData((prevData) => ({
+          ...prevData,
+          image: data.secure_url,
+        }));
+        setImageFile(null);
+        setImagePreview(null);
+      } else {
+        alert("Image upload failed");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Error uploading image. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = () => {
     if (activeTab === "manual") {
@@ -258,6 +309,41 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
               pattern="https?://.*"
               required
             />
+            <ImageUploadSection>
+              <p>Or upload an image:</p>
+              <FileInput
+                type="file"
+                name="imageFile"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              {isUploading ? (
+                <UploadingIndicator>
+                  <StyledSpan /> Uploading...
+                </UploadingIndicator>
+              ) : (
+                imagePreview && (
+                  <ImagePreview>
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      width={100}
+                      height={100}
+                    />
+                  </ImagePreview>
+                )
+              )}
+
+              {imageFile && !isUploading && (
+                <UploadButton
+                  type="button"
+                  onClick={handleImageUpload}
+                  disabled={isUploading}
+                >
+                  Upload Image
+                </UploadButton>
+              )}
+            </ImageUploadSection>
 
             <Select
               name="switchType"
@@ -835,5 +921,50 @@ const AddNoteButton = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+`;
+
+const ImageUploadSection = styled.div`
+  margin: 15px 0;
+  p {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+`;
+
+const FileInput = styled.input`
+  margin-bottom: 10px;
+`;
+
+const UploadButton = styled.button`
+  padding: 8px 15px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.5;
+  }
+`;
+
+const UploadingIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+`;
+
+const ImagePreview = styled.div`
+  width: 100%;
+  max-width: 200px;
+  margin: 10px 0;
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid #ddd;
   }
 `;

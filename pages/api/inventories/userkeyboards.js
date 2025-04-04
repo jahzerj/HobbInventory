@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
     if (req.method === "POST" || req.method === "PUT") {
       const {
+        userId,
         keyboardId,
         name,
         designer,
