@@ -1,11 +1,11 @@
 import Link from "next/link";
 import AddButtton from "@/components/SwitchComponents/AddButton";
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";
@@ -14,20 +14,16 @@ export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
   const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
-  const [userSwitches, setUserSwitches] = useState([]);
   const [typeFilter, setTypeFilter] = useState("all");
+  const [selectedManufacturers, setSelectedManufacturers] = useState(["all"]);
+  const typeScrollRef = useRef(null);
+  const manufacturerScrollRef = useRef(null);
 
   const {
     data: switches,
     error,
     mutate,
   } = useSWR(`/api/inventories/userswitches?userId=${userId}`);
-
-  useEffect(() => {
-    if (switches) {
-      setUserSwitches(switches);
-    }
-  }, [switches]);
 
   const handleAddSwitch = async (newSwitch) => {
     const tempId = nanoid();
@@ -67,8 +63,9 @@ export default function Switches() {
     );
     if (!confirmDelete) return;
 
-    setUserSwitches((prevSwitches) =>
-      prevSwitches.filter((s) => s._id !== switchId)
+    mutate(
+      switches.filter((s) => s._id !== switchId),
+      false
     );
 
     try {
@@ -78,31 +75,97 @@ export default function Switches() {
         body: JSON.stringify({ userId, switchId }),
       });
 
-      if (response.ok) {
-        await mutate();
-      } else {
-        console.error("Failed to delete switch:", await response.json());
+      if (!response.ok) {
+        throw new Error("Failed to delete switch");
       }
+
+      await mutate();
     } catch (error) {
       console.error("Error deleting switch.", error);
+      await mutate();
     }
   };
 
-  const getFilteredSwitches = (switches, typeFilter) => {
+  const getFilteredSwitches = (switches, typeFilter, manufacturerFilter) => {
     if (!switches) return [];
-    if (typeFilter === "all") return switches;
 
-    return switches.filter(
-      (switchItem) =>
-        switchItem.switchType.toLowerCase() === typeFilter.toLowerCase()
-    );
+    return switches.filter((switchItem) => {
+      const matchesType =
+        typeFilter === "all" ||
+        switchItem.switchType.toLowerCase() === typeFilter.toLowerCase();
+
+      const matchesManufacturer =
+        manufacturerFilter.includes("all") ||
+        manufacturerFilter.includes(switchItem.manufacturer);
+
+      return matchesType && matchesManufacturer;
+    });
   };
 
-  const filteredSwitches = getFilteredSwitches(switches, typeFilter);
+  const filteredSwitches = getFilteredSwitches(
+    switches,
+    typeFilter,
+    selectedManufacturers
+  );
 
-  const findSwitchData = (inventoryData, itemObj) => {
-    return inventoryData?.find((item) => item._id === itemObj._id);
-  };
+  const handleManufacturerSelect = useCallback((manufacturer) => {
+    setSelectedManufacturers((prev) => {
+      if (manufacturer === "all") {
+        return ["all"];
+      }
+      if (prev.includes("all") && manufacturer !== "all") {
+        return [manufacturer];
+      }
+      if (prev.includes(manufacturer)) {
+        const newSelection = prev.filter((m) => m !== manufacturer);
+        return newSelection.length === 0 ? ["all"] : newSelection;
+      }
+      return [...prev, manufacturer];
+    });
+  }, []);
+
+  const handleTypeSelect = useCallback((type) => {
+    setTypeFilter(type);
+  }, []);
+
+  const handleWheel = useCallback((event, ref) => {
+    if (ref.current) {
+      event.preventDefault();
+      ref.current.scrollLeft += event.deltaY;
+    }
+  }, []);
+
+  useEffect(() => {
+    const typeContainer = typeScrollRef.current;
+    const manufacturerContainer = manufacturerScrollRef.current;
+
+    const handleTypeWheel = (event) => handleWheel(event, typeScrollRef);
+    const handleManufacturerWheel = (event) =>
+      handleWheel(event, manufacturerScrollRef);
+
+    if (typeContainer) {
+      typeContainer.addEventListener("wheel", handleTypeWheel, {
+        passive: false,
+      });
+    }
+    if (manufacturerContainer) {
+      manufacturerContainer.addEventListener("wheel", handleManufacturerWheel, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (typeContainer) {
+        typeContainer.removeEventListener("wheel", handleTypeWheel);
+      }
+      if (manufacturerContainer) {
+        manufacturerContainer.removeEventListener(
+          "wheel",
+          handleManufacturerWheel
+        );
+      }
+    };
+  }, [handleWheel]);
 
   if (error) return <p>Error loading switches</p>;
   if (!switches)
@@ -127,16 +190,36 @@ export default function Switches() {
       <StyledContainer>
         <LongTitle> Switches Inventory</LongTitle>
 
-        <StyledInput
-          as="select"
-          value={typeFilter}
-          onChange={(event) => setTypeFilter(event.target.value)}
-        >
-          <option value="all">All Types</option>
-          <option value="linear">Linear</option>
-          <option value="tactile">Tactile</option>
-          <option value="clicky">Clicky</option>
-        </StyledInput>
+        <FiltersContainer>
+          <FilterGroup ref={manufacturerScrollRef}>
+            {[
+              "all",
+              ...new Set(switches?.map((sw) => sw.manufacturer) || []),
+            ].map((manufacturer) => (
+              <FilterPill
+                key={manufacturer}
+                $isSelected={selectedManufacturers.includes(manufacturer)}
+                onClick={() => handleManufacturerSelect(manufacturer)}
+              >
+                {manufacturer === "all" ? "All Manufacturers" : manufacturer}
+              </FilterPill>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup ref={typeScrollRef}>
+            {["all", "linear", "tactile", "clicky"].map((type) => (
+              <FilterPill
+                key={type}
+                $isSelected={typeFilter === type}
+                onClick={() => handleTypeSelect(type)}
+              >
+                {type === "all"
+                  ? "All Types"
+                  : type.charAt(0).toUpperCase() + type.slice(1)}
+              </FilterPill>
+            ))}
+          </FilterGroup>
+        </FiltersContainer>
 
         <CardContainer $itemCount={filteredSwitches?.length || 0}>
           {filteredSwitches && filteredSwitches.length > 0 ? (
@@ -146,8 +229,6 @@ export default function Switches() {
                 isEditMode={isEditMode}
                 onDelete={handleDeleteSwitch}
                 ItemComponent={SwitchCard}
-                dataEndpoint="/api/inventories/switches"
-                findFullItemData={findSwitchData}
               />
             </SwitchGrid>
           ) : (
@@ -176,18 +257,17 @@ const StyledContainer = styled.div`
 `;
 
 const CardContainer = styled.div`
-  margin-top: 40px;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 50px;
 `;
 
 const SwitchGrid = styled.ul`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-top: 20px;
   position: relative;
 
   /* Apply responsive grid based on item count */
@@ -271,5 +351,58 @@ const EmptyStateMessage = styled.div`
 
   p:last-child {
     color: #666;
+  }
+`;
+
+const FiltersContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+  position: sticky;
+  top: 40px;
+  z-index: 100;
+  padding: 10px 0;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  padding: 5px 15px;
+  gap: 10px;
+  align-items: center;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const FilterPill = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  padding: 8px 16px;
+  border-radius: 50px;
+  white-space: nowrap;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: ${(props) => (props.$isSelected ? "#007bff" : "#f0f0f0")};
+  color: ${(props) => (props.$isSelected ? "white" : "#333")};
+  border: 2px solid #007bff;
+  box-shadow: ${(props) =>
+    props.$isSelected ? "0 2px 5px rgba(0,0,0,0.2)" : "none"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
   }
 `;

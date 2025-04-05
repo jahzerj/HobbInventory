@@ -1,6 +1,6 @@
 import dbConnect from "@/db/connect";
 import UserKeycap from "@/db/models/UserKeycap";
-import Keycapdefinition from "@/db/models/Keycapdefinition";
+import mongoose from "mongoose";
 
 export default async function handler(req, res) {
   await dbConnect();
@@ -28,73 +28,95 @@ export default async function handler(req, res) {
         selectedKits,
         selectedColors = [],
         notes = [],
+        _id,
       } = req.body;
 
-      if (!keycapDefinitionId && !name) {
+      if (!name) {
         res.status(400).json({
-          message:
-            "Either keycap definition ID or keycap details are required.",
+          message: "Keycap name is required.",
         });
         return;
       }
 
-      // Create a new keycap definition if one wasn't provided
-      let definitionId = keycapDefinitionId;
-      if (!definitionId) {
-        const newDefinition = await Keycapdefinition.create({
-          name,
-          manufacturer,
-          profile,
-          material,
-          profileHeight,
-          designer,
-          geekhacklink,
-          render,
-          kits,
+      // Check if keycap came from dropdown selection
+      if (keycapDefinitionId) {
+        // Instead of finding by keycapDefinitionId, create a new entry each time
+        // unless _id is provided (for updates)
+        const query = _id ? { _id } : { _id: new mongoose.Types.ObjectId() };
+
+        const updatedKeycaps = await UserKeycap.findOneAndUpdate(
+          query,
+          {
+            userId,
+            keycapDefinitionId,
+            name,
+            manufacturer,
+            profile,
+            material,
+            profileHeight,
+            designer,
+            geekhacklink,
+            render,
+            kits,
+            selectedKits,
+            selectedColors,
+            notes,
+          },
+          { new: true, upsert: true }
+        );
+
+        res.status(200).json({
+          message: _id ? "Keycap updated." : "Keycap added to your collection.",
+          updatedKeycaps,
         });
-        definitionId = newDefinition._id;
+        return;
+      } else {
+        // For manually entered keycaps
+        // Use _id for updates, otherwise create a new entry each time
+        const query = _id ? { _id } : { _id: new mongoose.Types.ObjectId() };
+
+        const updatedKeycaps = await UserKeycap.findOneAndUpdate(
+          query,
+          {
+            userId,
+            name,
+            manufacturer,
+            profile,
+            material,
+            profileHeight,
+            designer,
+            geekhacklink,
+            render,
+            kits,
+            selectedKits,
+            selectedColors,
+            notes,
+          },
+          { new: true, upsert: true }
+        );
+
+        res.status(200).json({
+          message: "Keycap added to your collection.",
+          updatedKeycaps,
+        });
+        return;
       }
-
-      const updatedKeycaps = await UserKeycap.findOneAndUpdate(
-        { userId, keycapDefinitionId: definitionId },
-        {
-          userId,
-          keycapDefinitionId: definitionId,
-          name,
-          manufacturer,
-          profile,
-          material,
-          profileHeight,
-          designer,
-          geekhacklink,
-          render,
-          kits,
-          selectedKits,
-          selectedColors,
-          notes,
-        },
-        { new: true, upsert: true }
-      );
-
-      res
-        .status(200)
-        .json({ message: "Keycap selection updated.", updatedKeycaps });
-      return;
     }
 
+    // ...existing DELETE logic is fine...
     if (req.method === "DELETE") {
-      const { keycapDefinitionId } = req.body;
+      const { _id } = req.body;
 
-      if (!keycapDefinitionId) {
+      if (!_id) {
         res
           .status(400)
-          .json({ message: "Keycap definition ID is required for deletion." });
+          .json({ message: "Keycap ID is required for deletion." });
         return;
       }
 
       await UserKeycap.findOneAndDelete({
         userId: req.query.userId || "guest_user",
-        keycapDefinitionId,
+        _id,
       });
 
       res.status(200).json({ message: "Keycapset removed successfully." });

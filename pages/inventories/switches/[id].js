@@ -71,6 +71,8 @@ export default function SwitchDetail() {
     userSwitch?.isFilmed || false
   );
 
+  const [localNotes, setLocalNotes] = useState(notes);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInnerWidth(window.innerWidth);
@@ -91,20 +93,12 @@ export default function SwitchDetail() {
       setEditedFactoryLubed(userSwitch.factoryLubed || false);
       setEditedIsLubed(userSwitch.isLubed || false);
       setEditedIsFilmed(userSwitch.isFilmed || false);
+      setLocalNotes(userSwitch.notes ? [...userSwitch.notes] : []);
     }
   }, [userSwitch]);
 
-  const handleNotesUpdate = async (updatedNotes) => {
-    await fetch("/api/inventories/userswitches", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: "guest_user",
-        switchId: id,
-        notes: updatedNotes,
-      }),
-    });
-    await mutate();
+  const handleNotesUpdate = (updatedNotes) => {
+    setLocalNotes(updatedNotes);
   };
 
   const validateSwitchData = (data) => {
@@ -152,7 +146,7 @@ export default function SwitchDetail() {
           factoryLubed: editedFactoryLubed,
           isLubed: editedIsLubed,
           isFilmed: editedIsFilmed,
-          notes: notes,
+          notes: localNotes,
         }),
       });
 
@@ -166,18 +160,21 @@ export default function SwitchDetail() {
 
   const handleCancelEdits = () => {
     setIsEditMode(false);
-    setEditedName(userSwitch?.name || "");
-    setEditedManufacturer(userSwitch?.manufacturer || "");
-    setEditedImage(userSwitch?.image || "");
-    setEditedSwitchType(userSwitch?.switchType || "");
-    setEditedQuantity(userSwitch?.quantity || "");
-    setEditedSpringWeight(userSwitch?.springWeight || "");
-    setEditedTopMaterial(userSwitch?.topMaterial || "");
-    setEditedBottomMaterial(userSwitch?.bottomMaterial || "");
-    setEditedStemMaterial(userSwitch?.stemMaterial || "");
-    setEditedFactoryLubed(userSwitch?.factoryLubed || false);
-    setEditedIsLubed(userSwitch?.isLubed || false);
-    setEditedIsFilmed(userSwitch?.isFilmed || false);
+    if (userSwitch) {
+      setEditedName(userSwitch.name || "");
+      setEditedManufacturer(userSwitch.manufacturer || "");
+      setEditedImage(userSwitch.image || "");
+      setEditedSwitchType(userSwitch.switchType || "");
+      setEditedQuantity(userSwitch.quantity || "");
+      setEditedSpringWeight(userSwitch.springWeight || "");
+      setEditedTopMaterial(userSwitch.topMaterial || "");
+      setEditedBottomMaterial(userSwitch.bottomMaterial || "");
+      setEditedStemMaterial(userSwitch.stemMaterial || "");
+      setEditedFactoryLubed(userSwitch.factoryLubed || false);
+      setEditedIsLubed(userSwitch.isLubed || false);
+      setEditedIsFilmed(userSwitch.isFilmed || false);
+      setLocalNotes(userSwitch.notes ? [...userSwitch.notes] : []);
+    }
   };
 
   if (userSwitchesError) {
@@ -391,7 +388,7 @@ export default function SwitchDetail() {
         </BoxContainer>
 
         <Notes
-          notes={notes}
+          notes={localNotes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
         />

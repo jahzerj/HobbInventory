@@ -4,9 +4,10 @@ import styled from "styled-components";
 import { nanoid } from "nanoid";
 import SwitchCard from "./SwitchCard";
 import useSWR from "swr";
+import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedSwitchId, setSelectedSwitchId] = useState("");
 
@@ -206,17 +207,6 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         {/* Tab Navigation */}
         <TabContainer>
           <TabButton
-            $isActive={activeTab === "manual"}
-            onClick={() => {
-              if (activeTab !== "manual") {
-                resetForm();
-                setActiveTab("manual");
-              }
-            }}
-          >
-            Manual Entry
-          </TabButton>
-          <TabButton
             $isActive={activeTab === "dropdown"}
             onClick={() => {
               if (activeTab !== "dropdown") {
@@ -226,6 +216,17 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
             }}
           >
             Select from Database
+          </TabButton>
+          <TabButton
+            $isActive={activeTab === "manual"}
+            onClick={() => {
+              if (activeTab !== "manual") {
+                resetForm();
+                setActiveTab("manual");
+              }
+            }}
+          >
+            Manual Entry
           </TabButton>
         </TabContainer>
 
@@ -248,6 +249,15 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
               value={switchData.manufacturer}
               onChange={handleChange}
               required
+            />
+            <ImageUploader
+              onImageUpload={(secureUrl) => {
+                setSwitchData((prevData) => ({
+                  ...prevData,
+                  image: secureUrl,
+                }));
+              }}
+              prePopulatedUrl={switchData.image}
             />
             <Input
               type="url"
@@ -557,7 +567,14 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         )}
 
         <ButtonContainer>
-          <CancelButton onClick={onClose}>Cancel</CancelButton>
+          <CancelButton
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
+          >
+            Cancel
+          </CancelButton>
           <AddButton
             onClick={handleSubmit}
             disabled={

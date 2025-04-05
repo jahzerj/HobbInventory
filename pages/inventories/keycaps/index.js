@@ -3,7 +3,7 @@ import AddButton from "@/components/KeycapComponents/AddButton";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/KeycapComponents/EditInventoryButton";
+import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
@@ -32,11 +32,11 @@ export default function Keycaps() {
   //Function for adding keycap ID to the userKeycaps array
   const handleAddKeycap = useCallback(
     async (keycapToAdd) => {
-      if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
+      // if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
 
       try {
         // Update UI optimistically
-        setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
+        // setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
 
         // Send complete keycap data to API
         const response = await fetch("/api/inventories/userkeycaps", {
@@ -52,14 +52,11 @@ export default function Keycaps() {
         // Refresh data from server to ensure accuracy
         mutate();
       } catch (error) {
-        // Revert UI change on error
-        setUserKeycaps((prev) =>
-          prev.filter((id) => id !== keycapToAdd.keycapDefinitionId)
-        );
         console.error("Failed to add keycap:", error);
+        mutate(); // Refresh to ensure UI is consistent
       }
     },
-    [userKeycaps, mutate]
+    [mutate]
   );
 
   // Make getDeleteConfirmation a memoized function with useCallback
@@ -74,7 +71,6 @@ export default function Keycaps() {
     );
   }, []);
 
-  // Now update handleDeleteKeycap with useCallback
   const handleDeleteKeycap = useCallback(
     async (keycapId, event) => {
       event.stopPropagation();
@@ -90,7 +86,7 @@ export default function Keycaps() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId,
-            keycapDefinitionId: keycapId, // Updated field name
+            _id: keycapId, // Updated field name
           }),
         });
 
@@ -170,8 +166,6 @@ export default function Keycaps() {
     };
   }, [handleWheel]);
 
-  const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
-
   // Get all unique colors once
   const uniqueColors = keycaps
     ? [
@@ -182,12 +176,7 @@ export default function Keycaps() {
       ]
     : ["all"];
 
-  // Simplified and memoized finder function
-  const findKeycapData = useCallback((inventoryData, itemObj) => {
-    return inventoryData?.find(
-      (item) => item._id === itemObj.keycapDefinitionId
-    );
-  }, []);
+  const filteredKeycaps = getFilteredKeycaps(keycaps, selectedColors);
 
   // Handle opening/closing modal
   const handleOpenModal = useCallback(() => setIsOpen(true), []);
@@ -220,7 +209,7 @@ export default function Keycaps() {
       />
 
       <StyledContainer>
-        <h1>Keycap Inventory</h1>
+        <LongTitle>Keycap Inventory</LongTitle>
 
         <ColorFilterContainer ref={colorScrollRef}>
           {uniqueColors.map((color) => (
@@ -237,30 +226,26 @@ export default function Keycaps() {
 
         <CardContainer $itemCount={filteredKeycaps?.length || 0}>
           {keycaps?.length === 0 ? (
-            // No keycaps added at all
             <EmptyStateMessage>
               <p>No keycaps added yet!</p>
               <p>Click the ➕ button to add a keycap set to your inventory</p>
             </EmptyStateMessage>
           ) : filteredKeycaps?.length === 0 ? (
-            // Keycaps exist but none match the current filter
             <EmptyStateMessage>
               <p>No keycaps found with the selected color!</p>
               <p>Try selecting a different color filter</p>
             </EmptyStateMessage>
           ) : (
-            // Keycaps exist and match the current filter
             <InventoryList
               data={filteredKeycaps}
               isEditMode={isEditMode}
               onDelete={handleDeleteKeycap}
               ItemComponent={KeycapCard}
-              dataEndpoint="/api/inventories/keycaps"
-              findFullItemData={findKeycapData}
             />
           )}
         </CardContainer>
       </StyledContainer>
+
       <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
       <EditInventoryButton
         isEditMode={isEditMode}
@@ -283,6 +268,8 @@ const CardContainer = styled.div`
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 50px;
 
   @media (min-width: 900px) {
     /* Only use grid layout when we have multiple items */
@@ -345,7 +332,7 @@ const ColorFilterContainer = styled.div`
   padding: 10px 15px;
   gap: 10px;
   position: sticky;
-  top: 40px; // place it under the burger menu
+  top: 40px;
   z-index: 100;
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; //IE and Edge
@@ -408,5 +395,11 @@ const EmptyStateMessage = styled.div`
 
   p:last-child {
     color: #666;
+  }
+`;
+
+const LongTitle = styled.h1`
+  @media screen and (max-width: 390px) {
+    font-size: 28px;
   }
 `;

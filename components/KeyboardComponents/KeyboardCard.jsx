@@ -38,38 +38,28 @@ const ShimmerEffect = styled.div`
   }
 `;
 
-export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
+export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
   const router = useRouter();
   const [imageIndex, setImageIndex] = useState(0);
 
   // Rename for domain clarity
-  const keycapObj = itemObj;
+  const keyboardObj = itemObj;
 
-  const selectedKits = keycapObj.selectedKits ?? [];
-
-  // Updated to work with the new data structure
-  // Now kits are directly in the object, no need for kits[0].price_list
-  const selectedKitData =
-    keycapObj.kits
-      ?.filter((kit) => selectedKits.includes(kit.name))
-      ?.map((kit) => ({
-        name: kit.name,
-        pic: kit.image || "/no_image_available.jpg", // Map image to pic for backwards compatibility
-      })) ?? [];
+  // Get the photos array, with a fallback to empty array
+  const photos = keyboardObj.renders ?? [];
 
   // Determine if we should show navigation elements
-  const hasMultipleImages = selectedKitData.length > 1;
+  const hasMultipleImages = photos.length > 1;
 
   const handleNextImage = () => {
     if (!hasMultipleImages) return;
-    setImageIndex((prevIndex) => (prevIndex + 1) % selectedKitData.length);
+    setImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
   };
 
   const handlePrevImage = () => {
     if (!hasMultipleImages) return;
     setImageIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + selectedKitData.length) % selectedKitData.length
+      (prevIndex) => (prevIndex - 1 + photos.length) % photos.length
     );
   };
 
@@ -86,18 +76,17 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
   const cardProps = hasMultipleImages ? swipeHandlers : {};
 
   const handleCardClick = () => {
-    // Updated to use keycapDefinitionId instead of keycapSetId._id
-    router.push(`/inventories/keycaps/${keycapObj._id}`);
+    router.push(`/inventories/keyboards/${keyboardObj._id}`);
   };
 
   return (
     <StyledCard {...cardProps} onClick={handleCardClick}>
-      {selectedKitData.length > 0 ? (
+      {photos.length > 0 ? (
         <>
           <ImageWrapper>
             <Image
-              src={selectedKitData[imageIndex].pic}
-              alt={selectedKitData[imageIndex].name}
+              src={photos[imageIndex]}
+              alt={`${keyboardObj.name} photo ${imageIndex + 1}`}
               fill
               sizes="(min-width: 600px) 500px, 80vw"
               style={{ objectFit: "cover" }}
@@ -106,7 +95,23 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
             />
           </ImageWrapper>
           <CardContent>
-            {/* Only show carousel buttons if there are multiple images - unchanged */}
+            {hasMultipleImages && (
+              <DotsContainer>
+                {photos.map((_, index) => (
+                  <Dot
+                    key={index}
+                    $active={index === imageIndex}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setImageIndex(index);
+                    }}
+                  >
+                    •
+                  </Dot>
+                ))}
+              </DotsContainer>
+            )}
             {hasMultipleImages && (
               <>
                 <CarouselButton
@@ -131,32 +136,6 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
                 </CarouselButton>
               </>
             )}
-
-            <div>
-              <CardTitle>{keycapObj.name}</CardTitle>
-            </div>
-            <div>
-              <KitName>{selectedKitData[imageIndex].name}</KitName>
-
-              {/* Dots moved below title - unchanged */}
-              {hasMultipleImages && (
-                <DotsContainer>
-                  {selectedKitData.map((_, index) => (
-                    <Dot
-                      key={index}
-                      $active={index === imageIndex}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setImageIndex(index);
-                      }}
-                    >
-                      •
-                    </Dot>
-                  ))}
-                </DotsContainer>
-              )}
-            </div>
           </CardContent>
         </>
       ) : (
@@ -165,31 +144,65 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
             <ShimmerEffect />
           </ImageWrapper>
           <CardContent>
-            <div>
-              <CardTitle>&nbsp;</CardTitle>
-            </div>
-            <div>
-              <KitName>&nbsp;</KitName>
-            </div>
+            {hasMultipleImages && (
+              <DotsContainer>
+                {photos.map((_, index) => (
+                  <Dot
+                    key={index}
+                    $active={index === imageIndex}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setImageIndex(index);
+                    }}
+                  >
+                    •
+                  </Dot>
+                ))}
+              </DotsContainer>
+            )}
+            {hasMultipleImages && (
+              <>
+                <CarouselButton
+                  className="prev"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handlePrevImage();
+                  }}
+                >
+                  ←
+                </CarouselButton>
+                <CarouselButton
+                  className="next"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleNextImage();
+                  }}
+                >
+                  →
+                </CarouselButton>
+              </>
+            )}
           </CardContent>
         </>
       )}
       {isEditMode && (
         <DeleteInventoryItemButton
-          // Updated to use keycapDefinitionId
-          onClick={(event) => onDelete(keycapObj._id, event)}
-          aria-label="Delete Keycap Button"
+          onClick={(event) => onDelete(keyboardObj._id, event)}
+          aria-label="Delete Keyboard Button"
         >
           <DeleteIcon />
         </DeleteInventoryItemButton>
       )}
-      <ColorDotsList $isEmpty={(keycapObj.selectedColors || []).length === 0}>
-        {(keycapObj.selectedColors || []).map((color, index) => (
-          <ColorDotItem key={index} $color={color}>
-            •
-          </ColorDotItem>
-        ))}
-      </ColorDotsList>
+      <DesignerNameContainer>
+        <DesignerName>{keyboardObj.designer}</DesignerName>
+        <KeyboardName>{keyboardObj.name}</KeyboardName>
+        <LayoutLabel>
+          {itemObj.layout} {itemObj.blocker}
+        </LayoutLabel>
+      </DesignerNameContainer>
     </StyledCard>
   );
 }
@@ -201,8 +214,8 @@ const StyledCard = styled.li`
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
-  border: 2px solid white;
-  border-bottom-width: 8px;
+  border: 0 solid white;
+  border-bottom-width: 7rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
   cursor: pointer;
@@ -227,59 +240,14 @@ const CardContent = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 0.1rem);
   display: flex;
   flex-direction: column;
-  border-radius: 30px;
+  border-radius: 30px 30px 0 0;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 10px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0) 30%,
-    rgba(0, 0, 0, 0) 60%,
-    rgba(0, 0, 0, 0.4) 100%
-  );
   z-index: 1;
-`;
-
-const CardTitle = styled.h3`
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  margin: 0;
-`;
-
-const ColorDotsList = styled.div`
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 2px 6px;
-  padding-bottom: 8px;
-  font-size: 12px;
-  color: black;
-  font-weight: bold;
-  background: lightgray;
-  border-radius: 12px;
-  border: 2px solid white;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  z-index: 2;
-  min-width: 80px;
-  justify-content: center;
-  height: 24px;
-`;
-
-const ColorDotItem = styled.span`
-  font-size: 1.5rem;
-  color: ${(props) => props.$color?.toLowerCase() || "#ccc"};
-  line-height: 0.6;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
 `;
 
 const ImageWrapper = styled.div`
@@ -287,28 +255,55 @@ const ImageWrapper = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 0.1rem);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  border-radius: 30px;
+  border-radius: 30px 30px 0 0;
   overflow: hidden;
 
   img {
     object-fit: cover;
-    border-radius: 30px;
+    border-radius: 30px 30px 0 0;
   }
   background-color: transparent;
 `;
 
-const KitName = styled.p`
-  text-align: center;
-  font-size: 1.1rem;
-  margin: 5px 0;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+const DesignerNameContainer = styled.div`
+  position: absolute;
+  bottom: -90px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  z-index: 1;
+`;
+
+const DesignerName = styled.p`
+  font-size: 0.6rem;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+`;
+
+const KeyboardName = styled.h3`
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+`;
+
+const LayoutLabel = styled.div`
+  font-size: 0.8rem;
+  color: #444;
+  font-weight: 400;
+  margin: 0;
 `;
 
 const DotsContainer = styled.div`
-  margin-top: -8px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   z-index: 3;
   padding: 2px 8px;
@@ -319,12 +314,12 @@ const Dot = styled.span`
   font-size: 1.2rem;
   margin: 0 3px;
   cursor: pointer;
-  color: ${(props) => (props.$active ? "white" : "#ccc")};
+  color: ${(props) => (props.$active ? "white" : "rgba(255, 255, 255, 0.5)")};
 `;
 
 const CarouselButton = styled.button`
   position: absolute;
-  top: 50%;
+  top: 70%;
   transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.5);
   color: white;

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const userKeycapSchema = new Schema({
+const userkeycapSchema = new Schema({
   userId: { type: String, required: true, default: "guest_user" },
 
   // Keycap details
@@ -42,6 +42,6 @@ const userKeycapSchema = new Schema({
 });
 
 const UserKeycap =
-  mongoose.models.UserKeycap || mongoose.model("UserKeycap", userKeycapSchema);
+  mongoose.models.UserKeycap || mongoose.model("UserKeycap", userkeycapSchema);
 
 export default UserKeycap;
