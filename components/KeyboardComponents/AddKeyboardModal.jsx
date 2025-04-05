@@ -108,23 +108,6 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
       return;
     }
 
-    // For renders (URL validation)
-    if (name === "render") {
-      const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
-      if (!urlRegex.test(value) && value !== "") {
-        alert(
-          "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp)"
-        );
-        return;
-      }
-
-      setKeyboardData((prevData) => ({
-        ...prevData,
-        renders: [value],
-      }));
-      return;
-    }
-
     // Handle PCB options
     if (name.startsWith("pcbOptions.")) {
       const option = name.split(".")[1];
@@ -143,6 +126,32 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleRenderChange = (index, value) => {
+    const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
+    if (!urlRegex.test(value) && value !== "") {
+      alert(
+        "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp)"
+      );
+      return;
+    }
+
+    const newRenders = [...keyboardData.renders];
+    newRenders[index] = value;
+    setKeyboardData((prevData) => ({
+      ...prevData,
+      renders: newRenders,
+    }));
+  };
+
+  const handleAddRender = () => {
+    if (keyboardData.renders.length < 5) {
+      setKeyboardData((prevData) => ({
+        ...prevData,
+        renders: [...prevData.renders, ""],
+      }));
+    }
   };
 
   const handleAddNote = () => {
@@ -387,14 +396,42 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                 <option value="1800">1800</option>
                 <option value="Full Size">Full Size</option>
               </Select>
-              <Input
-                type="url"
-                name="render"
-                placeholder="Render Image URL *"
-                value={keyboardData.renders[0]}
-                onChange={handleChange}
-                required
-              />
+
+              {keyboardData.renders.map((render, index) => (
+                <RenderInputRow key={index}>
+                  {index > 0 && (
+                    <RenderButton
+                      $remove
+                      onClick={() => {
+                        const newRenders = [...keyboardData.renders];
+                        newRenders.splice(index, 1);
+                        setKeyboardData((prevData) => ({
+                          ...prevData,
+                          renders: newRenders,
+                        }));
+                      }}
+                    >
+                      -
+                    </RenderButton>
+                  )}
+                  <Input
+                    type="url"
+                    placeholder={`Render Image URL ${index === 0 ? "*" : ""}`}
+                    value={render}
+                    onChange={(event) =>
+                      handleRenderChange(index, event.target.value)
+                    }
+                    required={index === 0}
+                  />
+                  {index === keyboardData.renders.length - 1 &&
+                    keyboardData.renders.length < 5 && (
+                      <RenderButton $add onClick={handleAddRender}>
+                        +
+                      </RenderButton>
+                    )}
+                </RenderInputRow>
+              ))}
+
               <Select
                 name="blocker"
                 value={keyboardData.blocker}
@@ -783,4 +820,37 @@ const CheckboxContainer = styled.div`
   align-items: center;
   margin-bottom: 10px;
   gap: 8px;
+`;
+
+const RenderInputRow = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+`;
+
+const RenderButton = styled.button`
+  background: ${(props) =>
+    props.$add ? "#007bff" : props.$remove ? "#dc3545" : "#007bff"};
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+  color: white;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  z-index: 5;
+
+  /* Position the button outside the input field */
+  ${(props) => (props.$add ? `right: -30px;` : `left: -30px;`)}
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
