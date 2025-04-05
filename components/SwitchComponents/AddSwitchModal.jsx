@@ -258,6 +258,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                 }));
               }}
               prePopulatedUrl={switchData.image}
+              category="switches"
             />
             <Input
               type="url"

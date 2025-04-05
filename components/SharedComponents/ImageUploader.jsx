@@ -4,7 +4,11 @@ import styled from "styled-components";
 import Image from "next/image";
 import UploadIcon from "@/components/icons/UploadIcon";
 
-export default function ImageUploader({ onImageUpload, prePopulatedUrl }) {
+export default function ImageUploader({
+  onImageUpload,
+  prePopulatedUrl,
+  category,
+}) {
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -31,6 +35,10 @@ export default function ImageUploader({ onImageUpload, prePopulatedUrl }) {
     const formData = new FormData();
     formData.append("image", imageFile);
 
+    // Always pass the category, even if undefined
+    // The server will handle validation
+    formData.append("category", category);
+
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -46,7 +54,9 @@ export default function ImageUploader({ onImageUpload, prePopulatedUrl }) {
         setImageFile(null);
         setImagePreview(null);
       } else {
-        alert("Image upload failed");
+        const errorData = await response.json();
+        console.error("Upload failed:", errorData.message);
+        alert("Image upload failed. Please try again later.");
       }
     } catch (error) {
       console.error("Error uploading image:", error);
