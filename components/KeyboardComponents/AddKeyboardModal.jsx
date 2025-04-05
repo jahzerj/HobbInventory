@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { nanoid } from "nanoid";
 
 export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedKeyboard, setSelectedKeyboard] = useState("");
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
