@@ -27,19 +27,24 @@ export default function KeyCapDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data: keycaps, error: keycapError } = useSWR(
-    id ? `/api/inventories/keycaps/${id}` : null
-  );
-
   const {
     data: userKeycaps,
     error: userKeycapError,
     mutate,
   } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
-  const userKeycap = userKeycaps?.find(
-    (item) => item.keycapDefinitionId === id
-  );
+  const userKeycap = userKeycaps?.find((item) => item._id === id);
+
+  // const { data: keycaps, error: keycapError } = useSWR(
+  //   id ? `/api/inventories/keycaps/${userKeycap.keycapDefinitionId}` : null
+  // );
+
+  //  // Only fetch from keycapDefinition if there's a keycapDefinitionId
+  //  const { data: keycaps, error: keycapError } = useSWR(
+  //   userKeycap?.keycapDefinitionId
+  //     ? `/api/inventories/keycaps/${userKeycap.keycapDefinitionId}`
+  //     : null
+  // );
 
   const selectedColors = userKeycap?.selectedColors ?? [];
   const notes = userKeycap?.notes ?? [];
@@ -53,22 +58,20 @@ export default function KeyCapDetail() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [editedManufacturer, setEditedManufacturer] = useState(
-    userKeycap?.manufacturer || keycaps?.manufacturer || ""
+    userKeycap?.manufacturer || ""
   );
   const [editedMaterial, setEditedMaterial] = useState(
-    userKeycap?.material || keycaps?.material || ""
+    userKeycap?.material || ""
   );
-  const [editedProfile, setEditedProfile] = useState(
-    userKeycap?.profile || keycaps?.profile || ""
-  );
+  const [editedProfile, setEditedProfile] = useState(userKeycap?.profile || "");
   const [editedProfileHeight, setEditedProfileHeight] = useState(
-    userKeycap?.profileHeight || keycaps?.profileHeight || ""
+    userKeycap?.profileHeight || ""
   );
   const [editedDesigner, setEditedDesigner] = useState(
-    userKeycap?.designer || keycaps?.designer || ""
+    userKeycap?.designer || ""
   );
   const [editedGeekhackLink, setEditedGeekhackLink] = useState(
-    userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
+    userKeycap?.geekhacklink || ""
   );
 
   useEffect(() => {
@@ -84,23 +87,17 @@ export default function KeyCapDetail() {
   }, [userKeycap?.notes]);
 
   useEffect(() => {
-    if (userKeycap && keycaps) {
+    if (userKeycap) {
       setEditedKits(userKeycap.selectedKits || []);
       setEditedColors(userKeycap.selectedColors || []);
-      setEditedManufacturer(
-        userKeycap.manufacturer || keycaps.manufacturer || ""
-      );
-      setEditedMaterial(userKeycap.material || keycaps.material || "");
-      setEditedProfile(userKeycap.profile || keycaps.profile || "");
-      setEditedProfileHeight(
-        userKeycap.profileHeight || keycaps.profileHeight || ""
-      );
-      setEditedDesigner(userKeycap.designer || keycaps.designer || "");
-      setEditedGeekhackLink(
-        userKeycap.geekhacklink || keycaps.geekhacklink || ""
-      );
+      setEditedManufacturer(userKeycap.manufacturer || "");
+      setEditedMaterial(userKeycap.material || "");
+      setEditedProfile(userKeycap.profile || "");
+      setEditedProfileHeight(userKeycap.profileHeight || "");
+      setEditedDesigner(userKeycap.designer || "");
+      setEditedGeekhackLink(userKeycap.geekhacklink || "");
     }
-  }, [userKeycap, keycaps]);
+  }, [userKeycap]);
 
   const handleKitSelection = (kitName) => {
     if (!isEditMode) return;
@@ -152,8 +149,9 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapDefinitionId: id,
-        name: keycaps.name,
+        _id: userKeycap._id,
+        keycapDefinitionId: userKeycap.keycapDefinitionId,
+        name: userKeycap.name,
         selectedKits: userKeycap.selectedKits,
         selectedColors: updatedColors,
       }),
@@ -179,8 +177,9 @@ export default function KeyCapDetail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: "guest_user",
-          keycapDefinitionId: id,
-          name: keycaps.name,
+          _id: userKeycap._id,
+          keycapDefinitionId: userKeycap.keycapDefinitionId,
+          name: userKeycap.name,
           selectedKits: userKeycap.selectedKits,
           selectedColors: userKeycap.selectedColors,
           notes: updatedNotes,
@@ -197,8 +196,9 @@ export default function KeyCapDetail() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "guest_user",
-        keycapDefinitionId: id,
-        name: keycaps.name,
+        _id: userKeycap._id,
+        keycapDefinitionId: userKeycap.keycapDefinitionId,
+        name: userKeycap.name,
         selectedKits: editedKits,
         selectedColors: editedColors,
         notes: editedNotes,
@@ -218,26 +218,20 @@ export default function KeyCapDetail() {
     setEditedColors([...selectedColors]);
     setEditedKits(userKeycap?.selectedKits || []);
     setEditedNotes([...notes]);
-    setEditedManufacturer(
-      userKeycap?.manufacturer || keycaps?.manufacturer || ""
-    );
-    setEditedMaterial(userKeycap?.material || keycaps?.material || "");
-    setEditedProfile(userKeycap?.profile || keycaps?.profile || "");
-    setEditedProfileHeight(
-      userKeycap?.profileHeight || keycaps?.profileHeight || ""
-    );
-    setEditedDesigner(userKeycap?.designer || keycaps?.designer || "");
-    setEditedGeekhackLink(
-      userKeycap?.geekhacklink || keycaps?.geekhacklink || ""
-    );
+    setEditedManufacturer(userKeycap?.manufacturer || "");
+    setEditedMaterial(userKeycap?.material || "");
+    setEditedProfile(userKeycap?.profile || "");
+    setEditedProfileHeight(userKeycap?.profileHeight || "");
+    setEditedDesigner(userKeycap?.designer || "");
+    setEditedGeekhackLink(userKeycap?.geekhacklink || "");
     setIsEditMode(false);
   };
 
-  if (keycapError || userKeycapError) {
+  if (userKeycapError) {
     return <p>Error loading keycap details.</p>;
   }
 
-  if (!keycaps || !userKeycaps) {
+  if (!userKeycaps) {
     return (
       <LoaderWrapper>
         <StyledSpan />
@@ -245,7 +239,7 @@ export default function KeyCapDetail() {
     );
   }
 
-  const kitsAvailable = keycaps.kits ?? [];
+  const kitsAvailable = userKeycap.kits ?? [];
   const selectedKits = userKeycap?.selectedKits ?? [];
 
   return (
@@ -262,15 +256,15 @@ export default function KeyCapDetail() {
 
         <HeaderSection>
           {isEditMode ? (
-            <h1>Editing {keycaps.name}</h1>
+            <h1>Editing {userKeycap.name}</h1>
           ) : (
-            <h1>{keycaps.name}</h1>
+            <h1>{userKeycap.name}</h1>
           )}
-          {keycaps.render && (
+          {userKeycap.render && (
             <HeaderImage>
               <Image
-                src={keycaps.render}
-                alt={keycaps.name}
+                src={userKeycap.render}
+                alt={userKeycap.name}
                 fill
                 style={{ objectFit: "cover" }}
                 priority
@@ -291,7 +285,7 @@ export default function KeyCapDetail() {
                 placeholder="Manufacturer (e.g., GMK)"
               />
             ) : (
-              userKeycap.manufacturer || keycaps.manufacturer || "Not specified"
+              userKeycap.manufacturer || "Not specified"
             )}
           </li>
           <li>
@@ -304,7 +298,7 @@ export default function KeyCapDetail() {
                 placeholder="Material (e.g., ABS)"
               />
             ) : (
-              userKeycap.material || keycaps.material || "Not specified"
+              userKeycap.material || "Not specified"
             )}
           </li>
           <li>
@@ -317,7 +311,7 @@ export default function KeyCapDetail() {
                 placeholder="Profile (e.g., Cherry)"
               />
             ) : (
-              userKeycap.profile || keycaps.profile || "Not specified"
+              userKeycap.profile || "Not specified"
             )}
           </li>
           <li>
@@ -330,9 +324,7 @@ export default function KeyCapDetail() {
                 placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
               />
             ) : (
-              userKeycap.profileHeight ||
-              keycaps.profileHeight ||
-              "Not specified"
+              userKeycap.profileHeight || "Not specified"
             )}
           </li>
           <li>
@@ -345,7 +337,7 @@ export default function KeyCapDetail() {
                 placeholder="Designer"
               />
             ) : (
-              userKeycap.designer || keycaps.designer || "Not specified"
+              userKeycap.designer || "Not specified"
             )}
           </li>
           <li>
@@ -357,11 +349,8 @@ export default function KeyCapDetail() {
                 onChange={(event) => setEditedGeekhackLink(event.target.value)}
                 placeholder="Geekhack Link"
               />
-            ) : userKeycap.geekhacklink || keycaps.geekhacklink ? (
-              <ExternalLink
-                href={userKeycap.geekhacklink || keycaps.geekhacklink}
-                target="_blank"
-              >
+            ) : userKeycap.geekhacklink ? (
+              <ExternalLink href={userKeycap.geekhacklink} target="_blank">
                 Visit Geekhack
               </ExternalLink>
             ) : (

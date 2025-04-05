@@ -32,11 +32,11 @@ export default function Keycaps() {
   //Function for adding keycap ID to the userKeycaps array
   const handleAddKeycap = useCallback(
     async (keycapToAdd) => {
-      if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
+      // if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
 
       try {
         // Update UI optimistically
-        setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
+        // setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
 
         // Send complete keycap data to API
         const response = await fetch("/api/inventories/userkeycaps", {
@@ -52,14 +52,11 @@ export default function Keycaps() {
         // Refresh data from server to ensure accuracy
         mutate();
       } catch (error) {
-        // Revert UI change on error
-        setUserKeycaps((prev) =>
-          prev.filter((id) => id !== keycapToAdd.keycapDefinitionId)
-        );
         console.error("Failed to add keycap:", error);
+        mutate(); // Refresh to ensure UI is consistent
       }
     },
-    [userKeycaps, mutate]
+    [mutate]
   );
 
   // Make getDeleteConfirmation a memoized function with useCallback
@@ -89,7 +86,7 @@ export default function Keycaps() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId,
-            keycapDefinitionId: keycapId, // Updated field name
+            _id: keycapId, // Updated field name
           }),
         });
 

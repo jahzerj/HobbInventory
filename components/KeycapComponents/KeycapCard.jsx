@@ -87,7 +87,7 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
 
   const handleCardClick = () => {
     // Updated to use keycapDefinitionId instead of keycapSetId._id
-    router.push(`/inventories/keycaps/${keycapObj.keycapDefinitionId}`);
+    router.push(`/inventories/keycaps/${keycapObj._id}`);
   };
 
   return (
@@ -177,7 +177,7 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
       {isEditMode && (
         <DeleteInventoryItemButton
           // Updated to use keycapDefinitionId
-          onClick={(event) => onDelete(keycapObj.keycapDefinitionId, event)}
+          onClick={(event) => onDelete(keycapObj._id, event)}
           aria-label="Delete Keycap Button"
         >
           <DeleteIcon />
