@@ -31,8 +31,6 @@ export default function Keyboards() {
 
   const handleAddKeyboard = useCallback(
     async (keyboardToAdd) => {
-      if (userKeyboards.includes(keyboardToAdd.keyboardId)) return;
-
       try {
         // Update UI optimistically
         setUserKeyboards((prev) => [...prev, keyboardToAdd.keyboardId]);

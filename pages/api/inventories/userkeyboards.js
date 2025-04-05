@@ -1,5 +1,6 @@
 import dbConnect from "@/db/connect";
 import UserKeyboard from "@/db/models/UserKeyboard";
+import mongoose from "mongoose";
 
 export default async function handler(req, res) {
   await dbConnect();
@@ -32,6 +33,7 @@ export default async function handler(req, res) {
         pcbOptions,
         builds = [],
         notes = [],
+        _id,
       } = req.body;
 
       if (
@@ -50,9 +52,12 @@ export default async function handler(req, res) {
         return;
       }
 
+      // Use _id for updates, otherwise create a new entry each time
+      const query = _id ? { _id } : { _id: new mongoose.Types.ObjectId() };
+
       // Create or update the UserKeyboard entry
       const updatedKeyboard = await UserKeyboard.findOneAndUpdate(
-        { userId, name }, // Find by userId and name
+        query,
         {
           userId,
           keyboardId, // This can be null for manual entries
@@ -78,7 +83,9 @@ export default async function handler(req, res) {
       );
 
       res.status(200).json({
-        message: "Keyboard added or updated in your collection.",
+        message: _id
+          ? "Keyboard updated."
+          : "Keyboard added to your collection.",
         updatedKeyboard,
       });
       return;
