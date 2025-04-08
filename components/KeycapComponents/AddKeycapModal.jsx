@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
+import { colorOptions } from "@/utils/colors";
 
 export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const [activeTab, setActiveTab] = useState("dropdown");
@@ -147,6 +148,17 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
         return;
       }
 
+      // Normalize the database colors to match colorOptions case
+      const normalizedColors =
+        selectedKeycapObj.colors
+          ?.map((dbColor) => {
+            const matchingColor = colorOptions.find(
+              (option) => option.name.toLowerCase() === dbColor.toLowerCase()
+            );
+            return matchingColor ? matchingColor.name : null;
+          })
+          .filter(Boolean) || [];
+
       // Create the keycap to add with all fields
       const keycapToAdd = {
         userId: "guest_user",
@@ -161,7 +173,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
         render: selectedKeycapObj.render,
         kits: selectedKeycapObj.kits || [],
         selectedKits: selectedKits,
-        selectedColors: [],
+        selectedColors: normalizedColors,
         notes: [],
       };
 

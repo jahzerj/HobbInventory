@@ -11,6 +11,7 @@ const keycapdefinitionSchema = new Schema({
   designer: { type: String },
   geekhacklink: { type: String },
   render: { type: String, required: true },
+  colors: [{ type: String }],
 
   kits: [
     {

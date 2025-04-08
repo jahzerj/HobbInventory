@@ -125,7 +125,7 @@ export default function KeyboardDetail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: "guest_user",
-          keyboardId: id,
+          _id: id,
           name: editedName,
           designer: editedDesigner,
           layout: editedLayout,
