@@ -8,6 +8,7 @@ import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeycapCard from "@/components/KeycapComponents/KeycapCard";
+import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 
 export default function Keycaps() {
   const [isOpen, setIsOpen] = useState(false);
@@ -198,6 +199,7 @@ export default function Keycaps() {
 
   return (
     <>
+      <ScrollPositionManager pageId="keycaps" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />
       </HomeBurger>
