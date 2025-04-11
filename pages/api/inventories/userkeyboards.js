@@ -1,11 +1,21 @@
 import dbConnect from "@/db/connect";
 import UserKeyboard from "@/db/models/UserKeyboard";
 import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
-  await dbConnect();
-  const userId = req.query.userId || "guest_user";
+  const session = await getServerSession(req, res, authOptions);
 
+  // Early return if not authenticated
+  if (!session) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
+
+  await dbConnect();
+
+  //Use the session user's ID
+  const userId = session.user.id;
   try {
     if (req.method === "GET") {
       const userKeyboards = await UserKeyboard.find({ userId });
@@ -14,7 +24,6 @@ export default async function handler(req, res) {
 
     if (req.method === "POST" || req.method === "PUT") {
       const {
-        userId,
         keyboardId,
         name,
         designer,
@@ -52,15 +61,20 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Use _id for updates, otherwise create a new entry each time
-      const query = _id ? { _id } : { _id: new mongoose.Types.ObjectId() };
+      // For updates: find the keyboard by _id AND ensure it belongs to the current user
+      if (_id) {
+        query = { _id, userId: session.user.id };
+      } else {
+        // For new keyboards: generate a new _id
+        query = { _id: new mongoose.Types.ObjectId() };
+      }
 
-      // Create or update the UserKeyboard entry
+      // Always use the session user's ID for new entries or updates
       const updatedKeyboard = await UserKeyboard.findOneAndUpdate(
         query,
         {
-          userId,
-          keyboardId, // This can be null for manual entries
+          userId: session.user.id, // Force the authenticated user's ID
+          keyboardId,
           name,
           designer,
           layout,
@@ -101,8 +115,9 @@ export default async function handler(req, res) {
         return;
       }
 
+      // Only allow deletion of the user's own keyboards
       await UserKeyboard.findOneAndDelete({
-        userId: req.query.userId || "guest_user",
+        userId: session.user.id,
         _id: keyboardId,
       });
 
