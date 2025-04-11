@@ -234,55 +234,59 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
         {activeTab === "manual" ? (
           // Manual Entry Tab Content
           <>
-            <Input
-              type="text"
-              name="name"
-              placeholder="Switch Name *"
-              value={switchData.name}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              type="text"
-              name="manufacturer"
-              placeholder="Manufacturer *"
-              value={switchData.manufacturer}
-              onChange={handleChange}
-              required
-            />
-            <ImageUploader
-              onImageUpload={(secureUrl) => {
-                setSwitchData((prevData) => ({
-                  ...prevData,
-                  image: secureUrl,
-                }));
-              }}
-              prePopulatedUrl={switchData.image}
-              category="switches"
-            />
-            <Input
-              type="url"
-              name="image"
-              placeholder="Image URL *"
-              value={switchData.image}
-              onChange={handleChange}
-              pattern="https?://.*"
-              required
-            />
+            <SectionContainer>
+              <Label>Switch Details</Label>
+              <Input
+                type="text"
+                name="name"
+                placeholder="Switch Name *"
+                value={switchData.name}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                type="text"
+                name="manufacturer"
+                placeholder="Manufacturer *"
+                value={switchData.manufacturer}
+                onChange={handleChange}
+                required
+              />
 
-            <Select
-              name="switchType"
-              value={switchData.switchType}
-              onChange={handleChange}
-            >
-              <option value="">Select Switch Type *</option>
-              <option value="Linear">Linear</option>
-              <option value="Tactile">Tactile</option>
-              <option value="Clicky">Clicky</option>
-            </Select>
+              <ImageUploader
+                onImageUpload={(secureUrl) => {
+                  setSwitchData((prevData) => ({
+                    ...prevData,
+                    image: secureUrl,
+                  }));
+                }}
+                prePopulatedUrl={switchData.image}
+                category="switches"
+              />
+              <Input
+                type="url"
+                name="image"
+                placeholder="Image URL *"
+                value={switchData.image}
+                onChange={handleChange}
+                pattern="https?://.*"
+                required
+              />
+
+              <Select
+                name="switchType"
+                value={switchData.switchType}
+                onChange={handleChange}
+              >
+                <option value="">Select Switch Type *</option>
+                <option value="Linear">Linear</option>
+                <option value="Tactile">Tactile</option>
+                <option value="Clicky">Clicky</option>
+              </Select>
+            </SectionContainer>
 
             {isPreviewVisible && (
-              <>
+              <SectionContainer>
                 <h3>Preview</h3>
                 <PreviewWrapper>
                   <SwitchCard
@@ -294,7 +298,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                     onDelete={() => {}}
                   />
                 </PreviewWrapper>
-              </>
+              </SectionContainer>
             )}
 
             <ToggleAdditionalFieldsButton
@@ -320,7 +324,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
             </ToggleAdditionalFieldsButton>
 
             {isAdditionalFieldsVisible && (
-              <AdditionalFieldsContainer>
+              <SectionContainer>
                 <label htmlFor="quantity">Quantity</label>
                 <Input
                   type="number"
@@ -416,7 +420,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                     <p>No notes for this switch.</p>
                   )}
                 </NotesContainer>
-              </AdditionalFieldsContainer>
+              </SectionContainer>
             )}
           </>
         ) : (
@@ -432,8 +436,8 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
               </LoaderWrapper>
             ) : (
               <>
-                {/* Step 1: Select Manufacturer */}
-                <FormGroup>
+                <SectionContainer>
+                  {/* Step 1: Select Manufacturer */}
                   <Label>Manufacturer</Label>
                   <Select
                     value={selectedManufacturer}
@@ -446,94 +450,88 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                       </option>
                     ))}
                   </Select>
-                </FormGroup>
 
-                {/* Step 2: Select Switch (only shown if manufacturer is selected) */}
-                {selectedManufacturer && (
-                  <FormGroup>
-                    <Label>Switch</Label>
-                    <Select
-                      value={selectedSwitchId}
-                      onChange={handleSwitchChange}
-                    >
-                      <option value="">-- Select Switch --</option>
-                      {filteredSwitches.map((sw) => (
-                        <option key={sw._id} value={sw._id}>
-                          {sw.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </FormGroup>
-                )}
+                  {/* Step 2: Select Switch (only shown if manufacturer is selected) */}
+                  {selectedManufacturer && (
+                    <>
+                      <Label>Switch</Label>
+                      <Select
+                        value={selectedSwitchId}
+                        onChange={handleSwitchChange}
+                      >
+                        <option value="">-- Select Switch --</option>
+                        {filteredSwitches.map((sw) => (
+                          <option key={sw._id} value={sw._id}>
+                            {sw.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </>
+                  )}
+                </SectionContainer>
 
                 {/* Step 3: Quantity and Preview (only shown if switch is selected) */}
                 {selectedSwitchId && (
-                  <>
-                    <FormGroup>
-                      <Label>Quantity</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="9999"
-                        value={switchData.quantity}
-                        onChange={(event) => {
-                          const value = Math.min(
-                            9999,
-                            Math.max(0, parseInt(event.target.value) || 0)
-                          );
-                          setSwitchData((prev) => ({
-                            ...prev,
-                            quantity: value,
-                          }));
-                        }}
-                      />
-                    </FormGroup>
+                  <SectionContainer>
+                    <Label>Quantity</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="9999"
+                      value={switchData.quantity}
+                      onChange={(event) => {
+                        const value = Math.min(
+                          9999,
+                          Math.max(0, parseInt(event.target.value) || 0)
+                        );
+                        setSwitchData((prev) => ({
+                          ...prev,
+                          quantity: value,
+                        }));
+                      }}
+                    />
 
-                    <FormGroup>
-                      <CheckboxContainer>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={switchData.isLubed}
-                            onChange={(event) =>
-                              setSwitchData((prev) => ({
-                                ...prev,
-                                isLubed: event.target.checked,
-                              }))
-                            }
-                          />
-                          Hand Lubed
-                        </label>
-                      </CheckboxContainer>
+                    <CheckboxContainer>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={switchData.isLubed}
+                          onChange={(event) =>
+                            setSwitchData((prev) => ({
+                              ...prev,
+                              isLubed: event.target.checked,
+                            }))
+                          }
+                        />
+                        Hand Lubed
+                      </label>
+                    </CheckboxContainer>
 
-                      <CheckboxContainer>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={switchData.isFilmed}
-                            onChange={(event) =>
-                              setSwitchData((prev) => ({
-                                ...prev,
-                                isFilmed: event.target.checked,
-                              }))
-                            }
-                          />
-                          Filmed
-                        </label>
-                      </CheckboxContainer>
-                    </FormGroup>
+                    <CheckboxContainer>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={switchData.isFilmed}
+                          onChange={(event) =>
+                            setSwitchData((prev) => ({
+                              ...prev,
+                              isFilmed: event.target.checked,
+                            }))
+                          }
+                        />
+                        Filmed
+                      </label>
+                    </CheckboxContainer>
 
-                    <FormGroup>
-                      <Label>Notes</Label>
-                      <TextArea
-                        placeholder="Add a note..."
-                        value={noteText}
-                        onChange={(event) => setNoteText(event.target.value)}
-                      />
-                      <AddNoteButton onClick={handleAddNote} type="button">
-                        Add Note
-                      </AddNoteButton>
-                    </FormGroup>
+                    <Label>Notes</Label>
+                    <TextArea
+                      placeholder="Add a note..."
+                      value={noteText}
+                      onChange={(event) => setNoteText(event.target.value)}
+                    />
+                    <AddNoteButton onClick={handleAddNote} type="button">
+                      Add Note
+                    </AddNoteButton>
 
                     {switchData.notes.length > 0 && (
                       <>
@@ -560,7 +558,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                         onDelete={() => {}}
                       />
                     </PreviewWrapper>
-                  </>
+                  </SectionContainer>
                 )}
               </>
             )}
@@ -722,12 +720,6 @@ const PreviewWrapper = styled.div`
   align-items: center;
 `;
 
-const AdditionalFieldsContainer = styled.div`
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
-`;
 const ToggleAdditionalFieldsButton = styled.button`
   background: none;
   border: none;
@@ -768,35 +760,8 @@ const TabContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 5px;
   text-align: center;
-`;
-
-const SelectSwitchButton = styled.button`
-  padding: 12px 24px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    background-color: #0069d9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-  width: 100%;
 `;
 
 const Label = styled.label`
@@ -854,4 +819,13 @@ const AddNoteButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+`;
+
+const SectionContainer = styled.div`
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+  width: 100%;
 `;

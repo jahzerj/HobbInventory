@@ -44,6 +44,7 @@ export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
               width={100}
               height={100}
               priority
+              style={{ objectFit: "cover" }}
             />
           </ImageContainer>
           <TextContainer>

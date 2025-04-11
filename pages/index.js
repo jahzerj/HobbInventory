@@ -2,6 +2,11 @@ import styled from "styled-components";
 import Link from "next/link";
 
 export default function InventoryHub() {
+  // Function to clear scroll position for a specific inventory page
+  const handleNavigation = (pageId) => {
+    sessionStorage.removeItem(`scrollPosition_${pageId}`);
+  };
+
   return (
     <Container>
       <Title>📦 Welcome to HobbInventory! 🎉</Title>
@@ -22,17 +27,26 @@ export default function InventoryHub() {
       </InfoText>
 
       <CategorySection>
-        <CategoryLink href="/inventories/keycaps">
+        <CategoryLink
+          href="/inventories/keycaps"
+          onClick={() => handleNavigation("keycaps")}
+        >
           <CategoryCard>
             <Emoji>🗝️</Emoji> Keycaps
           </CategoryCard>
         </CategoryLink>
-        <CategoryLink href="/inventories/switches">
+        <CategoryLink
+          href="/inventories/switches"
+          onClick={() => handleNavigation("switches")}
+        >
           <CategoryCard>
             <Emoji>🎛️</Emoji> Switches
           </CategoryCard>
         </CategoryLink>
-        <CategoryLink href="/inventories/keyboards">
+        <CategoryLink
+          href="/inventories/keyboards"
+          onClick={() => handleNavigation("keyboards")}
+        >
           <CategoryCard>
             <Emoji>⌨️</Emoji> Keyboard Kits
           </CategoryCard>

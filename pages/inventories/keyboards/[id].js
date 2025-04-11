@@ -17,7 +17,6 @@ import {
   StyledSpan,
   LoaderWrapper,
   StyledInput,
-  SectionHeading,
 } from "@/components/SharedComponents/DetailPageStyles";
 
 export default function KeyboardDetail() {
@@ -70,6 +69,9 @@ export default function KeyboardDetail() {
   const [editedBuildWeight, setEditedBuildWeight] = useState(
     userKeyboard?.buildWeight || ""
   );
+
+  // Add this state to store the current active render image
+  const [activeRenderIndex, setActiveRenderIndex] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -202,16 +204,38 @@ export default function KeyboardDetail() {
         ) : (
           <h1>{userKeyboard.name}</h1>
         )}
-        {userKeyboard.renders && (
-          <HeaderImage>
-            <Image
-              src={userKeyboard.renders[0]}
-              alt={userKeyboard.name}
-              fill
-              style={{ objectFit: "cover" }}
-              priority
-            />
-          </HeaderImage>
+        {userKeyboard.renders && userKeyboard.renders.length > 0 && (
+          <>
+            <HeaderImage>
+              <Image
+                src={userKeyboard.renders[activeRenderIndex]}
+                alt={userKeyboard.name}
+                fill
+                style={{ objectFit: "cover" }}
+                priority
+              />
+            </HeaderImage>
+
+            {userKeyboard.renders.length > 1 && (
+              <ThumbnailGallery>
+                {userKeyboard.renders.map((render, index) => (
+                  <ThumbnailContainer
+                    key={index}
+                    $isActive={index === activeRenderIndex}
+                    onClick={() => setActiveRenderIndex(index)}
+                  >
+                    <Image
+                      src={render}
+                      alt={`${userKeyboard.name} render ${index + 1}`}
+                      width={80}
+                      height={80}
+                      style={{ objectFit: "cover" }}
+                    />
+                  </ThumbnailContainer>
+                ))}
+              </ThumbnailGallery>
+            )}
+          </>
         )}
       </HeaderSection>
 
@@ -508,5 +532,30 @@ const StyledCheckboxGroup = styled.div`
   input[type="checkbox"] {
     width: 16px;
     height: 16px;
+  }
+`;
+
+const ThumbnailGallery = styled.div`
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 10px 0;
+  justify-content: center;
+`;
+
+const ThumbnailContainer = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  border: 2px solid ${(props) => (props.$isActive ? "#007bff" : "transparent")};
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 `;

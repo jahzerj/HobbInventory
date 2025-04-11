@@ -22,6 +22,8 @@ import {
   StyledInput,
   SectionHeading,
 } from "@/components/SharedComponents/DetailPageStyles";
+import AddIcon from "@/components/icons/AddIcon";
+import AddKitModal from "@/components/KeycapComponents/AddKitModal";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -34,18 +36,6 @@ export default function KeyCapDetail() {
   } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
 
   const userKeycap = userKeycaps?.find((item) => item._id === id);
-
-  // const { data: keycaps, error: keycapError } = useSWR(
-  //   id ? `/api/inventories/keycaps/${userKeycap.keycapDefinitionId}` : null
-  // );
-
-  //  // Only fetch from keycapDefinition if there's a keycapDefinitionId
-  //  const { data: keycaps, error: keycapError } = useSWR(
-  //   userKeycap?.keycapDefinitionId
-  //     ? `/api/inventories/keycaps/${userKeycap.keycapDefinitionId}`
-  //     : null
-  // );
-
   const selectedColors = userKeycap?.selectedColors ?? [];
   const notes = userKeycap?.notes ?? [];
 
@@ -73,6 +63,8 @@ export default function KeyCapDetail() {
   const [editedGeekhackLink, setEditedGeekhackLink] = useState(
     userKeycap?.geekhacklink || ""
   );
+
+  const [isAddKitModalOpen, setIsAddKitModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -225,6 +217,41 @@ export default function KeyCapDetail() {
     setEditedDesigner(userKeycap?.designer || "");
     setEditedGeekhackLink(userKeycap?.geekhacklink || "");
     setIsEditMode(false);
+  };
+
+  const handleAddKit = async (newKit) => {
+    try {
+      // Add the new kit to the existing kits
+      const updatedKits = [...(userKeycap.kits || []), newKit];
+      
+      // Add the new kit name to selectedKits if it's not already there
+      const updatedSelectedKits = userKeycap.selectedKits.includes(newKit.name)
+        ? userKeycap.selectedKits
+        : [...userKeycap.selectedKits, newKit.name];
+      
+      // Make the PUT request to update the keycap with the new kit
+      const response = await fetch("/api/inventories/userkeycaps", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...userKeycap,
+          kits: updatedKits,
+          selectedKits: updatedSelectedKits,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update keycap with new kit");
+      }
+  
+      // Update the local state
+      mutate(); // Refetch data using SWR
+    } catch (error) {
+      console.error("Error adding kit:", error);
+      alert("Failed to add kit. Please try again.");
+    }
   };
 
   if (userKeycapError) {
@@ -399,6 +426,14 @@ export default function KeyCapDetail() {
                 </KitCard>
               );
             })}
+            <KitCard
+              as="button"
+              onClick={() => setIsAddKitModalOpen(true)}
+              $isAddCard
+            >
+              <AddIcon />
+              <p>Add Kit</p>
+            </KitCard>
           </GridContainer>
         ) : selectedKits.length > 0 ? (
           <GridContainer>
@@ -516,6 +551,12 @@ export default function KeyCapDetail() {
           )}
         </AcceptCancelEditButtonContainer>
       </DetailPageContainer>
+
+      <AddKitModal
+        open={isAddKitModalOpen}
+        onClose={() => setIsAddKitModalOpen(false)}
+        onAddKit={handleAddKit}
+      />
     </>
   );
 }
@@ -546,14 +587,28 @@ const KitCard = styled.li`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   opacity: ${(props) =>
-    props.$isEditMode && !props.$isSelected ? "0.33" : "1"};
+    props.$isAddCard
+      ? "1"
+      : props.$isEditMode && !props.$isSelected
+      ? "0.33"
+      : "1"};
   transition: opacity 0.2s ease-in-out;
+  border: none;
+  min-height: ${(props) => (props.$isAddCard ? "87px" : "auto")};
+  width: 100%;
 
   &:hover {
-    opacity: ${(props) => (props.$isEditMode ? "0.8" : "1")};
+    opacity: ${(props) =>
+      props.$isEditMode && !props.$isAddCard ? "0.8" : "1"};
+    background: ${(props) => (props.$isAddCard ? "#f5f5f5" : "white")};
+  }
+
+  svg {
+    color: #666;
   }
 
   input[type="checkbox"] {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { colorOptions } from "@/utils/colors";
+import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
 export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const [activeTab, setActiveTab] = useState("dropdown");
@@ -309,20 +310,22 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
           </TabContent>
         ) : (
           // Manual Entry Content
-          <TabContent>
-            <FormGroup>
+          <>
+            <SectionContainer>
               <Label>Keycap Set Details</Label>
-              <Input
-                type="text"
-                name="name"
-                placeholder="Keycap Name *"
-                value={keycapData.name}
-                onChange={handleChange}
-                required
-              />
+              <SectionContainer>
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="Keycap Name *"
+                  value={keycapData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </SectionContainer>
 
               {keycapData.kits.map((kit, index) => (
-                <div key={index}>
+                <SectionContainer key={index}>
                   <KitInputRow>
                     {index > 0 && (
                       <KitButton
@@ -339,10 +342,11 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                         -
                       </KitButton>
                     )}
+
                     <KitInput
                       type="text"
                       name={`kitName${index}`}
-                      placeholder="Kit Name *"
+                      placeholder={`Kit ${index + 1} Name`}
                       value={kit.name}
                       onChange={(event) =>
                         handleKitChange(index, "name", event.target.value)
@@ -356,6 +360,20 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                         </KitButton>
                       )}
                   </KitInputRow>
+                  <ImageUploader
+                    onImageUpload={(secureUrl) => {
+                      const newKits = [...keycapData.kits];
+                      if (newKits[index]) {
+                        newKits[index].image = secureUrl;
+                        setKeycapData((prevData) => ({
+                          ...prevData,
+                          kits: newKits,
+                        }));
+                      }
+                    }}
+                    prePopulatedUrl={kit.image}
+                    category="keycaps_kits"
+                  />
                   <Input
                     type="url"
                     name={`kitImage${index}`}
@@ -366,18 +384,30 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                     }
                     required
                   />
-                </div>
+                </SectionContainer>
               ))}
 
-              <Input
-                type="url"
-                name="render"
-                placeholder="Render Image URL *"
-                value={keycapData.render}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
+              <SectionContainer>
+                <ImageUploader
+                  onImageUpload={(secureUrl) => {
+                    setKeycapData((prevData) => ({
+                      ...prevData,
+                      render: secureUrl,
+                    }));
+                  }}
+                  prePopulatedUrl={keycapData.render}
+                  category="keycaps_render"
+                />
+                <Input
+                  type="url"
+                  name="render"
+                  placeholder="Render Image URL *"
+                  value={keycapData.render}
+                  onChange={handleChange}
+                  required
+                />
+              </SectionContainer>
+            </SectionContainer>
 
             <ToggleAdditionalFieldsButton
               onClick={() =>
@@ -390,7 +420,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
             </ToggleAdditionalFieldsButton>
 
             {isAdditionalFieldsVisible && (
-              <AdditionalFieldsContainer>
+              <SectionContainer>
                 <Input
                   type="text"
                   name="manufacturer"
@@ -433,9 +463,9 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                   value={keycapData.geekhacklink}
                   onChange={handleChange}
                 />
-              </AdditionalFieldsContainer>
+              </SectionContainer>
             )}
-          </TabContent>
+          </>
         )}
 
         <ButtonContainer>
@@ -616,11 +646,13 @@ const ToggleAdditionalFieldsButton = styled.button`
   margin: 10px 0;
 `;
 
-const AdditionalFieldsContainer = styled.div`
-  background: #f9f9f9;
+const SectionContainer = styled.div`
+  border: 1px solid #ddd;
   padding: 10px;
   border-radius: 8px;
-  margin-top: 10px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  width: 100%;
 `;
 
 const KitInputRow = styled.div`

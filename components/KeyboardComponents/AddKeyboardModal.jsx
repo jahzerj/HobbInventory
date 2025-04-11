@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
+import ImageUploader from "../SharedComponents/ImageUploader";
 
 export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
   const [activeTab, setActiveTab] = useState("dropdown");
@@ -292,13 +293,14 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
 
         {activeTab === "dropdown" ? (
           <TabContent>
+            <p>Choose a keyboard to add to your inventory:</p>
             {dbKeyboardsError ? (
               <p>Error loading keyboards. Please try again.</p>
             ) : !dbKeyboards ? (
               <p>Loading keyboards...</p>
             ) : (
               <>
-                <FormGroup>
+                <SectionContainer>
                   <Label>Keyboard</Label>
                   <DropDownSelect
                     value={selectedKeyboard}
@@ -315,18 +317,18 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                         </option>
                       ))}
                   </DropDownSelect>
-                </FormGroup>
+                </SectionContainer>
 
                 {selectedKeyboard && (
                   <KeyboardPreview>
                     {dbKeyboards.find(
                       (keyboard) => keyboard.name === selectedKeyboard
-                    )?.renders[0] && (
+                    )?.renders?.[0] && (
                       <Image
                         src={
                           dbKeyboards.find(
                             (keyboard) => keyboard.name === selectedKeyboard
-                          ).renders[0]
+                          )?.renders[0]
                         }
                         alt={selectedKeyboard}
                         width={300}
@@ -334,17 +336,18 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                         style={{
                           objectFit: "cover",
                           borderRadius: "5px",
+                          marginBottom: "10px",
                         }}
-                        priority
                       />
                     )}
                     <KeyboardDetails>
+                      <h3>{selectedKeyboard}</h3>
                       <p>
                         <strong>Designer:</strong>{" "}
                         {
                           dbKeyboards.find(
                             (keyboard) => keyboard.name === selectedKeyboard
-                          ).designer
+                          )?.designer
                         }
                       </p>
                       <p>
@@ -352,7 +355,7 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                         {
                           dbKeyboards.find(
                             (keyboard) => keyboard.name === selectedKeyboard
-                          ).layout
+                          )?.layout
                         }
                       </p>
                     </KeyboardDetails>
@@ -362,8 +365,8 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
             )}
           </TabContent>
         ) : (
-          <TabContent>
-            <FormGroup>
+          <>
+            <SectionContainer>
               <Label>Keyboard Details</Label>
               <Input
                 type="text"
@@ -396,42 +399,6 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                 <option value="1800">1800</option>
                 <option value="Full Size">Full Size</option>
               </Select>
-
-              {keyboardData.renders.map((render, index) => (
-                <RenderInputRow key={index}>
-                  {index > 0 && (
-                    <RenderButton
-                      $remove
-                      onClick={() => {
-                        const newRenders = [...keyboardData.renders];
-                        newRenders.splice(index, 1);
-                        setKeyboardData((prevData) => ({
-                          ...prevData,
-                          renders: newRenders,
-                        }));
-                      }}
-                    >
-                      -
-                    </RenderButton>
-                  )}
-                  <Input
-                    type="url"
-                    placeholder={`Render Image URL ${index === 0 ? "*" : ""}`}
-                    value={render}
-                    onChange={(event) =>
-                      handleRenderChange(index, event.target.value)
-                    }
-                    required={index === 0}
-                  />
-                  {index === keyboardData.renders.length - 1 &&
-                    keyboardData.renders.length < 5 && (
-                      <RenderButton $add onClick={handleAddRender}>
-                        +
-                      </RenderButton>
-                    )}
-                </RenderInputRow>
-              ))}
-
               <Select
                 name="blocker"
                 value={keyboardData.blocker}
@@ -455,7 +422,60 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                 <option value="HE">HE</option>
                 <option value="Alps">Alps</option>
               </Select>
-            </FormGroup>
+            </SectionContainer>
+
+            <SectionContainer>
+              {keyboardData.renders.map((render, index) => (
+                <SectionContainer key={index}>
+                  <RenderInputRow>
+                    {index > 0 && (
+                      <RenderButton
+                        $remove
+                        onClick={() => {
+                          const newRenders = [...keyboardData.renders];
+                          newRenders.splice(index, 1);
+                          setKeyboardData((prevData) => ({
+                            ...prevData,
+                            renders: newRenders,
+                          }));
+                        }}
+                      >
+                        -
+                      </RenderButton>
+                    )}
+                    <ImageUploader
+                      onImageUpload={(secureUrl) => {
+                        const newRenders = [...keyboardData.renders];
+                        newRenders[index] = secureUrl;
+                        setKeyboardData((prevData) => ({
+                          ...prevData,
+                          renders: newRenders,
+                        }));
+                      }}
+                      prePopulatedUrl={render}
+                      category="keyboards_renders"
+                    />
+                    <Input
+                      type="url"
+                      placeholder={`Render ${index + 1} Image URL ${
+                        index === 0 ? "*" : ""
+                      }`}
+                      value={render}
+                      onChange={(event) =>
+                        handleRenderChange(index, event.target.value)
+                      }
+                      required={index === 0}
+                    />
+                    {index === keyboardData.renders.length - 1 &&
+                      keyboardData.renders.length < 5 && (
+                        <RenderButton $add onClick={handleAddRender}>
+                          +
+                        </RenderButton>
+                      )}
+                  </RenderInputRow>
+                </SectionContainer>
+              ))}
+            </SectionContainer>
 
             <ToggleAdditionalFieldsButton
               onClick={() => {
@@ -569,7 +589,7 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                 )}
               </AdditionalFieldsContainer>
             )}
-          </TabContent>
+          </>
         )}
 
         <ButtonContainer>
@@ -652,10 +672,17 @@ const TabContent = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  align-items: center;
+  text-align: center;
+  padding: 5px;
 `;
 
-const FormGroup = styled.div`
-  margin-bottom: 16px;
+const SectionContainer = styled.div`
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
   width: 100%;
 `;
 
@@ -824,6 +851,7 @@ const CheckboxContainer = styled.div`
 
 const RenderInputRow = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   width: 100%;
   margin-bottom: 10px;
