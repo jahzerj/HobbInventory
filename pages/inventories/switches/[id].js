@@ -22,15 +22,11 @@ export default function SwitchDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  // const { data: mxswitch, error: switchError } = useSWR(
-  //   id ? `/api/inventories/switches/${id}` : null
-  // );
-
   const {
     data: userSwitches,
     error: userSwitchesError,
     mutate,
-  } = useSWR(id ? `/api/inventories/userswitches?userId=guest_user` : null);
+  } = useSWR(id ? "/api/inventories/userswitches" : null);
 
   const userSwitch = userSwitches?.find((item) => item._id === id);
   const notes = userSwitch?.notes ?? [];
@@ -132,7 +128,6 @@ export default function SwitchDetail() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "guest_user",
           switchId: id,
           name: editedName,
           manufacturer: editedManufacturer,

@@ -9,10 +9,10 @@ import EditInventoryButton from "@/components/SharedComponents/EditInventoryButt
 import MenuIcon from "@/components/icons/MenuIcon";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";
+import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 
 export default function Switches() {
   const [isOpen, setIsOpen] = useState(false);
-  const userId = "guest_user";
   const [isEditMode, setIsEditMode] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedManufacturers, setSelectedManufacturers] = useState(["all"]);
@@ -23,7 +23,7 @@ export default function Switches() {
     data: switches,
     error,
     mutate,
-  } = useSWR(`/api/inventories/userswitches?userId=${userId}`);
+  } = useSWR("/api/inventories/userswitches");
 
   const handleAddSwitch = async (newSwitch) => {
     const tempId = nanoid();
@@ -72,7 +72,7 @@ export default function Switches() {
       const response = await fetch("/api/inventories/userswitches", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, switchId }),
+        body: JSON.stringify({ switchId }),
       });
 
       if (!response.ok) {
@@ -177,6 +177,7 @@ export default function Switches() {
 
   return (
     <>
+      <ScrollPositionManager pageId="switches" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />
       </HomeBurger>
