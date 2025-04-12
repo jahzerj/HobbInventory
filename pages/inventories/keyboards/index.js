@@ -11,6 +11,7 @@ import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
 import { useSession } from "next-auth/react";
 
 export default function Keyboards() {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [userKeyboards, setUserKeyboards] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -21,7 +22,7 @@ export default function Keyboards() {
     data: keyboards,
     error,
     mutate,
-  } = useSWR(`/api/inventories/userkeyboards?userId=${userId}`);
+  } = useSWR("/api/inventories/userkeyboards");
 
   useEffect(() => {
     if (keyboards) {
@@ -58,7 +59,7 @@ export default function Keyboards() {
         console.error("Failed to add keyboard:", error);
       }
     },
-    [userKeyboards, mutate]
+    [mutate, session.user.id]
   );
 
   // Make getDeleteConfirmation a memoized function with useCallback
@@ -88,7 +89,7 @@ export default function Keyboards() {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId,
+            userId: session.user.id,
             keyboardId: keyboardId,
           }),
         });
@@ -104,7 +105,7 @@ export default function Keyboards() {
         mutate();
       }
     },
-    [getDeleteConfirmation, userId, mutate]
+    [getDeleteConfirmation, mutate, session]
   );
 
   // Memoized layout filtering function
