@@ -16,13 +16,12 @@ export default function Keycaps() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedColors, setSelectedColors] = useState(["all"]);
   const colorScrollRef = useRef(null);
-  const userId = "guest_user";
 
   const {
     data: keycaps,
     error,
     mutate,
-  } = useSWR(`/api/inventories/userkeycaps?userId=${userId}`);
+  } = useSWR("/api/inventories/userkeycaps");
 
   useEffect(() => {
     if (keycaps) {
@@ -33,13 +32,9 @@ export default function Keycaps() {
   //Function for adding keycap ID to the userKeycaps array
   const handleAddKeycap = useCallback(
     async (keycapToAdd) => {
-      // if (userKeycaps.includes(keycapToAdd.keycapDefinitionId)) return;
-
       try {
-        // Update UI optimistically
-        // setUserKeycaps((prev) => [...prev, keycapToAdd.keycapDefinitionId]);
+        setUserKeycaps((prev) => [...prev, keycapToAdd.keycapId]);
 
-        // Send complete keycap data to API
         const response = await fetch("/api/inventories/userkeycaps", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -47,14 +42,18 @@ export default function Keycaps() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add keycap");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add keycap");
         }
 
-        // Refresh data from server to ensure accuracy
         mutate();
       } catch (error) {
+        // Revert on error
+        setUserKeycaps((prev) =>
+          prev.filter((id) => id !== keycapToAdd.keycapId)
+        );
         console.error("Failed to add keycap:", error);
-        mutate(); // Refresh to ensure UI is consistent
+        alert(`Error: ${error.message}`);
       }
     },
     [mutate]
@@ -79,30 +78,28 @@ export default function Keycaps() {
       if (!getDeleteConfirmation("keycapset")) return;
 
       try {
-        // Optimistic UI update
         setUserKeycaps((prev) => prev.filter((id) => id !== keycapId));
 
         const response = await fetch("/api/inventories/userkeycaps", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            _id: keycapId, // Updated field name
-          }),
+          body: JSON.stringify({ keycapId }),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to delete keycap");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to delete keycap");
         }
 
         mutate();
       } catch (error) {
         console.error("Failed to delete keycap:", error);
-        // Force refetch to restore accurate state on error
+        alert(`Error: ${error.message}`);
+        // Revert the UI change and refetch data
         mutate();
       }
     },
-    [getDeleteConfirmation, userId, mutate]
+    [getDeleteConfirmation, mutate]
   );
 
   // Memoized color filtering function

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userkeycapSchema = new Schema({
-  userId: { type: String, required: true, default: "guest_user" },
+  userId: { type: String, required: true },
 
   // Keycap details
   name: { type: String, required: true },

@@ -1,20 +1,35 @@
 import dbConnect from "@/db/connect";
 import UserKeycap from "@/db/models/UserKeycap";
 import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
+  const session = await getServerSession(req, res, authOptions);
+
+  // Check for session and user.name
+  if (!session || !session.user || !session.user.name) {
+    console.error("No valid session user name found:", session);
+    res
+      .status(401)
+      .json({ message: "Valid user session with username required" });
+    return;
+  }
+
   await dbConnect();
-  const userId = req.query.userId || "guest_user";
+
+  // Use session.user.name as the identifier
+  const userName = session.user.name;
 
   try {
     if (req.method === "GET") {
-      const userKeycaps = await UserKeycap.find({ userId });
+      // Find by userName (stored in the userId field)
+      const userKeycaps = await UserKeycap.find({ userId: userName });
       return res.status(200).json(userKeycaps);
     }
 
     if (req.method === "POST" || req.method === "PUT") {
       const {
-        userId,
         keycapDefinitionId,
         name,
         manufacturer,
@@ -47,7 +62,7 @@ export default async function handler(req, res) {
         const updatedKeycaps = await UserKeycap.findOneAndUpdate(
           query,
           {
-            userId,
+            userId: userName,
             keycapDefinitionId,
             name,
             manufacturer,
@@ -78,7 +93,7 @@ export default async function handler(req, res) {
         const updatedKeycaps = await UserKeycap.findOneAndUpdate(
           query,
           {
-            userId,
+            userId: userName,
             name,
             manufacturer,
             profile,
@@ -105,9 +120,10 @@ export default async function handler(req, res) {
 
     // ...existing DELETE logic is fine...
     if (req.method === "DELETE") {
-      const { _id } = req.body;
+      const { _id, keycapId } = req.body;
+      const idToDelete = _id || keycapId;
 
-      if (!_id) {
+      if (!idToDelete) {
         res
           .status(400)
           .json({ message: "Keycap ID is required for deletion." });
@@ -115,8 +131,8 @@ export default async function handler(req, res) {
       }
 
       await UserKeycap.findOneAndDelete({
-        userId: req.query.userId || "guest_user",
-        _id,
+        userId: userName,
+        _id: idToDelete,
       });
 
       res.status(200).json({ message: "Keycapset removed successfully." });
