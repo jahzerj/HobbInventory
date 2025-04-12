@@ -1,15 +1,83 @@
 import styled from "styled-components";
 import Link from "next/link";
+// Import necessary hooks/functions from next-auth
+import { useSession, signIn, signOut } from "next-auth/react";
+
+// Add a new styled component for the Auth controls
+const AuthControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+`;
+
+const UserInfo = styled.span`
+  color: #555;
+`;
+
+const AuthButton = styled.button`
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &.signOut {
+    background-color: #dc3545;
+    &:hover {
+      background-color: #c82333;
+    }
+  }
+`;
 
 export default function InventoryHub() {
+  // Get session data and status
+  const { data: session, status } = useSession();
+
   // Function to clear scroll position for a specific inventory page
   const handleNavigation = (pageId) => {
     sessionStorage.removeItem(`scrollPosition_${pageId}`);
   };
 
+  // Don't render anything while loading the session
+  if (status === "loading") {
+    return null; // Or a loading indicator
+  }
+
   return (
     <Container>
       <Title>📦 Welcome to HobbInventory! 🎉</Title>
+
+      {/* Login/Logout Component */}
+      <AuthControls>
+        {session ? (
+          <>
+            <UserInfo>
+              Signed in as {session.user.name || session.user.email}
+            </UserInfo>
+            <AuthButton className="signOut" onClick={() => signOut()}>
+              Sign out
+            </AuthButton>
+          </>
+        ) : (
+          <>
+            <UserInfo>Not signed in</UserInfo>
+            {/* Use signIn('discord') to specify the provider */}
+            <AuthButton onClick={() => signIn("discord")}>
+              Sign in with Discord
+            </AuthButton>
+          </>
+        )}
+      </AuthControls>
+
       <InfoText>
         HobbInventory is your go-to app for managing and tracking your favorite
         hobby collections. Whether it’s keyboards, photography gear, or trading

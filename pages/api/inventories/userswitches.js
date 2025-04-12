@@ -1,14 +1,28 @@
 import dbConnect from "@/db/connect";
 import UserSwitch from "@/db/models/UserSwitch";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
+  // Get session and authenticate
+  const session = await getServerSession(req, res, authOptions);
+
+  // Check for valid session
+  if (!session || !session.user || !session.user.name) {
+    console.error("No valid session user name found:", session);
+    return res
+      .status(401)
+      .json({ message: "Valid user session with username required" });
+  }
+
   await dbConnect();
 
-  try {
-    const userId = req.query.userId || "guest_user";
+  // Use session.user.name as the identifier
+  const userName = session.user.name;
 
+  try {
     if (req.method === "GET") {
-      const userSwitches = await UserSwitch.find({ userId });
+      const userSwitches = await UserSwitch.find({ userId: userName });
       return res.status(200).json(userSwitches);
     }
 
@@ -38,10 +52,14 @@ export default async function handler(req, res) {
           });
         }
 
-        const newSwitch = await UserSwitch.create({ ...req.body, userId });
+        // Use userName from session instead of from request
+        const newSwitch = await UserSwitch.create({
+          ...req.body,
+          userId: userName,
+        });
         return res
           .status(201)
-          .json({ messsage: "Switch added successfully!", switch: newSwitch });
+          .json({ message: "Switch added successfully!", switch: newSwitch });
       }
 
       if (req.method === "PUT") {
@@ -52,12 +70,18 @@ export default async function handler(req, res) {
         }
 
         const existingSwitch = await UserSwitch.findOne({
-          userId,
+          userId: userName,
           _id: switchId,
         });
 
+        if (!existingSwitch) {
+          return res
+            .status(404)
+            .json({ message: "Switch not found or unauthorized" });
+        }
+
         const updatedSwitch = await UserSwitch.findOneAndUpdate(
-          { userId, _id: switchId },
+          { userId: userName, _id: switchId },
           {
             switchId,
             name: name ?? existingSwitch?.name,
@@ -87,17 +111,23 @@ export default async function handler(req, res) {
       const { switchId } = req.body;
 
       if (!switchId) {
-        res.status(400).json({ message: "Switch ID is required for deletion" });
-        return;
+        return res
+          .status(400)
+          .json({ message: "Switch ID is required for deletion" });
       }
 
-      await UserSwitch.findOneAndDelete({
-        userId: req.query.userId || "guest_user",
+      const result = await UserSwitch.findOneAndDelete({
+        userId: userName,
         _id: switchId,
       });
 
-      res.status(200).json({ message: "Switch removed successfully." });
-      return;
+      if (!result) {
+        return res
+          .status(404)
+          .json({ message: "Switch not found or unauthorized" });
+      }
+
+      return res.status(200).json({ message: "Switch removed successfully." });
     }
 
     return res.status(405).json({ message: "Method Not Allowed" });

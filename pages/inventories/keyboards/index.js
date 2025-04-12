@@ -15,13 +15,12 @@ export default function Keyboards() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedLayouts, setSelectedLayouts] = useState(["all"]);
   const layoutScrollRef = useRef(null);
-  const userId = "guest_user";
 
   const {
     data: keyboards,
     error,
     mutate,
-  } = useSWR(`/api/inventories/userkeyboards?userId=${userId}`);
+  } = useSWR("/api/inventories/userkeyboards");
 
   useEffect(() => {
     if (keyboards) {
@@ -42,7 +41,8 @@ export default function Keyboards() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add keyboard");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add keyboard");
         }
 
         // Refresh data from server to ensure accuracy
@@ -53,9 +53,10 @@ export default function Keyboards() {
           prev.filter((id) => id !== keyboardToAdd.keyboardId)
         );
         console.error("Failed to add keyboard:", error);
+        alert(`Error: ${error.message}`);
       }
     },
-    [userKeyboards, mutate]
+    [mutate]
   );
 
   // Make getDeleteConfirmation a memoized function with useCallback
@@ -85,23 +86,24 @@ export default function Keyboards() {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId,
             keyboardId: keyboardId,
           }),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to delete keyboard");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to delete keyboard");
         }
 
         mutate();
       } catch (error) {
         console.error("Failed to delete keyboard:", error);
+        alert(`Error: ${error.message}`);
         // Force refetch to restore accurate state on error
         mutate();
       }
     },
-    [getDeleteConfirmation, userId, mutate]
+    [getDeleteConfirmation, mutate]
   );
 
   // Memoized layout filtering function

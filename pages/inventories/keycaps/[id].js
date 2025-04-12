@@ -25,6 +25,7 @@ import {
 import AddIcon from "@/components/icons/AddIcon";
 import AddKitModal from "@/components/KeycapComponents/AddKitModal";
 
+
 export default function KeyCapDetail() {
   const router = useRouter();
   const { id } = router.query;
@@ -33,7 +34,7 @@ export default function KeyCapDetail() {
     data: userKeycaps,
     error: userKeycapError,
     mutate,
-  } = useSWR(id ? `/api/inventories/userkeycaps?userId=guest_user` : null);
+  } = useSWR(id ? "/api/inventories/userkeycaps" : null);
 
   const userKeycap = userKeycaps?.find((item) => item._id === id);
   const selectedColors = userKeycap?.selectedColors ?? [];
@@ -140,7 +141,6 @@ export default function KeyCapDetail() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: "guest_user",
         _id: userKeycap._id,
         keycapDefinitionId: userKeycap.keycapDefinitionId,
         name: userKeycap.name,
@@ -168,7 +168,6 @@ export default function KeyCapDetail() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "guest_user",
           _id: userKeycap._id,
           keycapDefinitionId: userKeycap.keycapDefinitionId,
           name: userKeycap.name,
@@ -187,7 +186,6 @@ export default function KeyCapDetail() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: "guest_user",
         _id: userKeycap._id,
         keycapDefinitionId: userKeycap.keycapDefinitionId,
         name: userKeycap.name,
@@ -223,12 +221,12 @@ export default function KeyCapDetail() {
     try {
       // Add the new kit to the existing kits
       const updatedKits = [...(userKeycap.kits || []), newKit];
-      
+
       // Add the new kit name to selectedKits if it's not already there
       const updatedSelectedKits = userKeycap.selectedKits.includes(newKit.name)
         ? userKeycap.selectedKits
         : [...userKeycap.selectedKits, newKit.name];
-      
+
       // Make the PUT request to update the keycap with the new kit
       const response = await fetch("/api/inventories/userkeycaps", {
         method: "PUT",
@@ -241,11 +239,11 @@ export default function KeyCapDetail() {
           selectedKits: updatedSelectedKits,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to update keycap with new kit");
       }
-  
+
       // Update the local state
       mutate(); // Refetch data using SWR
     } catch (error) {

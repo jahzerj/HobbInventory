@@ -115,7 +115,6 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
 
       // Create a complete keycap object with all fields
       const keycapToAdd = {
-        userId: "guest_user",
         name: keycapData.name,
         manufacturer: keycapData.manufacturer,
         profile: keycapData.profile || "",
@@ -162,7 +161,6 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
 
       // Create the keycap to add with all fields
       const keycapToAdd = {
-        userId: "guest_user",
         keycapDefinitionId: selectedKeycapObj._id,
         name: selectedKeycapObj.name,
         manufacturer: selectedKeycapObj.manufacturer,

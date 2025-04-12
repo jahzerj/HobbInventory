@@ -192,7 +192,6 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
 
       // Create the keyboard to add
       const keyboardToAdd = {
-        userId: "guest_user",
         name: keyboardData.name,
         designer: keyboardData.designer,
         layout: keyboardData.layout,
@@ -231,7 +230,6 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
 
       //Create the keyboard to add with all fields
       const keyboardToAdd = {
-        userId: "guest_user",
         keyboardId: selectedKeyboardObj._id,
         name: selectedKeyboardObj.name,
         designer: selectedKeyboardObj.designer,
