@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userkeyboardSchema = new Schema({
-  userId: { type: String, required: true, default: "guest_user" },
+  userId: { type: String, required: true },
 
   name: { type: String, required: true },
   designer: { type: String, required: true },

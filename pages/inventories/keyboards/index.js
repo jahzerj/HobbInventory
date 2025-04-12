@@ -8,6 +8,7 @@ import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
+import { useSession } from "next-auth/react";
 
 export default function Keyboards() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +16,6 @@ export default function Keyboards() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedLayouts, setSelectedLayouts] = useState(["all"]);
   const layoutScrollRef = useRef(null);
-  const userId = "guest_user";
 
   const {
     data: keyboards,
@@ -38,7 +38,10 @@ export default function Keyboards() {
         const response = await fetch("/api/inventories/userkeyboards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(keyboardToAdd),
+          body: JSON.stringify({
+            ...keyboardToAdd,
+            userId: session.user.id,
+          }),
         });
 
         if (!response.ok) {

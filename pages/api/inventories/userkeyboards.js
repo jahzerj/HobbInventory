@@ -61,7 +61,8 @@ export default async function handler(req, res) {
         return;
       }
 
-      // For updates: find the keyboard by _id AND ensure it belongs to the current user
+      let query;
+
       if (_id) {
         query = { _id, userId: session.user.id };
       } else {
