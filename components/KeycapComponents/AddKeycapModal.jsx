@@ -12,6 +12,8 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
   const [selectedKits, setSelectedKits] = useState([]);
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [keycapData, setKeycapData] = useState({
     name: "",
@@ -231,22 +233,57 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                 {/* Dropdown: Select Keycap Set */}
                 <FormGroup>
                   <Label>Keycap Set</Label>
-                  <DropDownSelect
-                    value={selectedKeycap}
-                    onChange={(event) => {
-                      setSelectedKeycap(event.target.value);
-                      setSelectedKits([]); // Reset kit selection
-                    }}
-                  >
-                    <option value="">-- Choose a keycap set --</option>
-                    {dbKeycaps
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((keycap) => (
-                        <option key={keycap._id} value={keycap.name}>
-                          {keycap.name}
-                        </option>
-                      ))}
-                  </DropDownSelect>
+                  <SearchableDropdown>
+                    <SelectedValue
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    >
+                      {selectedKeycap || "-- Choose a keycap set --"}
+                      <DropdownIcon>▼</DropdownIcon>
+                    </SelectedValue>
+
+                    {isDropdownOpen && (
+                      <DropdownContainer>
+                        <SearchInput
+                          type="text"
+                          placeholder="Search keycaps..."
+                          value={searchTerm}
+                          onChange={(event) =>
+                            setSearchTerm(event.target.value)
+                          }
+                        />
+                        <OptionsList>
+                          {dbKeycaps
+                            .filter((keycap) =>
+                              keycap.name
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase())
+                            )
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map((keycap) => (
+                              <OptionItem
+                                key={keycap._id}
+                                onClick={() => {
+                                  setSelectedKeycap(keycap.name);
+                                  setSelectedKits([]);
+                                  setIsDropdownOpen(false);
+                                  setSearchTerm("");
+                                }}
+                                $isSelected={keycap.name === selectedKeycap}
+                              >
+                                {keycap.name}
+                              </OptionItem>
+                            ))}
+                          {dbKeycaps.filter((keycap) =>
+                            keycap.name
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase())
+                          ).length === 0 && (
+                            <NoResults>No matching keycaps found</NoResults>
+                          )}
+                        </OptionsList>
+                      </DropdownContainer>
+                    )}
+                  </SearchableDropdown>
                 </FormGroup>
 
                 {/* Checkbox Selection for Kits */}
@@ -563,14 +600,74 @@ const Label = styled.label`
   font-weight: 500;
 `;
 
-const DropDownSelect = styled.select`
+const SearchableDropdown = styled.div`
+  position: relative;
+  margin-bottom: 15px;
   width: 100%;
+`;
+
+const SelectedValue = styled.div`
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  margin-bottom: 15px;
-  font-size: 16px;
   background-color: #f9f9f9;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+`;
+
+const DropdownIcon = styled.span`
+  font-size: 12px;
+`;
+
+const DropdownContainer = styled.div`
+  position: absolute;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  z-index: 10;
+  margin-top: 2px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+`;
+
+const OptionsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const OptionItem = styled.li`
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  background-color: ${(props) =>
+    props.$isSelected ? "#e6f2ff" : "transparent"};
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const NoResults = styled.div`
+  padding: 10px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
 `;
 
 const KitList = styled.ul`
