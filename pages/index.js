@@ -1,42 +1,8 @@
 import styled from "styled-components";
 import Link from "next/link";
 // Import necessary hooks/functions from next-auth
-import { useSession, signIn, signOut } from "next-auth/react";
-
-// Add a new styled component for the Auth controls
-const AuthControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-`;
-
-const UserInfo = styled.span`
-  color: #555;
-`;
-
-const AuthButton = styled.button`
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-
-  &.signOut {
-    background-color: #dc3545;
-    &:hover {
-      background-color: #c82333;
-    }
-  }
-`;
+import { useSession, signIn } from "next-auth/react";
+import ProfileButton from "@/components/SharedComponents/ProfileButton";
 
 export default function InventoryHub() {
   // Get session data and status
@@ -53,74 +19,61 @@ export default function InventoryHub() {
   }
 
   return (
-    <Container>
-      <Title>📦 Welcome to HobbInventory! 🎉</Title>
+    <>
+      <ProfileButton />
+      <Container>
+        <Title>📦 Welcome to HobbInventory! 🎉</Title>
 
-      {/* Login/Logout Component */}
-      <AuthControls>
-        {session ? (
-          <>
-            <UserInfo>
-              Signed in as {session.user.name || session.user.email}
-            </UserInfo>
-            <AuthButton className="signOut" onClick={() => signOut()}>
-              Sign out
-            </AuthButton>
-          </>
-        ) : (
-          <>
-            <UserInfo>Not signed in</UserInfo>
-            {/* Use signIn('discord') to specify the provider */}
-            <AuthButton onClick={() => signIn("discord")}>
-              Sign in with Discord
-            </AuthButton>
-          </>
+        {!session && (
+          <AuthButton onClick={() => signIn("discord")}>
+            Sign in with Discord
+          </AuthButton>
         )}
-      </AuthControls>
 
-      <InfoText>
-        HobbInventory is your go-to app for managing and tracking your favorite
-        hobby collections. Whether it’s keyboards, photography gear, or trading
-        cards, we help you stay organized!
-      </InfoText>
+        <InfoText>
+          HobbInventory is your go-to app for managing and tracking your
+          favorite hobby collections. Whether keyboards, photography gear, or
+          trading cards, we help you stay organized!
+        </InfoText>
 
-      <Alert>🚧 Under Maintenance 🚧</Alert>
+        <Alert>🚧 Under Maintenance 🚧</Alert>
 
-      <InfoText>
-        Currently, we only have the <strong>Keycap Inventory</strong>, but soon
-        we will be expanding to <strong>Switches</strong> and{" "}
-        <strong>Keyboard Kits</strong>. In the future, we plan to support many
-        other hobbies like{" "}
-        <strong>gardening, photography, trading cards</strong>, and more!
-      </InfoText>
+        <InfoText>
+          Currently, we only have the <strong>Keycap Inventory</strong>,{" "}
+          <strong>Switches Inventory</strong> and{" "}
+          <strong>Keyboard Kits Inventory</strong>. In the future, we plan to
+          support many other hobbies like{" "}
+          <strong>gardening, photography, trading cards</strong>, and more!
+        </InfoText>
 
-      <CategorySection>
-        <CategoryLink
-          href="/inventories/keycaps"
-          onClick={() => handleNavigation("keycaps")}
-        >
-          <CategoryCard>
-            <Emoji>🗝️</Emoji> Keycaps
-          </CategoryCard>
-        </CategoryLink>
-        <CategoryLink
-          href="/inventories/switches"
-          onClick={() => handleNavigation("switches")}
-        >
-          <CategoryCard>
-            <Emoji>🎛️</Emoji> Switches
-          </CategoryCard>
-        </CategoryLink>
-        <CategoryLink
-          href="/inventories/keyboards"
-          onClick={() => handleNavigation("keyboards")}
-        >
-          <CategoryCard>
-            <Emoji>⌨️</Emoji> Keyboard Kits
-          </CategoryCard>
-        </CategoryLink>
-      </CategorySection>
-    </Container>
+        <CategorySection>
+          <CategoryLink
+            href="/inventories/keycaps"
+            onClick={() => handleNavigation("keycaps")}
+          >
+            <CategoryCard>
+              <Emoji>🗝️</Emoji> Keycaps
+            </CategoryCard>
+          </CategoryLink>
+          <CategoryLink
+            href="/inventories/switches"
+            onClick={() => handleNavigation("switches")}
+          >
+            <CategoryCard>
+              <Emoji>🎛️</Emoji> Switches
+            </CategoryCard>
+          </CategoryLink>
+          <CategoryLink
+            href="/inventories/keyboards"
+            onClick={() => handleNavigation("keyboards")}
+          >
+            <CategoryCard>
+              <Emoji>⌨️</Emoji> Keyboard Kits
+            </CategoryCard>
+          </CategoryLink>
+        </CategorySection>
+      </Container>
+    </>
   );
 }
 
@@ -204,5 +157,34 @@ const StyledLink = styled(Link)`
 
   &:hover {
     text-decoration: underline;
+  }
+`;
+// Add a new styled component for the Auth controls
+const AuthControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+`;
+
+const UserInfo = styled.span`
+  color: #555;
+`;
+
+const AuthButton = styled.button`
+  display: inline-block;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-primary, #007bff);
+  color: var(--color-primary-fg, white);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #0056b3;
   }
 `;

@@ -8,6 +8,8 @@ import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
+import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
+import ProfileButton from "@/components/SharedComponents/ProfileButton";
 
 export default function Keyboards() {
   const [isOpen, setIsOpen] = useState(false);
@@ -204,6 +206,8 @@ export default function Keyboards() {
 
   return (
     <>
+      <ProfileButton />
+      <ScrollPositionManager pageId="keyboards" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />
       </HomeBurger>
@@ -291,16 +295,25 @@ const CardContainer = styled.div`
 `;
 
 const HomeBurger = styled(Link)`
-  position: fixed;
+  position: fixed; /* Or absolute if preferred */
   display: flex;
-  background-color: #007bff;
+  align-items: center; /* Center icon */
+  justify-content: center; /* Center icon */
+  background-color: var(--color-primary, #007bff);
   height: 40px;
   width: 40px;
-  color: white;
+  color: var(--color-primary-fg, white);
   left: 10px;
   top: 8px;
   z-index: 1000;
   border-radius: 10px;
+  text-decoration: none; /* Remove underline from link */
+
+  svg {
+    /* Style the SVG icon */
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 const EmptyStateMessage = styled.div`
