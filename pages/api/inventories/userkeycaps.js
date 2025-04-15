@@ -7,24 +7,22 @@ import { authOptions } from "../auth/[...nextauth]";
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
-  // Check for session and user.name
-  if (!session || !session.user || !session.user.name) {
-    console.error("No valid session user name found:", session);
-    res
-      .status(401)
-      .json({ message: "Valid user session with username required" });
+  // Check for session and user.email
+  if (!session || !session.user || !session.user.email) {
+    console.error("No valid session user email found:", session);
+    res.status(401).json({ message: "Valid user session with email required" });
     return;
   }
 
   await dbConnect();
 
-  // Use session.user.name as the identifier
-  const userName = session.user.name;
+  // Use session.user.email as the identifier
+  const userEmail = session.user.email;
 
   try {
     if (req.method === "GET") {
-      // Find by userName (stored in the userId field)
-      const userKeycaps = await UserKeycap.find({ userId: userName });
+      // Find by userEmail (stored in the userId field)
+      const userKeycaps = await UserKeycap.find({ userId: userEmail });
       return res.status(200).json(userKeycaps);
     }
 
@@ -62,7 +60,7 @@ export default async function handler(req, res) {
         const updatedKeycaps = await UserKeycap.findOneAndUpdate(
           query,
           {
-            userId: userName,
+            userId: userEmail,
             keycapDefinitionId,
             name,
             manufacturer,
@@ -93,7 +91,7 @@ export default async function handler(req, res) {
         const updatedKeycaps = await UserKeycap.findOneAndUpdate(
           query,
           {
-            userId: userName,
+            userId: userEmail,
             name,
             manufacturer,
             profile,
@@ -131,7 +129,7 @@ export default async function handler(req, res) {
       }
 
       await UserKeycap.findOneAndDelete({
-        userId: userName,
+        userId: userEmail,
         _id: idToDelete,
       });
 

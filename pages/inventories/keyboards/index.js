@@ -10,8 +10,18 @@ import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import ProfileButton from "@/components/SharedComponents/ProfileButton";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Keyboards() {
+  const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const [isOpen, setIsOpen] = useState(false);
   const [userKeyboards, setUserKeyboards] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -195,6 +205,18 @@ export default function Keyboards() {
     () => setIsEditMode((prevMode) => !prevMode),
     []
   );
+
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
+  }
+
+  if (!session) {
+    return null; // This prevents any flash of content before redirect
+  }
 
   if (error) return <p>Error loading keyboards...</p>;
   if (!keyboards)

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import Link from "next/link";
-// Import necessary hooks/functions from next-auth
 import { useSession, signIn } from "next-auth/react";
 import ProfileButton from "@/components/SharedComponents/ProfileButton";
+import Image from "next/image";
 
 export default function InventoryHub() {
   // Get session data and status
@@ -13,178 +13,205 @@ export default function InventoryHub() {
     sessionStorage.removeItem(`scrollPosition_${pageId}`);
   };
 
-  // Don't render anything while loading the session
+  // Show loading state
   if (status === "loading") {
-    return null; // Or a loading indicator
+    return null;
   }
 
+  // If user is not authenticated, show splash screen
+  if (!session) {
+    return (
+      <SplashScreen>
+        <ImageSection>
+          <Image
+            src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744725945/4540_1262644523225_6618953_n_px9uvc.jpg"
+            alt="Reusable bag with produce"
+            fill
+            style={{ objectFit: "cover" }}
+            priority
+          />
+        </ImageSection>
+        <ContentSection>
+          <h1>HobbInventory</h1>
+          <p>The one stop shop for all your hobby needs</p>
+          <button onClick={() => signIn()}>Sign in</button>
+        </ContentSection>
+      </SplashScreen>
+    );
+  }
+
+  // Minimal hub view for authenticated users
   return (
     <>
       <ProfileButton />
-      <Container>
-        <Title>📦 Welcome to HobbInventory! 🎉</Title>
+      <MinimalContainer>
+        <HubTitle>Inventory Hub</HubTitle>
 
-        {!session && (
-          <AuthButton onClick={() => signIn("discord")}>
-            Sign in with Discord
-          </AuthButton>
-        )}
+        <InventoryGrid>
+          <CategoryItem>
+            <CategoryLabel>Keycaps</CategoryLabel>
+            <Link
+              href="/inventories/keycaps"
+              onClick={() => handleNavigation("keycaps")}
+            >
+              <ImageWrapper>
+                <Image
+                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744729995/Keycap_nshyrk.png"
+                  alt="Keycaps"
+                  width={300}
+                  height={300}
+                  style={{ objectFit: "contain" }}
+                />
+              </ImageWrapper>
+            </Link>
+          </CategoryItem>
 
-        <InfoText>
-          HobbInventory is your go-to app for managing and tracking your
-          favorite hobby collections. Whether keyboards, photography gear, or
-          trading cards, we help you stay organized!
-        </InfoText>
+          <CategoryItem>
+            <CategoryLabel>Switches</CategoryLabel>
+            <Link
+              href="/inventories/switches"
+              onClick={() => handleNavigation("switches")}
+            >
+              <ImageWrapper>
+                <Image
+                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744730282/MX_Switch_um3qef.png"
+                  alt="Switches"
+                  width={300}
+                  height={300}
+                  style={{ objectFit: "contain" }}
+                />
+              </ImageWrapper>
+            </Link>
+          </CategoryItem>
 
-        <Alert>🚧 Under Maintenance 🚧</Alert>
-
-        <InfoText>
-          Currently, we only have the <strong>Keycap Inventory</strong>,{" "}
-          <strong>Switches Inventory</strong> and{" "}
-          <strong>Keyboard Kits Inventory</strong>. In the future, we plan to
-          support many other hobbies like{" "}
-          <strong>gardening, photography, trading cards</strong>, and more!
-        </InfoText>
-
-        <CategorySection>
-          <CategoryLink
-            href="/inventories/keycaps"
-            onClick={() => handleNavigation("keycaps")}
-          >
-            <CategoryCard>
-              <Emoji>🗝️</Emoji> Keycaps
-            </CategoryCard>
-          </CategoryLink>
-          <CategoryLink
-            href="/inventories/switches"
-            onClick={() => handleNavigation("switches")}
-          >
-            <CategoryCard>
-              <Emoji>🎛️</Emoji> Switches
-            </CategoryCard>
-          </CategoryLink>
-          <CategoryLink
-            href="/inventories/keyboards"
-            onClick={() => handleNavigation("keyboards")}
-          >
-            <CategoryCard>
-              <Emoji>⌨️</Emoji> Keyboard Kits
-            </CategoryCard>
-          </CategoryLink>
-        </CategorySection>
-      </Container>
+          <CategoryItem>
+            <CategoryLabel>Keyboard Kits</CategoryLabel>
+            <Link
+              href="/inventories/keyboards"
+              onClick={() => handleNavigation("keyboards")}
+            >
+              <ImageWrapper>
+                <Image
+                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744730460/Keyboard_q2kisx.png"
+                  alt="Keyboard Kits"
+                  width={300}
+                  height={300}
+                  style={{ objectFit: "contain" }}
+                />
+              </ImageWrapper>
+            </Link>
+          </CategoryItem>
+        </InventoryGrid>
+      </MinimalContainer>
     </>
   );
 }
 
-// Styled Components
-const Container = styled.div`
+// Simple, flat splash screen components
+const SplashScreen = styled.div`
+  display: grid;
+  width: 100%;
+  height: 100vh;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 767px) {
+    grid-template-rows: 1fr 1fr;
+  }
+`;
+
+const ImageSection = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
+
+const ContentSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+
+  h1 {
+    color: #007bff;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #333;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.8rem 3rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color:rgb(10, 37, 66);
+    }
+  }
+`;
+
+// New minimal hub components
+const MinimalContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: left;
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
 `;
 
-const Title = styled.h1`
-  font-size: 1.8rem;
-  color: #333;
+const HubTitle = styled.h1`
+  font-size: 2 rem;
   margin-bottom: 10px;
   text-align: center;
 `;
 
-const InfoText = styled.p`
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 500px;
-  margin: 10px 0;
-  line-height: 1.5;
-  text-align: justify;
-`;
-
-const Alert = styled.div`
-  background: #ffcc00;
-  color: #333;
-  padding: 8px 12px;
-  font-weight: bold;
-  border-radius: 5px;
-  display: inline-block;
-  margin: 10px 0;
-`;
-
-const CategorySection = styled.div`
+const InventoryGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 40px;
   width: 100%;
-  max-width: 300px;
-  margin-top: 20px;
-`;
 
-const CategoryLink = styled(Link)`
-  text-decoration: none;
-`;
-
-const CategoryCard = styled.div`
-  background: ${({ disabled }) => (disabled ? "darkgrey" : "#007bff")};
-  color: white;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 1.2rem;
-  text-align: center;
-  cursor: ${({ disabled }) => (disabled ? "default" : "pointer")};
-  transition: 0.3s ease;
-  box-shadow: ${({ disabled }) =>
-    disabled ? "none" : "2px 2px 5px rgba(0, 0, 0, 0.2)"};
-
-  &:hover {
-    background: ${({ disabled }) => (disabled ? "#darkgrey" : "#0056b3")};
+  @media (min-width: 768px) {
+    flex-direction: column;
+    align-items: center;
   }
 `;
 
-const Emoji = styled.span`
-  margin-right: 8px;
-`;
-
-const StyledLink = styled(Link)`
-  margin-top: 20px;
-  font-size: 1.2rem;
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-// Add a new styled component for the Auth controls
-const AuthControls = styled.div`
+const CategoryItem = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
 `;
 
-const UserInfo = styled.span`
-  color: #555;
+const CategoryLabel = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 10px;
 `;
 
-const AuthButton = styled.button`
-  display: inline-block;
-  padding: 10px 20px;
-  margin-bottom: 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--color-primary, #007bff);
-  color: var(--color-primary-fg, white);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s ease;
+const ImageWrapper = styled.div`
+  border-radius: 24px;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out;
 
   &:hover {
-    background-color: #0056b3;
+    transform: scale(1.05);
+    cursor: pointer;
   }
 `;

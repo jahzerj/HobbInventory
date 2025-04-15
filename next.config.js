@@ -16,6 +16,7 @@ const nextConfig = {
   images: {
     domains: [
       "akkogear.eu",
+      "lh3.googleusercontent.com",
       "cannonkeys.com",
       "cdn.discordapp.com",
       "cdn.shopify.com",

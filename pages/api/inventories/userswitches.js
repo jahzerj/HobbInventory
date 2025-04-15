@@ -8,21 +8,21 @@ export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
   // Check for valid session
-  if (!session || !session.user || !session.user.name) {
-    console.error("No valid session user name found:", session);
+  if (!session || !session.user || !session.user.email) {
+    console.error("No valid session user email found:", session);
     return res
       .status(401)
-      .json({ message: "Valid user session with username required" });
+      .json({ message: "Valid user session with email required" });
   }
 
   await dbConnect();
 
-  // Use session.user.name as the identifier
-  const userName = session.user.name;
+  // Use session.user.email as the identifier
+  const userEmail = session.user.email;
 
   try {
     if (req.method === "GET") {
-      const userSwitches = await UserSwitch.find({ userId: userName });
+      const userSwitches = await UserSwitch.find({ userId: userEmail });
       return res.status(200).json(userSwitches);
     }
 
@@ -52,10 +52,10 @@ export default async function handler(req, res) {
           });
         }
 
-        // Use userName from session instead of from request
+        // Use userEmail from session instead of from request
         const newSwitch = await UserSwitch.create({
           ...req.body,
-          userId: userName,
+          userId: userEmail,
         });
         return res
           .status(201)
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         }
 
         const existingSwitch = await UserSwitch.findOne({
-          userId: userName,
+          userId: userEmail,
           _id: switchId,
         });
 
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
         }
 
         const updatedSwitch = await UserSwitch.findOneAndUpdate(
-          { userId: userName, _id: switchId },
+          { userId: userEmail, _id: switchId },
           {
             switchId,
             name: name ?? existingSwitch?.name,
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       }
 
       const result = await UserSwitch.findOneAndDelete({
-        userId: userName,
+        userId: userEmail,
         _id: switchId,
       });
 

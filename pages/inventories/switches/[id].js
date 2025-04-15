@@ -17,9 +17,17 @@ import {
   LoaderWrapper,
   StyledInput,
 } from "@/components/SharedComponents/DetailPageStyles";
+import { useSession } from "next-auth/react";
 
 export default function SwitchDetail() {
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const { id } = router.query;
 
   const {
@@ -172,10 +180,19 @@ export default function SwitchDetail() {
     }
   };
 
-  if (userSwitchesError) {
-    return <p> Error loading switch details</p>;
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
   }
 
+  if (!session) {
+    return null;
+  }
+
+  if (userSwitchesError) return <p> Error loading switch details</p>;
   if (!userSwitch) {
     return (
       <LoaderWrapper>

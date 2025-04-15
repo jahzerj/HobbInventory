@@ -7,24 +7,22 @@ import { authOptions } from "../auth/[...nextauth]";
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
-  // Check for session and user.name
-  if (!session || !session.user || !session.user.name) {
-    console.error("No valid session user name found:", session);
-    res
-      .status(401)
-      .json({ message: "Valid user session with username required" });
+  // Check for session and user.email
+  if (!session || !session.user || !session.user.email) {
+    console.error("No valid session user email found:", session);
+    res.status(401).json({ message: "Valid user session with email required" });
     return;
   }
 
   await dbConnect();
 
-  // Use session.user.name as the identifier
-  const userName = session.user.name;
+  // Use session.user.email as the identifier
+  const userEmail = session.user.email;
 
   try {
     if (req.method === "GET") {
-      // Find by userName (stored in the userId field)
-      const userKeyboards = await UserKeyboard.find({ userId: userName });
+      // Find by userEmail (stored in the userId field)
+      const userKeyboards = await UserKeyboard.find({ userId: userEmail });
       return res.status(200).json(userKeyboards);
     }
 
@@ -69,14 +67,14 @@ export default async function handler(req, res) {
 
       let query;
       if (_id) {
-        // Query by _id and userName (stored in userId field)
-        query = { _id, userId: userName };
+        // Query by _id and userEmail (stored in userId field)
+        query = { _id, userId: userEmail };
       } else {
         query = { _id: new mongoose.Types.ObjectId() };
       }
 
       const updateDoc = {
-        userId: userName, // Save userName in the userId field
+        userId: userEmail,
         keyboardId,
         name,
         designer,
@@ -113,15 +111,14 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
-      const { keyboardId } = req.body; // This is the _id of the UserKeyboard entry
-      // ... validation ...
+      const { keyboardId } = req.body;
 
-      // Delete by _id and userName (stored in userId field)
+      // Delete by _id and userEmail (stored in userId field)
       const deleteResult = await UserKeyboard.findOneAndDelete({
         _id: keyboardId,
-        userId: userName,
+        userId: userEmail,
       });
-      // ... rest of DELETE ...
+
       return res
         .status(200)
         .json({ message: "Keyboard removed successfully." });

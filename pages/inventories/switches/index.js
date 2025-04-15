@@ -11,8 +11,18 @@ import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import ProfileButton from "@/components/SharedComponents/ProfileButton";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Switches() {
+  const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const [isOpen, setIsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
@@ -167,6 +177,18 @@ export default function Switches() {
       }
     };
   }, [handleWheel]);
+
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
+  }
+
+  if (!session) {
+    return null; // This prevents any flash of content before redirect
+  }
 
   if (error) return <p>Error loading switches</p>;
   if (!switches)
