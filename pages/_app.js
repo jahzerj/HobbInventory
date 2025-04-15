@@ -1,6 +1,6 @@
 import GlobalStyle from "../styles";
 import { SWRConfig } from "swr";
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -21,20 +21,9 @@ export default function App({
           },
         }}
       >
-        <Auth>
-          <GlobalStyle />
-          <Component {...pageProps} />
-        </Auth>
+        <GlobalStyle />
+        <Component {...pageProps} />
       </SWRConfig>
     </SessionProvider>
   );
-}
-
-function Auth({ children }) {
-  const { status } = useSession({ required: true });
-
-  if (status === "loading") {
-    return <div>Is loading</div>;
-  }
-  return children;
 }

@@ -24,10 +24,17 @@ import {
 } from "@/components/SharedComponents/DetailPageStyles";
 import AddIcon from "@/components/icons/AddIcon";
 import AddKitModal from "@/components/KeycapComponents/AddKitModal";
-
+import { useSession } from "next-auth/react";
 
 export default function KeyCapDetail() {
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const { id } = router.query;
 
   const {
@@ -252,10 +259,19 @@ export default function KeyCapDetail() {
     }
   };
 
-  if (userKeycapError) {
-    return <p>Error loading keycap details.</p>;
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
   }
 
+  if (!session) {
+    return null;
+  }
+
+  if (userKeycapError) return <p>Error loading keycap details.</p>;
   if (!userKeycaps) {
     return (
       <LoaderWrapper>

@@ -6,6 +6,7 @@ import EditButton from "@/components/KeycapComponents/EditButton";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
+import { useSession } from "next-auth/react";
 
 import {
   DetailPageContainer,
@@ -21,6 +22,13 @@ import {
 
 export default function KeyboardDetail() {
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const { id } = router.query;
 
   //Fetching userkeyboard details
@@ -179,6 +187,19 @@ export default function KeyboardDetail() {
     }
   };
 
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  if (userKeyboardError) return <p>Error loading keyboards</p>;
   if (!userKeyboard) {
     return (
       <LoaderWrapper>

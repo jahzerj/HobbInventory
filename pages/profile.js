@@ -6,9 +6,19 @@ import useSWR from "swr";
 import Link from "next/link";
 import Image from "next/image";
 import MenuIcon from "@/components/icons/MenuIcon";
+import {
+  LoaderWrapper,
+  StyledSpan,
+} from "@/components/SharedComponents/DetailPageStyles";
 
 export default function Profile() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
   const router = useRouter();
   const [currentTheme, setCurrentTheme] = useState("light"); // Default theme
 
@@ -32,9 +42,16 @@ export default function Profile() {
     // document.documentElement.setAttribute('data-theme', newTheme);
   };
 
-  // Show loading state or null while session loads or user is unauthorized
-  if (status === "loading" || !session) {
-    return <div>Loading...</div>; // Or a more sophisticated loader
+  if (status === "loading") {
+    return (
+      <LoaderWrapper>
+        <StyledSpan />
+      </LoaderWrapper>
+    );
+  }
+
+  if (!session) {
+    return null;
   }
 
   const keycapCount = keycaps?.length ?? 0;
