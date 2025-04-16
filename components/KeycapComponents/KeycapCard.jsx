@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import DeleteIcon from "../icons/DeleteIcon";
 
-// Move the keyframes and ShimmerEffect outside the component
 const shimmerAnimation = keyframes`
   to {
     background-position: 315px 0;
@@ -106,32 +105,6 @@ export default function KeycapCard({ itemObj, isEditMode, onDelete }) {
             />
           </ImageWrapper>
           <CardContent>
-            {/* Only show carousel buttons if there are multiple images - unchanged */}
-            {hasMultipleImages && (
-              <>
-                <CarouselButton
-                  className="prev"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handlePrevImage();
-                  }}
-                >
-                  ←
-                </CarouselButton>
-                <CarouselButton
-                  className="next"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handleNextImage();
-                  }}
-                >
-                  →
-                </CarouselButton>
-              </>
-            )}
-
             <div>
               <CardTitle>{keycapObj.name}</CardTitle>
             </div>
@@ -201,7 +174,6 @@ const StyledCard = styled.li`
   margin: 10px;
   min-width: 360px;
   max-width: 600px;
-  border: 2px solid white;
   border-bottom-width: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
@@ -212,6 +184,8 @@ const StyledCard = styled.li`
   list-style: none;
   touch-action: pan-y;
   user-select: none;
+  margin-bottom: 20px;
+  margin-top: 20px;
 
   @media (min-width: 600px) {
     width: 500px;
@@ -252,17 +226,15 @@ const CardTitle = styled.h3`
 
 const ColorDotsList = styled.div`
   position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: -28px;
+  left: 5px;
   padding: 2px 6px;
   padding-bottom: 8px;
   font-size: 12px;
   color: black;
   font-weight: bold;
-  background: lightgray;
   border-radius: 12px;
-  border: 2px solid white;
+  border: 1px solid grey;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   gap: 3px;
@@ -320,36 +292,6 @@ const Dot = styled.span`
   margin: 0 3px;
   cursor: pointer;
   color: ${(props) => (props.$active ? "white" : "#ccc")};
-`;
-
-const CarouselButton = styled.button`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 2;
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.8);
-  }
-
-  &.prev {
-    left: 10px;
-  }
-
-  &.next {
-    right: 10px;
-  }
 `;
 
 const DeleteInventoryItemButton = styled.button`
