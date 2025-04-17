@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AddButton from "@/components/KeyboardComponents/AddButton";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
@@ -12,6 +11,7 @@ import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionM
 import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import AddButton from "@/components/SharedComponents/AddButton";
 
 export default function Keyboards() {
   const router = useRouter();
@@ -277,7 +277,11 @@ export default function Keyboards() {
         </CardContainer>
       </StyledContainer>
 
-      <AddButton onOpenModal={handleOpenModal} isEditMode={isEditMode} />
+      <AddButton
+        onOpenModal={handleOpenModal}
+        isEditMode={isEditMode}
+        itemType="Keyboard"
+      />
       <EditInventoryButton
         isEditMode={isEditMode}
         onToggleEdit={handleToggleEdit}

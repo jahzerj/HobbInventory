@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-
-export default function AddButtton({ onOpenModal, isEditMode }) {
+export default function AddButton({ onOpenModal, isEditMode, itemType }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const buttonRef = useRef(null);
-
-  //Handle click outside the collapse the button
 
   useEffect(() => {
     const handleCloseExpandedButton = (event) => {
@@ -24,8 +21,6 @@ export default function AddButtton({ onOpenModal, isEditMode }) {
     };
   }, [isExpanded]);
 
-  //Button click behaivor
-
   const handleClick = () => {
     if (isEditMode) return;
 
@@ -41,10 +36,10 @@ export default function AddButtton({ onOpenModal, isEditMode }) {
       ref={buttonRef}
       $isExpanded={isExpanded}
       onClick={handleClick}
-      aria-label="Add Keycaps Button"
+      aria-label={`Add ${itemType} Button`}
       $isEditMode={isEditMode}
     >
-      {isExpanded ? " Add Keyboard +" : "+"}
+      {isExpanded ? ` Add ${itemType} +` : "+"}
     </StyledButton>
   );
 }

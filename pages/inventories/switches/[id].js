@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
-import EditButton from "@/components/KeycapComponents/EditButton";
+import ConfirmEditButton from "@/components/SharedComponents/ConfirmEditButton";
+import EditButton from "@/components/SharedComponents/EditButton";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
