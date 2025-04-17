@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AddButtton from "@/components/SwitchComponents/AddButton";
 import styled from "styled-components";
 import { useState, useEffect, useRef, useCallback } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
@@ -13,6 +12,7 @@ import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionM
 import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import AddButton from "@/components/SharedComponents/AddButton";
 
 export default function Switches() {
   const router = useRouter();
@@ -119,6 +119,10 @@ export default function Switches() {
     selectedManufacturers
   );
 
+  // Handle opening/closing modal
+  const handleOpenModal = useCallback(() => setIsOpen(true), []);
+  const handleCloseModal = useCallback(() => setIsOpen(false), []);
+
   const handleManufacturerSelect = useCallback((manufacturer) => {
     setSelectedManufacturers((prev) => {
       if (manufacturer === "all") {
@@ -208,7 +212,7 @@ export default function Switches() {
 
       <AddSwitchModal
         open={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={handleCloseModal}
         onAddSwitch={handleAddSwitch}
       />
 
@@ -265,7 +269,11 @@ export default function Switches() {
         </CardContainer>
       </StyledContainer>
 
-      <AddButtton onOpenModal={() => setIsOpen(true)} isEditMode={isEditMode} />
+      <AddButton
+        onOpenModal={handleOpenModal}
+        isEditMode={isEditMode}
+        itemType="Switch"
+      />
       <EditInventoryButton
         isEditMode={isEditMode}
         onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}

@@ -4,9 +4,9 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
-import EditButton from "@/components/KeycapComponents/EditButton";
+import EditButton from "@/components/SharedComponents/EditButton";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/KeycapComponents/ConfirmEditButton";
+import ConfirmEditButton from "@/components/SharedComponents/ConfirmEditButton";
 import KitImageModal from "@/components/KeycapComponents/KitImageModal";
 import Notes from "@/components/SharedComponents/Notes";
 import {
