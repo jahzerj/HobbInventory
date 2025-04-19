@@ -12,6 +12,8 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
+    "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "cloudinary": "^2.6.0",
     "eslint": "8.44.0",
