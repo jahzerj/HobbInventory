@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
-import DeleteIcon from "../icons/DeleteIcon";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 // Move the keyframes and ShimmerEffect outside the component
 const shimmerAnimation = keyframes`
@@ -213,7 +213,6 @@ const StyledCard = styled.li`
   height: 315px;
   margin: 10px;
   min-width: 360px;
-  max-width: 600px;
   border: 0 solid white;
   border-bottom-width: 7rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -356,8 +355,11 @@ const DeleteInventoryItemButton = styled.button`
   background: #ff4d4d;
   border: none;
   border-radius: 50%;
+  height: 35px;
+  width: 35px;
   cursor: pointer;
   z-index: 1000;
+  align-items: center;
 
   &:hover {
     background-color: rgb(162, 24, 24);

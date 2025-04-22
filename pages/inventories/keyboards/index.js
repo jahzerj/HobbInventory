@@ -12,6 +12,16 @@ import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import AddButton from "@/components/SharedComponents/AddButton";
+import Image from "next/image";
+
+//MUI STUFF
+import {
+  Container,
+  Card,
+  CardContent,
+  Typography,
+  CardMedia,
+} from "@mui/material";
 
 export default function Keyboards() {
   const router = useRouter();
@@ -275,6 +285,42 @@ export default function Keyboards() {
             />
           )}
         </CardContainer>
+        <Container>
+          <Card
+            sx={
+              ({
+                width: {
+                  xs: "80%",
+                  sm: "500px",
+                },
+                m: 2,
+              },
+              { borderRadius: "30px" },
+              { maxWidth: "500px" })
+            }
+          >
+            <CardContent>
+              <CardMedia sx={{ height: 200, position: "relative" }}>
+                <Image
+                  src={keyboards[0].renders[0]}
+                  alt={keyboards[0].name}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  priority
+                />
+              </CardMedia>
+              <Typography variant="body2" color="text.secondary">
+                {keyboards[0].designer}
+              </Typography>
+              <Typography variant="h5" component="div">
+                {keyboards[0].name}
+              </Typography>
+              <Typography variant="h6" component="div">
+                {keyboards[0].layout} {keyboards[0].blocker}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Container>
       </StyledContainer>
 
       <AddButton

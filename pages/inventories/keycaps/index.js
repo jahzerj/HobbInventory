@@ -297,7 +297,6 @@ const CardContainer = styled.div`
   align-items: center;
   -webkit-tap-highlight-color: transparent;
   margin-bottom: 50px;
-  background-color: rgba(0, 0, 0, 0.2);
   gap: 10px;
 
   @media (min-width: 900px) {
