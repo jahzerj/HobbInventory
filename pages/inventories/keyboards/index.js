@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
@@ -13,6 +12,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import AddButton from "@/components/SharedComponents/AddButton";
 import Image from "next/image";
+import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 
 //MUI STUFF
 import {
@@ -323,15 +324,12 @@ export default function Keyboards() {
         </Container>
       </StyledContainer>
 
-      <AddButton
+      <AddButtonMUI
         onOpenModal={handleOpenModal}
         isEditMode={isEditMode}
         itemType="Keyboard"
       />
-      <EditInventoryButton
-        isEditMode={isEditMode}
-        onToggleEdit={handleToggleEdit}
-      />
+      <EditButtonMUI isEditMode={isEditMode} onToggleEdit={handleToggleEdit} />
     </>
   );
 }

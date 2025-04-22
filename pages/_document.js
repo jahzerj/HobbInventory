@@ -26,9 +26,7 @@ export default class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head>
-          <meta name="viewport" content="initial-scale=1, width=device-width" />
-        </Head>
+        <Head />
         <body>
           <Main />
           <NextScript />

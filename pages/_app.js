@@ -9,6 +9,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { useState, useMemo, createContext } from "react";
+import Head from "next/head";
 
 // Create context for theme mode
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
@@ -38,10 +39,10 @@ export default function App({
       createTheme({
         palette: {
           mode,
-          // background: {
-          //   default: mode === "light" ? "#ccc" : "#333",
-          //   paper: mode === "light" ? "#fff" : "#424242",
-          // },
+          background: {
+            default: mode === "light" ? "#ccc" : "#333",
+            paper: mode === "light" ? "#fff" : "#424242",
+          },
         },
       }),
     [mode]
@@ -52,6 +53,7 @@ export default function App({
       <ColorModeContext.Provider value={colorMode}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
+
           <SWRConfig
             value={{
               fetcher: async (...args) => {
@@ -65,6 +67,12 @@ export default function App({
               },
             }}
           >
+            <Head>
+              <meta
+                name="viewport"
+                content="initial-scale=1, width=device-width"
+              />
+            </Head>
             <Component {...pageProps} />
           </SWRConfig>
         </ThemeProvider>
