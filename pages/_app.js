@@ -8,44 +8,67 @@ import { SWRConfig } from "swr";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import { useState, useMemo, createContext } from "react";
+
+// Create context for theme mode
+export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
-
-const theme = createTheme({
-  // Customize the theme to match your global styles
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          backgroundColor: "#ccc",
-        },
-      },
-    },
-  },
-});
 
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }) {
+  // Add state for mode
+  const [mode, setMode] = useState("light");
+
+  // Create color mode toggle context
+  const colorMode = useMemo(
+    () => ({
+      toggleColorMode: () => {
+        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+      },
+    }),
+    []
+  );
+
+  // Create theme based on current mode
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+          // background: {
+          //   default: mode === "light" ? "#ccc" : "#333",
+          //   paper: mode === "light" ? "#fff" : "#424242",
+          // },
+        },
+      }),
+    [mode]
+  );
+
   return (
     <SessionProvider session={session}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <SWRConfig
-          value={{
-            fetcher: async (...args) => {
-              const response = await fetch(...args);
-              if (!response.ok) {
-                throw new Error(`Request with ${JSON.stringify(args)} failed.`);
-              }
-              return await response.json();
-            },
-          }}
-        >
-          <Component {...pageProps} />
-        </SWRConfig>
-      </ThemeProvider>
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <SWRConfig
+            value={{
+              fetcher: async (...args) => {
+                const response = await fetch(...args);
+                if (!response.ok) {
+                  throw new Error(
+                    `Request with ${JSON.stringify(args)} failed.`
+                  );
+                }
+                return await response.json();
+              },
+            }}
+          >
+            <Component {...pageProps} />
+          </SWRConfig>
+        </ThemeProvider>
+      </ColorModeContext.Provider>
     </SessionProvider>
   );
 }

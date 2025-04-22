@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -10,6 +10,9 @@ import {
   LoaderWrapper,
   StyledSpan,
 } from "@/components/SharedComponents/DetailPageStyles";
+import { Button } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { ColorModeContext } from "./_app";
 
 export default function Profile() {
   const { data: session, status } = useSession({
@@ -20,7 +23,10 @@ export default function Profile() {
   });
 
   const router = useRouter();
-  const [currentTheme, setCurrentTheme] = useState("light"); // Default theme
+
+  // Get theme and colorMode from context
+  const theme = useTheme();
+  const colorMode = useContext(ColorModeContext);
 
   // Fetch counts for each inventory type
   const { data: keycaps } = useSWR("/api/inventories/userkeycaps");
@@ -33,14 +39,6 @@ export default function Profile() {
       router.push("/api/auth/signin");
     }
   }, [status, router]);
-
-  const handleThemeToggle = () => {
-    const newTheme = currentTheme === "light" ? "dark" : "light";
-    setCurrentTheme(newTheme);
-    console.log(`${newTheme.toUpperCase()} MODE`);
-    // Later: Add logic here to update the <html> data-theme attribute
-    // document.documentElement.setAttribute('data-theme', newTheme);
-  };
 
   if (status === "loading") {
     return (
@@ -90,9 +88,14 @@ export default function Profile() {
         </StatsContainer>
 
         <ControlsContainer>
-          <ThemeToggleButton onClick={handleThemeToggle}>
-            Toggle Theme ({currentTheme === "light" ? "Dark" : "Light"})
-          </ThemeToggleButton>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={colorMode.toggleColorMode}
+            fullWidth
+          >
+            {theme.palette.mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </Button>
           <LogoutButton onClick={() => signOut()}>Sign out</LogoutButton>
         </ControlsContainer>
       </ProfileContainer>
@@ -150,22 +153,6 @@ const ControlsContainer = styled.div`
   gap: 15px;
   width: 100%;
   max-width: 250px;
-`;
-
-const ThemeToggleButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: var(--color-accent, #cb9df0); /* Use accent color */
-  color: var(--color-primary-fg, white);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s ease;
-  width: 100%;
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 const LogoutButton = styled.button`
