@@ -296,6 +296,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                     }}
                     isEditMode={false}
                     onDelete={() => {}}
+                    isPreview={true}
                   />
                 </PreviewWrapper>
               </SectionContainer>
@@ -556,6 +557,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                         }}
                         isEditMode={false}
                         onDelete={() => {}}
+                        isPreview={true}
                       />
                     </PreviewWrapper>
                   </SectionContainer>

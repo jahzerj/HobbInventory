@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import DeleteIcon from "../icons/DeleteIcon";
 
-export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
+export default function SwitchCard({
+  itemObj,
+  isEditMode,
+  onDelete,
+  isPreview = false,
+}) {
   const router = useRouter();
 
   // Rename for clarity about what we're working with
@@ -24,7 +29,12 @@ export default function SwitchCard({ itemObj, isEditMode, onDelete }) {
 
   return (
     <StyledSwitchCard
-      onClick={() => router.push(`/inventories/switches/${switchObj._id}`)}
+      onClick={
+        !isPreview
+          ? () => router.push(`/inventories/switches/${switchObj._id}`)
+          : undefined
+      }
+      isPreview={isPreview}
     >
       {switchObj.image ? (
         <>
@@ -91,8 +101,10 @@ const StyledSwitchCard = styled.li`
   max-width: 200px;
 
   &:hover {
-    scale: 1.02;
+    scale: ${({ isPreview }) => (isPreview ? 1 : 1.02)};
   }
+
+  cursor: ${({ isPreview }) => (isPreview ? "default" : "pointer")};
 `;
 
 const ImageContainer = styled.div`
