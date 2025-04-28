@@ -1,13 +1,13 @@
-import dbConnect from "@db/connect";
-import User from "@db/models/User";
-import { v4 as uuid } from "uuid";
+import dbConnect from "@/db/connect";
+import User from "@/db/models/User";
+import { v4 as uuidv4 } from "uuid";
 
 export default async function handler(req, res) {
   await dbConnect();
 
   if (req.method === "POST") {
     try {
-      const { email, provider, providerAccountId } = req.body;
+      const { email, provider, providerAccountId, name, image } = req.body;
 
       // Find existing user by account
       let user = await User.findOne({ provider, providerAccountId });
