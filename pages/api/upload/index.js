@@ -35,7 +35,19 @@ export default async function handler(request, response) {
 
   //  refers to the first file in the array of files uploaded through the form input with the "name "attribute set to "image".
   const file = files.image[0];
-  const { newFilename, filepath } = file;
+  const { newFilename, filepath, size } = file;
+
+  // Check file size before even trying to upload (Cloudinary free tier limit is 10MB)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  if (size > MAX_FILE_SIZE) {
+    response.status(400).json({
+      message: `File size exceeds 10MB limit. Your file is ${(
+        size /
+        (1024 * 1024)
+      ).toFixed(2)}MB.`,
+    });
+    return;
+  }
 
   // Get the category from form fields, throw an error if missing
   if (!fields.category || !fields.category[0]) {
@@ -64,6 +76,21 @@ export default async function handler(request, response) {
     response.status(200).json(result);
   } catch (error) {
     console.error("Upload error:", error);
-    response.status(500).json({ message: "Server error during upload" });
+
+    // Provide more specific error messages for common issues
+    if (
+      error.http_code === 400 &&
+      error.message.includes("File size too large")
+    ) {
+      response.status(400).json({
+        message:
+          "File exceeds Cloudinary's size limit of 10MB. Please use a smaller image or compress your current one.",
+      });
+    } else {
+      response.status(500).json({
+        message:
+          "Server error during upload. Please try a smaller image or a different format.",
+      });
+    }
   }
 }

@@ -13,9 +13,36 @@ export default function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
+  // Add file size validation before upload
+  const validateFileSize = (file) => {
+    // Cloudinary free tier limit is 10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        message: `File size exceeds 10MB limit. Your file is ${(
+          file.size /
+          (1024 * 1024)
+        ).toFixed(2)}MB.`,
+      };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Validate file size before setting
+      const validation = validateFileSize(file);
+      if (!validation.valid) {
+        alert(validation.message);
+        // Reset the file input
+        event.target.value = "";
+        return;
+      }
+
       setImageFile(file);
 
       // Show preview
@@ -56,7 +83,16 @@ export default function ImageUploader({
       } else {
         const errorData = await response.json();
         console.error("Upload failed:", errorData.message);
-        alert("Image upload failed. Please try again later.");
+
+        // More specific error message
+        let errorMessage = "Image upload failed. Please try again later.";
+
+        // If we have a more specific error from the server, use it
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+
+        alert(errorMessage);
       }
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -70,7 +106,7 @@ export default function ImageUploader({
     <UploadArea>
       <FileInputLabel>
         <UploadIcon />
-        <span>Choose Photo</span>
+        <span>Choose Photo (Max 10MB)</span>
         <FileInput
           type="file"
           name="imageFile"
