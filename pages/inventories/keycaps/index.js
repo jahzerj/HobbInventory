@@ -229,6 +229,7 @@ export default function Keycaps() {
         open={isOpen}
         onClose={handleCloseModal}
         onAddKeycap={handleAddKeycap}
+        userId={session.user.uuid}
       />
 
       <StyledContainer>

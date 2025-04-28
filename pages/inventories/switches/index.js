@@ -214,6 +214,7 @@ export default function Switches() {
         open={isOpen}
         onClose={handleCloseModal}
         onAddSwitch={handleAddSwitch}
+        userId={session.user.uuid}
       />
 
       <StyledContainer>

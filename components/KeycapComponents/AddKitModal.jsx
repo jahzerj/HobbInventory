@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useState } from "react";
 import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
-export default function AddKitModal({ open, onClose, onAddKit }) {
+export default function AddKitModal({ open, onClose, onAddKit, userId }) {
   const [kitData, setKitData] = useState({
     name: "",
     image: "",
@@ -55,6 +55,7 @@ export default function AddKitModal({ open, onClose, onAddKit }) {
             }}
             prePopulatedUrl={kitData.image}
             category="keycaps_kits"
+            userId={userId}
           />
           <Input
             type="url"

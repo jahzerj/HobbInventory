@@ -6,7 +6,7 @@ import SwitchCard from "./SwitchCard";
 import useSWR from "swr";
 import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
-export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
+export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
   const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedSwitchId, setSelectedSwitchId] = useState("");
@@ -262,6 +262,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch }) {
                 }}
                 prePopulatedUrl={switchData.image}
                 category="switches"
+                userId={userId}
               />
               <Input
                 type="url"

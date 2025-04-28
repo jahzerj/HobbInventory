@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { colorOptions } from "@/utils/colors";
 import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
-export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
+export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
   const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedKeycap, setSelectedKeycap] = useState("");
   const [selectedKits, setSelectedKits] = useState([]);
@@ -408,6 +408,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap }) {
                     }}
                     prePopulatedUrl={kit.image}
                     category="keycaps_kits"
+                    userId={userId}
                   />
                   <Input
                     type="url"

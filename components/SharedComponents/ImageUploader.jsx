@@ -8,6 +8,7 @@ export default function ImageUploader({
   onImageUpload,
   prePopulatedUrl,
   category,
+  userId,
 }) {
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -65,6 +66,7 @@ export default function ImageUploader({
     // Always pass the category, even if undefined
     // The server will handle validation
     formData.append("category", category);
+    formData.append("userId", userId);
 
     try {
       const response = await fetch("/api/upload", {

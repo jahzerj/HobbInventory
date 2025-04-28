@@ -49,6 +49,9 @@ export default async function handler(request, response) {
     return;
   }
 
+  // Get the userId if available
+  const userId = fields.userId?.[0] || "anonymous";
+
   // Get the category from form fields, throw an error if missing
   if (!fields.category || !fields.category[0]) {
     response.status(400).json({
@@ -62,9 +65,14 @@ export default async function handler(request, response) {
 
   try {
     // now we have the information about the image, we can send it to Cloudinary
+    // Upload to Cloudinary with userId in the context
     const result = await cloudinary.v2.uploader.upload(filepath, {
       public_id: newFilename,
       folder: category,
+      // Add user ID as a context metadata
+      context: `userId=${userId}`,
+      // Optional: You can add a moderation flag to detect inappropriate content
+      // moderation: "aws_rek",
     });
     /*
       To upload a file, we call the upload method with the file's path. 
@@ -72,6 +80,9 @@ export default async function handler(request, response) {
       - 'public_id' allows us to specify a custom identifier for the uploaded file.
       - 'folder' lets us designate a specific folder within Cloudinary where the file should be stored.
       */
+
+    // You could also store this information in your own database
+    // Example: await ImageUpload.create({ cloudinaryId: result.public_id, userId, url: result.secure_url });
 
     response.status(200).json(result);
   } catch (error) {
