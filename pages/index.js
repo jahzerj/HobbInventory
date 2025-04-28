@@ -24,8 +24,8 @@ export default function InventoryHub() {
       <SplashScreen>
         <ImageSection>
           <Image
-            src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744725945/4540_1262644523225_6618953_n_px9uvc.jpg"
-            alt="Reusable bag with produce"
+            src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1745845655/F1_wk1fpp.jpg"
+            alt="F1-8x ISO-DE GMK Dualshot"
             fill
             style={{ objectFit: "cover" }}
             priority
@@ -161,7 +161,7 @@ const ContentSection = styled.div`
     transition: background-color 0.3s;
 
     &:hover {
-      background-color:rgb(10, 37, 66);
+      background-color: rgb(10, 37, 66);
     }
   }
 `;
