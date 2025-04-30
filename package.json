@@ -21,7 +21,7 @@
     "formidable": "^3.5.2",
     "mongoose": "^8.12.1",
     "nanoid": "^5.1.2",
-    "next": "^13.5.11",
+    "next": "^15.3.1",
     "next-auth": "^4.24.11",
     "react": "18.2.0",
     "react-awesome-reveal": "^4.3.1",

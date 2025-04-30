@@ -1,18 +1,25 @@
-import { useState, useEffect, useContext } from "react";
-import styled from "styled-components";
+import { useEffect, useContext } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import Link from "next/link";
-import Image from "next/image";
-import MenuIcon from "@/components/icons/MenuIcon";
 import {
-  LoaderWrapper,
-  StyledSpan,
-} from "@/components/SharedComponents/DetailPageStyles";
-import { Button } from "@mui/material";
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  Fab,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { ColorModeContext } from "./_app";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 export default function Profile() {
   const { data: session, status } = useSession({
@@ -42,52 +49,123 @@ export default function Profile() {
 
   if (status === "loading") {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
-  if (!session) {
-    return null;
-  }
+  if (!session) return null;
 
   const keycapCount = keycaps?.length ?? 0;
   const switchCount = switches?.length ?? 0;
   const keyboardCount = keyboards?.length ?? 0;
 
   return (
-    <>
-      {/* Added HomeBurger Link */}
-      <HomeBurger href="/" aria-label="Go to Homepage">
-        <MenuIcon />
-      </HomeBurger>
-
-      <ProfileContainer>
+    <Container maxWidth="sm">
+      <Card
+        sx={{
+          mt: 5,
+          p: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         {session.user.image && (
           <Avatar
             src={session.user.image}
             alt="User Avatar"
-            width={100}
-            height={100}
-            priority
+            sx={{
+              width: 100,
+              height: 100,
+              mb: 2,
+              border: 3,
+              borderColor: "primary.main",
+            }}
           />
         )}
-        <UserName>{session.user.name || session.user.email}</UserName>
 
-        <StatsContainer>
-          <StatItem>
-            <span>{keycapCount}</span> Keycaps
-          </StatItem>
-          <StatItem>
-            <span>{switchCount}</span> Switches
-          </StatItem>
-          <StatItem>
-            <span>{keyboardCount}</span> Keyboards
-          </StatItem>
-        </StatsContainer>
+        <Typography variant="h5" gutterBottom>
+          {session.user.name || session.user.email}
+        </Typography>
 
-        <ControlsContainer>
+        <Box sx={{ overflow: "auto", width: "100%", mb: 3 }}>
+          <Grid
+            container
+            sx={{
+              justifyContent: "space-between",
+              px: 2,
+            }}
+          >
+            <Grid
+              item
+              component={Link}
+              href="/inventories/keycaps"
+              sx={{
+                textDecoration: "none",
+                textAlign: "center",
+                width: 80,
+              }}
+            >
+              <Paper elevation={0} sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main">
+                  {keycapCount}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Keycaps
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid
+              item
+              component={Link}
+              href="/inventories/switches"
+              sx={{
+                textDecoration: "none",
+                textAlign: "center",
+                width: 80,
+              }}
+            >
+              <Paper elevation={0} sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main">
+                  {switchCount}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Switches
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid
+              item
+              component={Link}
+              href="/inventories/keyboards"
+              sx={{
+                textDecoration: "none",
+                textAlign: "center",
+                width: 80,
+              }}
+            >
+              <Paper elevation={0} sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main">
+                  {keyboardCount}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Keyboards
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
+
+        <Stack spacing={2} width="100%" maxWidth={250}>
           <Button
             variant="contained"
             color="secondary"
@@ -96,99 +174,32 @@ export default function Profile() {
           >
             {theme.palette.mode === "dark" ? "Light Mode" : "Dark Mode"}
           </Button>
-          <LogoutButton onClick={() => signOut()}>Sign out</LogoutButton>
-        </ControlsContainer>
-      </ProfileContainer>
-    </>
+
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<LogoutIcon />}
+            onClick={() => signOut()}
+            fullWidth
+          >
+            Sign out
+          </Button>
+        </Stack>
+      </Card>
+
+      <Fab
+        color="primary"
+        aria-label="home"
+        onClick={() => router.push("/")}
+        sx={{
+          position: "fixed",
+          bottom: 16,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
+        <KeyboardReturnIcon />
+      </Fab>
+    </Container>
   );
 }
-
-const ProfileContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px;
-  max-width: 600px;
-  margin: 40px auto;
-  background-color: var(
-    --color-surface-1,
-    #f8f9fa
-  ); /* Use CSS var if available */
-  border-radius: 10px;
-  box-shadow: 0 4px 8px var(--shadow-color, rgba(0, 0, 0, 0.1));
-`;
-
-const Avatar = styled(Image)`
-  border-radius: 50%;
-  margin-bottom: 20px;
-  border: 3px solid var(--color-primary, #007bff);
-`;
-
-const UserName = styled.h2`
-  margin-bottom: 20px;
-  color: var(--color-text-primary, #333);
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  gap: 30px;
-  margin-bottom: 30px;
-  text-align: center;
-`;
-
-const StatItem = styled.div`
-  color: var(--color-text-secondary, #666);
-  span {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--color-text-primary, #333);
-  }
-`;
-
-const ControlsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  width: 100%;
-  max-width: 250px;
-`;
-
-const LogoutButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: var(--color-destructive, #dc3545);
-  color: var(--color-destructive-fg, white);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s ease;
-  width: 100%;
-
-  &:hover {
-    background-color: #c82333; /* Keep specific hover for logout */
-  }
-`;
-
-const HomeBurger = styled(Link)`
-  position: fixed; /* Or absolute if preferred */
-  display: flex;
-  align-items: center; /* Center icon */
-  justify-content: center; /* Center icon */
-  background-color: var(--color-primary, #007bff);
-  height: 40px;
-  width: 40px;
-  color: var(--color-primary-fg, white);
-  left: 10px;
-  top: 8px;
-  z-index: 1000;
-  border-radius: 10px;
-  text-decoration: none; /* Remove underline from link */
-
-  svg {
-    /* Style the SVG icon */
-    width: 24px;
-    height: 24px;
-  }
-`;

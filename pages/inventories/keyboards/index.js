@@ -13,7 +13,6 @@ import { useRouter } from "next/router";
 import AddButton from "@/components/SharedComponents/AddButton";
 import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
-import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 
 //MUI STUFF
 import {
@@ -303,21 +302,21 @@ export default function Keyboards() {
             <CardContent>
               <CardMedia sx={{ height: 200, position: "relative" }}>
                 <Image
-                  src={keyboards[0].renders[0]}
-                  alt={keyboards[0].name}
+                  src={keyboards[0]?.renders[0]}
+                  alt={keyboards[0]?.name}
                   fill
                   style={{ objectFit: "cover" }}
                   priority
                 />
               </CardMedia>
               <Typography variant="body2" color="text.secondary">
-                {keyboards[0].designer}
+                {keyboards[0]?.designer}
               </Typography>
               <Typography variant="h5" component="div">
-                {keyboards[0].name}
+                {keyboards[0]?.name}
               </Typography>
               <Typography variant="h6" component="div">
-                {keyboards[0].layout} {keyboards[0].blocker}
+                {keyboards[0]?.layout} {keyboards[0]?.blocker}
               </Typography>
             </CardContent>
           </Card>
@@ -329,7 +328,6 @@ export default function Keyboards() {
         isEditMode={isEditMode}
         itemType="Keyboard"
       />
-      <EditButtonMUI isEditMode={isEditMode} onToggleEdit={handleToggleEdit} />
     </>
   );
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
 import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
@@ -273,10 +272,6 @@ export default function Keycaps() {
         onOpenModal={handleOpenModal}
         isEditMode={isEditMode}
         itemType="Keycap"
-      />
-      <EditInventoryButton
-        isEditMode={isEditMode}
-        onToggleEdit={handleToggleEdit}
       />
     </>
   );
