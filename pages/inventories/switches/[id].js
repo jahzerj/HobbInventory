@@ -101,8 +101,25 @@ export default function SwitchDetail() {
     }
   }, [userSwitch]);
 
-  const handleNotesUpdate = (updatedNotes) => {
-    setLocalNotes(updatedNotes);
+  const handleNotesUpdate = async (updatedNotes) => {
+    if (isEditMode) {
+      setLocalNotes(updatedNotes);
+    } else {
+      // Only make API call when not in edit mode
+      await fetch("/api/inventories/userswitches", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          switchId: id,
+          name: userSwitch.name,
+          manufacturer: userSwitch.manufacturer,
+          image: userSwitch.image,
+          switchType: userSwitch.switchType,
+          notes: updatedNotes,
+        }),
+      });
+      await mutate();
+    }
   };
 
   const validateSwitchData = (data) => {

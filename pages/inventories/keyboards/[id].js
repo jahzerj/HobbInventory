@@ -303,8 +303,8 @@ export default function KeyboardDetail() {
                 onChange={(event) => setEditedBlocker(event.target.value)}
               >
                 <option value="">-- Select Blocker --</option>
-                <option value="WK">WK</option>
-                <option value="WKL">WKL</option>
+                <option value="Winkey">WK</option>
+                <option value="Winkeyless">WKL</option>
                 <option value="HHKB">HHKB</option>
               </StyledInput>
             </li>
