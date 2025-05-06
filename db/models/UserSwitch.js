@@ -29,7 +29,7 @@ const userswitchSchema = new Schema(
       },
     ],
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 
 const UserSwitch =

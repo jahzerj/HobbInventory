@@ -36,68 +36,48 @@ const userkeyboardSchema = new Schema({
       type: String,
       enum: ["FR4", "CEM"],
     },
-    backspace: [
-      {
-        type: String,
-        enum: ["Full BS", "Split BS"],
-      },
-    ],
-    layoutStandard: [
-      {
-        type: String,
-        enum: ["ISO", "ANSI"],
-      },
-    ],
-    leftShift: [
-      {
-        type: String,
-        enum: ["Split LS", "Full LS"],
-      },
-    ],
-    capslock: [
-      {
-        type: String,
-        enum: ["NormalCapslock", "SteppedCapslock"],
-      },
-    ],
-    rightShift: [
-      {
-        type: String,
-        enum: ["Split Right Shift", "Full Right Shift"],
-      },
-    ],
-    numpad: {
-      enter: [
-        {
-          type: String,
-          enum: ["Split Enter", "Full Enter"],
-        },
-      ],
-      plus: [
-        {
-          type: String,
-          enum: ["Split Plus", "Full Plus"],
-        },
-      ],
-      zero: [
-        {
-          type: String,
-          enum: ["Split Zero", "Full Zero"],
-        },
-      ],
-      orientation: [
-        {
-          type: String,
-          enum: ["Normal", "Inverted"],
-        },
-      ],
+    backspace: {
+      type: [String],
+      enum: ["Full BS", "Split BS"],
     },
-    spacebar: [
-      {
-        type: String,
-        enum: ["10u", "7u", "6.25u", "6u", "Split"],
+    layoutStandard: {
+      type: [String],
+      enum: ["ISO", "ANSI"],
+    },
+    leftShift: {
+      type: [String],
+      enum: ["Split LS", "Full LS"],
+    },
+    capslock: {
+      type: [String],
+      enum: ["Normal", "Stepped"],
+    },
+    rightShift: {
+      type: [String],
+      enum: ["Split RS", "Full RS"],
+    },
+    numpad: {
+      enter: {
+        type: [String],
+        enum: ["Split Enter", "Full Enter"],
       },
-    ],
+      plus: {
+        type: [String],
+        enum: ["Split Plus", "Full Plus"],
+      },
+      zero: {
+        type: [String],
+        enum: ["Split Zero", "Full Zero"],
+      },
+      orientation: {
+        type: [String],
+        enum: ["Normal", "Inverted"],
+      },
+    },
+    spacebar: {
+      type: [String],
+      enum: ["10u", "7u", "6.25u", "6u", "Split"],
+    },
     flexCuts: { type: Boolean, default: false },
   },
   builds: [
