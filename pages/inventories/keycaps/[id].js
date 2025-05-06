@@ -570,6 +570,7 @@ export default function KeyCapDetail() {
         open={isAddKitModalOpen}
         onClose={() => setIsAddKitModalOpen(false)}
         onAddKit={handleAddKit}
+        userId={session.user.uuid}
       />
     </>
   );

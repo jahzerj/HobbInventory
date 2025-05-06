@@ -7,22 +7,22 @@ import { authOptions } from "../auth/[...nextauth]";
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
-  // Check for session and user.email
-  if (!session || !session.user || !session.user.email) {
-    console.error("No valid session user email found:", session);
-    res.status(401).json({ message: "Valid user session with email required" });
+  // Check for session and user.uuid
+  if (!session || !session.user || !session.user.uuid) {
+    console.error("No valid session user uuid found:", session);
+    res.status(401).json({ message: "Valid user session required" });
     return;
   }
 
   await dbConnect();
 
-  // Use session.user.email as the identifier
-  const userEmail = session.user.email;
+  // Use session.user.uuid as the identifier
+  const userId = session.user.uuid;
 
   try {
     if (req.method === "GET") {
-      // Find by userEmail (stored in the userId field)
-      const userKeyboards = await UserKeyboard.find({ userId: userEmail });
+      // Find by userId
+      const userKeyboards = await UserKeyboard.find({ userId });
       return res.status(200).json(userKeyboards);
     }
 
@@ -67,14 +67,14 @@ export default async function handler(req, res) {
 
       let query;
       if (_id) {
-        // Query by _id and userEmail (stored in userId field)
-        query = { _id, userId: userEmail };
+        // Query by _id and userId
+        query = { _id, userId };
       } else {
         query = { _id: new mongoose.Types.ObjectId() };
       }
 
       const updateDoc = {
-        userId: userEmail,
+        userId,
         keyboardId,
         name,
         designer,
@@ -113,10 +113,10 @@ export default async function handler(req, res) {
     if (req.method === "DELETE") {
       const { keyboardId } = req.body;
 
-      // Delete by _id and userEmail (stored in userId field)
+      // Delete by _id and userId
       const deleteResult = await UserKeyboard.findOneAndDelete({
         _id: keyboardId,
-        userId: userEmail,
+        userId,
       });
 
       return res
@@ -124,15 +124,16 @@ export default async function handler(req, res) {
         .json({ message: "Keyboard removed successfully." });
     }
   } catch (error) {
-    // ... error handling ...
     console.error("API Error:", error);
     if (error instanceof mongoose.Error.ValidationError) {
       return res.status(400).json({
-        /* ... */
+        message: "Validation error. Please check your input data.",
+        details: error.errors,
       });
     }
     return res.status(500).json({
-      /* ... */
+      message: "Internal server error",
+      error: error.message,
     });
   }
 

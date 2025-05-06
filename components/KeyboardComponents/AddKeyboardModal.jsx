@@ -6,7 +6,12 @@ import styled from "styled-components";
 import { nanoid } from "nanoid";
 import ImageUploader from "../SharedComponents/ImageUploader";
 
-export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
+export default function AddKeyboardModal({
+  open,
+  onClose,
+  onAddKeyboard,
+  userId,
+}) {
   const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedKeyboard, setSelectedKeyboard] = useState("");
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
@@ -452,6 +457,7 @@ export default function AddKeyboardModal({ open, onClose, onAddKeyboard }) {
                       }}
                       prePopulatedUrl={render}
                       category="keyboards_renders"
+                      userId={userId}
                     />
                     <Input
                       type="url"
