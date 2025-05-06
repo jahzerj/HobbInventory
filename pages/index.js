@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
-import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import Image from "next/image";
+import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 
 export default function InventoryHub() {
   // Get session data and status
@@ -43,7 +43,7 @@ export default function InventoryHub() {
   // Minimal hub view for authenticated users
   return (
     <>
-      <ProfileButton />
+      <ProfileButtonMUI />
       <MinimalContainer>
         <HubTitle>Inventory Hub</HubTitle>
 

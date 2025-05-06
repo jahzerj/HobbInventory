@@ -8,11 +8,10 @@ import MenuIcon from "@/components/icons/MenuIcon";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
-import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import AddButton from "@/components/SharedComponents/AddButton";
-
+import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
+import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 export default function Switches() {
   const router = useRouter();
   const { data: session, status } = useSession({
@@ -203,7 +202,7 @@ export default function Switches() {
 
   return (
     <>
-      <ProfileButton />
+      <ProfileButtonMUI />
       <ScrollPositionManager pageId="switches" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />
@@ -269,7 +268,7 @@ export default function Switches() {
         </CardContainer>
       </StyledContainer>
 
-      <AddButton
+      <AddButtonMUI
         onOpenModal={handleOpenModal}
         isEditMode={isEditMode}
         itemType="Switch"

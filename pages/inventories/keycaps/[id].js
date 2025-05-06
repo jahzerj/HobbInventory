@@ -4,9 +4,9 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
-import EditButton from "@/components/SharedComponents/EditButton";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/SharedComponents/ConfirmEditButton";
+import ConfirmEditButtonMUI from "@/components/SharedComponents/ConfirmEditButtonMUI";
 import KitImageModal from "@/components/KeycapComponents/KitImageModal";
 import Notes from "@/components/SharedComponents/Notes";
 import {
@@ -544,7 +544,7 @@ export default function KeyCapDetail() {
           $innerWidth={innerWidth}
           $isEditMode={isEditMode}
         >
-          <EditButton
+          <EditButtonMUI
             isEditMode={isEditMode}
             onToggleEdit={() => {
               if (isEditMode) {
@@ -558,7 +558,7 @@ export default function KeyCapDetail() {
             }}
           />
           {isEditMode && (
-            <ConfirmEditButton
+            <ConfirmEditButtonMUI
               isEditMode={isEditMode}
               onSaveChanges={handleSaveChanges}
             />

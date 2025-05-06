@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/SharedComponents/ConfirmEditButton";
-import EditButton from "@/components/SharedComponents/EditButton";
+import ConfirmEditButtonMUI from "@/components/SharedComponents/ConfirmEditButtonMUI";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
@@ -497,7 +497,7 @@ export default function KeyboardDetail() {
         $innerWidth={innerWidth}
         $isEditMode={isEditMode}
       >
-        <EditButton
+        <EditButtonMUI
           isEditMode={isEditMode}
           onToggleEdit={() => {
             if (isEditMode) {
@@ -508,7 +508,7 @@ export default function KeyboardDetail() {
           }}
         />
         {isEditMode && (
-          <ConfirmEditButton
+          <ConfirmEditButtonMUI
             isEditMode={isEditMode}
             onSaveChanges={handleSaveChanges}
           />

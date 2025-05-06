@@ -7,12 +7,11 @@ import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
-import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import AddButton from "@/components/SharedComponents/AddButton";
 import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
+import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 
 //MUI STUFF
 import {
@@ -238,7 +237,7 @@ export default function Keyboards() {
 
   return (
     <>
-      <ProfileButton />
+      <ProfileButtonMUI />
       <ScrollPositionManager pageId="keyboards" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />

@@ -7,10 +7,10 @@ import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeycapCard from "@/components/KeycapComponents/KeycapCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
-import ProfileButton from "@/components/SharedComponents/ProfileButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import AddButton from "@/components/SharedComponents/AddButton";
+import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
+import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 
 export default function Keycaps() {
   const router = useRouter();
@@ -218,7 +218,7 @@ export default function Keycaps() {
 
   return (
     <>
-      <ProfileButton />
+      <ProfileButtonMUI />
       <ScrollPositionManager pageId="keycaps" enabled={true} />
       <HomeBurger href="/">
         <MenuIcon />
@@ -269,7 +269,7 @@ export default function Keycaps() {
         </CardContainer>
       </StyledContainer>
 
-      <AddButton
+      <AddButtonMUI
         onOpenModal={handleOpenModal}
         isEditMode={isEditMode}
         itemType="Keycap"

@@ -191,6 +191,7 @@ export default function Profile() {
         color="primary"
         aria-label="home"
         onClick={() => router.push("/")}
+        size="medium"
         sx={{
           position: "fixed",
           bottom: 16,

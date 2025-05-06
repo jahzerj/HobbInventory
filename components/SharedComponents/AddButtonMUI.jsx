@@ -41,15 +41,14 @@ export default function AddButtonMUI({ onOpenModal, isEditMode, itemType }) {
         color="primary"
         onClick={handleClick}
         aria-label={`Add ${itemType} Button`}
+        size="medium"
         sx={{
           position: "fixed",
           bottom: 10,
           right: 10,
           zIndex: 1000,
           opacity: isEditMode ? 0.5 : 1,
-          width: isExpanded && isMobile ? 160 : 45,
-          height: 45,
-          minWidth: 45,
+          width: isExpanded && isMobile ? 160 : null,
           borderRadius: isExpanded && isMobile ? 2 : "50%",
           pointerEvents: isEditMode ? "none" : "auto",
           transition: "all 0.3s ease-in-out",
