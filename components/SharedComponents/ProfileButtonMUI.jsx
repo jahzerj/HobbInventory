@@ -20,13 +20,14 @@ export default function ProfileButtonMUI() {
         top: 8,
         right: 10,
         zIndex: 1000,
+        p: 0,
       }}
     >
       {session.user?.image ? (
         <Avatar
           src={session.user.image}
           alt="User Avatar"
-          sx={{ width: 45, height: 45 }}
+          sx={{ width: 48, height: 48 }}
         />
       ) : (
         <Avatar>

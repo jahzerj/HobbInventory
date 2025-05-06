@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import MenuIcon from "@/components/icons/MenuIcon";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import SwitchCard from "@/components/SwitchComponents/SwitchCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
@@ -12,6 +11,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
+import { Fab } from "@mui/material";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+
 export default function Switches() {
   const router = useRouter();
   const { data: session, status } = useSession({
@@ -204,9 +206,6 @@ export default function Switches() {
     <>
       <ProfileButtonMUI />
       <ScrollPositionManager pageId="switches" enabled={true} />
-      <HomeBurger href="/">
-        <MenuIcon />
-      </HomeBurger>
 
       <AddSwitchModal
         open={isOpen}
@@ -273,6 +272,20 @@ export default function Switches() {
         isEditMode={isEditMode}
         itemType="Switch"
       />
+      <Fab
+        color="primary"
+        aria-label="home"
+        onClick={() => router.push("/")}
+        size="medium"
+        sx={{
+          position: "fixed",
+          bottom: 10,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
+        <KeyboardReturnIcon />
+      </Fab>
     </>
   );
 }
@@ -314,28 +327,6 @@ const StyledInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 4px;
   top: 80px;
-`;
-
-const HomeBurger = styled(Link)`
-  position: fixed; /* Or absolute if preferred */
-  display: flex;
-  align-items: center; /* Center icon */
-  justify-content: center; /* Center icon */
-  background-color: var(--color-primary, #007bff);
-  height: 40px;
-  width: 40px;
-  color: var(--color-primary-fg, white);
-  left: 10px;
-  top: 8px;
-  z-index: 1000;
-  border-radius: 10px;
-  text-decoration: none; /* Remove underline from link */
-
-  svg {
-    /* Style the SVG icon */
-    width: 24px;
-    height: 24px;
-  }
 `;
 
 const StyledSpan = styled.span`

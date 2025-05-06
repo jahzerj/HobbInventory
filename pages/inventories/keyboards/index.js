@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import MenuIcon from "@/components/icons/MenuIcon";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
 import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
@@ -12,6 +11,8 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
+import { Fab } from "@mui/material";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 
 //MUI STUFF
 import {
@@ -239,9 +240,6 @@ export default function Keyboards() {
     <>
       <ProfileButtonMUI />
       <ScrollPositionManager pageId="keyboards" enabled={true} />
-      <HomeBurger href="/">
-        <MenuIcon />
-      </HomeBurger>
 
       <AddKeyboardModal
         open={isOpen}
@@ -328,6 +326,20 @@ export default function Keyboards() {
         isEditMode={isEditMode}
         itemType="Keyboard"
       />
+      <Fab
+        color="primary"
+        aria-label="home"
+        onClick={() => router.push("/")}
+        size="medium"
+        sx={{
+          position: "fixed",
+          bottom: 10,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
+        <KeyboardReturnIcon />
+      </Fab>
     </>
   );
 }
@@ -359,28 +371,6 @@ const CardContainer = styled.div`
     justify-content: center;
     align-items: ${(props) => (props.$itemCount > 1 ? "start" : "center")};
     flex-direction: column;
-  }
-`;
-
-const HomeBurger = styled(Link)`
-  position: fixed; /* Or absolute if preferred */
-  display: flex;
-  align-items: center; /* Center icon */
-  justify-content: center; /* Center icon */
-  background-color: var(--color-primary, #007bff);
-  height: 40px;
-  width: 40px;
-  color: var(--color-primary-fg, white);
-  left: 10px;
-  top: 8px;
-  z-index: 1000;
-  border-radius: 10px;
-  text-decoration: none; /* Remove underline from link */
-
-  svg {
-    /* Style the SVG icon */
-    width: 24px;
-    height: 24px;
   }
 `;
 
