@@ -10,6 +10,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { useState, useMemo, createContext } from "react";
 import Head from "next/head";
+import { Box } from "@mui/material";
 
 // Create context for theme mode
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
@@ -53,28 +54,37 @@ export default function App({
       <ColorModeContext.Provider value={colorMode}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-
-          <SWRConfig
-            value={{
-              fetcher: async (...args) => {
-                const response = await fetch(...args);
-                if (!response.ok) {
-                  throw new Error(
-                    `Request with ${JSON.stringify(args)} failed.`
-                  );
-                }
-                return await response.json();
-              },
+          <Box
+            sx={{
+              maxWidth: "100vw",
+              overflowX: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
             }}
           >
-            <Head>
-              <meta
-                name="viewport"
-                content="initial-scale=1, width=device-width"
-              />
-            </Head>
-            <Component {...pageProps} />
-          </SWRConfig>
+            <SWRConfig
+              value={{
+                fetcher: async (...args) => {
+                  const response = await fetch(...args);
+                  if (!response.ok) {
+                    throw new Error(
+                      `Request with ${JSON.stringify(args)} failed.`
+                    );
+                  }
+                  return await response.json();
+                },
+              }}
+            >
+              <Head>
+                <meta
+                  name="viewport"
+                  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+                />
+              </Head>
+              <Component {...pageProps} />
+            </SWRConfig>
+          </Box>
         </ThemeProvider>
       </ColorModeContext.Provider>
     </SessionProvider>

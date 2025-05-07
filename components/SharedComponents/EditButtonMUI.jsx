@@ -1,40 +1,24 @@
 import { Fab, Zoom } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import CloseIcon from "@mui/icons-material/Close";
 
-export default function EditButtonMUI({ isEditMode, onToggleEdit }) {
+export default function EditButtonMUI({ onEdit }) {
   return (
     <Zoom in={true}>
-      {isEditMode ? (
-        <Fab
-          color="secondary"
-          variant="extended"
-          onClick={onToggleEdit}
-          aria-label="Cancel Edits"
-          sx={{
-            border: "1px solid",
-            backgroundColor: "transparent",
-            color: "secondary.main",
-            "&:hover": {
-              backgroundColor: "secondary.main",
-              color: "white",
-            },
-          }}
-        >
-          <CloseIcon sx={{ mr: 1 }} />
-          Cancel Edits
-        </Fab>
-      ) : (
-        <Fab
-          color="primary"
-          variant="circular"
-          size="medium"
-          onClick={onToggleEdit}
-          aria-label="Edit Inventory Item"
-        >
-          <EditIcon />
-        </Fab>
-      )}
+      <Fab
+        color="primary"
+        variant="circular"
+        size="medium"
+        onClick={onEdit}
+        aria-label="Edit Inventory Item"
+        sx={{
+          position: "fixed",
+          bottom: 10,
+          right: 8,
+          zIndex: 1000,
+        }}
+      >
+        <EditIcon />
+      </Fab>
     </Zoom>
   );
 }

@@ -18,7 +18,7 @@ export default function ProfileButtonMUI() {
       sx={{
         position: "fixed",
         top: 8,
-        right: 10,
+        right: 8,
         zIndex: 1000,
         p: 0,
       }}

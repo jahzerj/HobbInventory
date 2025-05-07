@@ -1,18 +1,17 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButtonMUI from "@/components/SharedComponents/ConfirmEditButtonMUI";
-import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import useSWR from "swr";
 import Image from "next/image";
 import styled from "styled-components";
 import Notes from "@/components/SharedComponents/Notes";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
+import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
+import EditButtonsContainer from "@/components/SharedComponents/EditButtonsContainer";
+
 import {
   DetailPageContainer,
-  StyledLink,
   HeaderSection,
   BoxContainer,
-  AcceptCancelEditButtonContainer,
   StyledSpan,
   LoaderWrapper,
   StyledInput,
@@ -220,16 +219,8 @@ export default function SwitchDetail() {
 
   return (
     <>
+      {!isEditMode && <BackButtonMUI href="/inventories/switches" />}
       <DetailPageContainer>
-        {!isEditMode && (
-          <StyledLink
-            href="/inventories/switches"
-            aria-label="Close Details Page"
-          >
-            <CloseButtonIcon />
-          </StyledLink>
-        )}
-
         <HeaderSection>
           {isEditMode ? (
             <h1>Editing {userSwitch.name}</h1>
@@ -422,39 +413,30 @@ export default function SwitchDetail() {
           onNotesUpdate={handleNotesUpdate}
         />
 
-        <AcceptCancelEditButtonContainer
-          $innerWidth={innerWidth}
-          $isEditMode={isEditMode}
-        >
+        {!isEditMode ? (
           <EditButtonMUI
-            isEditMode={isEditMode}
-            onToggleEdit={() => {
-              if (isEditMode) {
-                handleCancelEdits();
-              } else {
-                setIsEditMode(true);
-                setEditedName(userSwitch?.name || "");
-                setEditedManufacturer(userSwitch?.manufacturer || "");
-                setEditedImage(userSwitch?.image || "");
-                setEditedSwitchType(userSwitch?.switchType || "");
-                setEditedQuantity(userSwitch?.quantity || "");
-                setEditedSpringWeight(userSwitch?.springWeight || "");
-                setEditedTopMaterial(userSwitch?.topMaterial || "");
-                setEditedBottomMaterial(userSwitch?.bottomMaterial || "");
-                setEditedStemMaterial(userSwitch?.stemMaterial || "");
-                setEditedFactoryLubed(userSwitch?.factoryLubed || false);
-                setEditedIsLubed(userSwitch?.isLubed || false);
-                setEditedIsFilmed(userSwitch?.isFilmed || false);
-              }
+            onEdit={() => {
+              setIsEditMode(true);
+              setEditedName(userSwitch?.name || "");
+              setEditedManufacturer(userSwitch?.manufacturer || "");
+              setEditedImage(userSwitch?.image || "");
+              setEditedSwitchType(userSwitch?.switchType || "");
+              setEditedQuantity(userSwitch?.quantity || "");
+              setEditedSpringWeight(userSwitch?.springWeight || "");
+              setEditedTopMaterial(userSwitch?.topMaterial || "");
+              setEditedBottomMaterial(userSwitch?.bottomMaterial || "");
+              setEditedStemMaterial(userSwitch?.stemMaterial || "");
+              setEditedFactoryLubed(userSwitch?.factoryLubed || false);
+              setEditedIsLubed(userSwitch?.isLubed || false);
+              setEditedIsFilmed(userSwitch?.isFilmed || false);
             }}
           />
-          {isEditMode && (
-            <ConfirmEditButtonMUI
-              isEditMode={isEditMode}
-              onSaveChanges={handleSaveChanges}
-            />
-          )}
-        </AcceptCancelEditButtonContainer>
+        ) : (
+          <EditButtonsContainer
+            onCancel={handleCancelEdits}
+            onConfirm={handleSaveChanges}
+          />
+        )}
       </DetailPageContainer>
     </>
   );

@@ -4,19 +4,18 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
-import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
-import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButtonMUI from "@/components/SharedComponents/ConfirmEditButtonMUI";
 import KitImageModal from "@/components/KeycapComponents/KitImageModal";
 import Notes from "@/components/SharedComponents/Notes";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
+import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
+import EditButtonsContainer from "@/components/SharedComponents/EditButtonsContainer";
+
 import {
   DetailPageContainer,
-  StyledLink,
   HeaderSection,
   HeaderImage,
   BoxContainer,
   ExternalLink,
-  AcceptCancelEditButtonContainer,
   StyledSpan,
   LoaderWrapper,
   StyledInput,
@@ -285,16 +284,8 @@ export default function KeyCapDetail() {
 
   return (
     <>
+      {!isEditMode && <BackButtonMUI href="/inventories/keycaps" />}
       <DetailPageContainer>
-        {isEditMode ? null : (
-          <StyledLink
-            href="/inventories/keycaps"
-            aria-label="Close Details Page"
-          >
-            <CloseButtonIcon />
-          </StyledLink>
-        )}
-
         <HeaderSection>
           {isEditMode ? (
             <h1>Editing {userKeycap.name}</h1>
@@ -487,6 +478,12 @@ export default function KeyCapDetail() {
           imageUrl={selectedImage?.url}
           kitName={selectedImage?.name}
         />
+        <AddKitModal
+          open={isAddKitModalOpen}
+          onClose={() => setIsAddKitModalOpen(false)}
+          onAddKit={handleAddKit}
+          userId={session.user.uuid}
+        />
         <SectionHeading>Choose 6 Colors</SectionHeading>
         <StyledInput
           as="select"
@@ -540,38 +537,22 @@ export default function KeyCapDetail() {
           onNotesUpdate={handleNotesUpdate}
         />
 
-        <AcceptCancelEditButtonContainer
-          $innerWidth={innerWidth}
-          $isEditMode={isEditMode}
-        >
+        {!isEditMode ? (
           <EditButtonMUI
-            isEditMode={isEditMode}
-            onToggleEdit={() => {
-              if (isEditMode) {
-                handleCancelEdits();
-              } else {
-                setIsEditMode(true);
-                setEditedColors([...selectedColors]);
-                setEditedKits(userKeycap?.selectedKits || []);
-                setEditedNotes([...notes]);
-              }
+            onEdit={() => {
+              setIsEditMode(true);
+              setEditedColors([...selectedColors]);
+              setEditedKits(userKeycap?.selectedKits || []);
+              setEditedNotes([...notes]);
             }}
           />
-          {isEditMode && (
-            <ConfirmEditButtonMUI
-              isEditMode={isEditMode}
-              onSaveChanges={handleSaveChanges}
-            />
-          )}
-        </AcceptCancelEditButtonContainer>
+        ) : (
+          <EditButtonsContainer
+            onCancel={handleCancelEdits}
+            onConfirm={handleSaveChanges}
+          />
+        )}
       </DetailPageContainer>
-
-      <AddKitModal
-        open={isAddKitModalOpen}
-        onClose={() => setIsAddKitModalOpen(false)}
-        onAddKit={handleAddKit}
-        userId={session.user.uuid}
-      />
     </>
   );
 }

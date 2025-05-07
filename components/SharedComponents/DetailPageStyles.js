@@ -11,6 +11,7 @@ export const DetailPageContainer = styled.div`
   text-align: center;
   padding-bottom: 60px;
   background-color: #ccc;
+  position: relative;
 `;
 
 export const StyledLink = styled(Link)`

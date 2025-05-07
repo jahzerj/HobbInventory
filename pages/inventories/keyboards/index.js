@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
@@ -11,8 +10,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
-import { Fab } from "@mui/material";
-import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 
 //MUI STUFF
 import {
@@ -326,20 +324,7 @@ export default function Keyboards() {
         isEditMode={isEditMode}
         itemType="Keyboard"
       />
-      <Fab
-        color="primary"
-        aria-label="home"
-        onClick={() => router.push("/")}
-        size="medium"
-        sx={{
-          position: "fixed",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-        }}
-      >
-        <KeyboardReturnIcon />
-      </Fab>
+      <BackButtonMUI href="/" />
     </>
   );
 }
