@@ -109,6 +109,14 @@ const userkeyboardSchema = new Schema({
     },
   ],
 
+  notes: [
+    {
+      _id: { type: String, required: true },
+      text: { type: String, maxlength: 100 },
+      timestamp: { type: Date, default: Date.now },
+    },
+  ],
+
   // Reference to keyboard (optional)
   keyboardId: { type: Schema.Types.ObjectId, ref: "Keyboard" },
 });

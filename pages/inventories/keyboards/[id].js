@@ -35,7 +35,7 @@ export default function KeyboardDetail() {
     data: userKeyboards,
     error: userKeyboardError,
     mutate,
-  } = useSWR(id ? `/api/inventories/userkeyboards?userId=guest_user` : null);
+  } = useSWR(id ? `/api/inventories/userkeyboards` : null);
 
   const userKeyboard = userKeyboards?.find((item) => item._id === id);
 
@@ -80,6 +80,12 @@ export default function KeyboardDetail() {
   // Add this state to store the current active render image
   const [activeRenderIndex, setActiveRenderIndex] = useState(0);
 
+  // Extract notes with default empty array
+  const notes = userKeyboard?.notes ?? [];
+
+  // Add this state declaration with your other useState declarations
+  const [editedNotes, setEditedNotes] = useState([]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInnerWidth(window.innerWidth);
@@ -101,29 +107,43 @@ export default function KeyboardDetail() {
       setEditedColor(userKeyboard.color || "");
       setEditedWeightMaterial(userKeyboard.weightMaterial || "");
       setEditedBuildWeight(userKeyboard.buildWeight || "");
+      setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
     }
   }, [userKeyboard]);
 
   const handleNotesUpdate = async (updatedNotes) => {
-    try {
-      const response = await fetch("/api/inventories/userkeyboards", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "guest_user",
-          keyboardId: id,
-          notes: updatedNotes,
-        }),
-      });
+    if (isEditMode) {
+      setEditedNotes(updatedNotes);
+    } else {
+      try {
+        // Include all required fields from the existing keyboard data
+        const response = await fetch("/api/inventories/userkeyboards", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            _id: id,
+            name: userKeyboard.name,
+            designer: userKeyboard.designer,
+            layout: userKeyboard.layout,
+            blocker: userKeyboard.blocker,
+            switchType: userKeyboard.switchType,
+            renders: userKeyboard.renders,
+            notes: updatedNotes,
+            // Include any other required fields
+            plateMaterial: userKeyboard.plateMaterial || [],
+            mounting: userKeyboard.mounting || [],
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to update notes");
+        if (!response.ok) {
+          throw new Error("Failed to update notes");
+        }
+
+        await mutate();
+      } catch (error) {
+        console.error("Error updating notes:", error);
+        alert("Failed to save notes. Please try again.");
       }
-
-      mutate();
-    } catch (error) {
-      console.error("Error updating notes:", error);
-      alert("Failed to save notes. Please try again.");
     }
   };
 
@@ -133,7 +153,6 @@ export default function KeyboardDetail() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "guest_user",
           _id: id,
           name: editedName,
           designer: editedDesigner,
@@ -150,6 +169,7 @@ export default function KeyboardDetail() {
           weightMaterial: editedWeightMaterial,
           buildWeight: editedBuildWeight,
           pcbOptions: userKeyboard.pcbOptions,
+          notes: editedNotes,
         }),
       });
 
@@ -183,6 +203,7 @@ export default function KeyboardDetail() {
       setEditedColor(userKeyboard.color || "");
       setEditedWeightMaterial(userKeyboard.weightMaterial || "");
       setEditedBuildWeight(userKeyboard.buildWeight || "");
+      setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
     }
   };
 
@@ -486,9 +507,20 @@ export default function KeyboardDetail() {
             </>
           )}
         </BoxContainer>
+        <Notes
+          notes={isEditMode ? editedNotes : notes}
+          isEditMode={isEditMode}
+          onNotesUpdate={handleNotesUpdate}
+        />
       </DetailPageContainer>
       {!isEditMode ? (
-        <EditButtonMUI onEdit={() => setIsEditMode(true)} />
+        <EditButtonMUI
+          onEdit={() => {
+            setIsEditMode(true);
+            // Make sure to include this with your other state initializations:
+            setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
+          }}
+        />
       ) : (
         <EditButtonsContainer
           onCancel={handleCancelEdits}
