@@ -8,7 +8,7 @@ import KitImageModal from "@/components/KeycapComponents/KitImageModal";
 import Notes from "@/components/SharedComponents/Notes";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
-import EditButtonsContainer from "@/components/SharedComponents/EditButtonsContainer";
+import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
 
 import {
   DetailPageContainer,
@@ -547,7 +547,7 @@ export default function KeyCapDetail() {
             }}
           />
         ) : (
-          <EditButtonsContainer
+          <EditButtonsContainerMUI
             onCancel={handleCancelEdits}
             onConfirm={handleSaveChanges}
           />

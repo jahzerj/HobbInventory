@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import Notes from "@/components/SharedComponents/Notes";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
-import EditButtonsContainer from "@/components/SharedComponents/EditButtonsContainer";
+import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
 
 import {
   DetailPageContainer,
@@ -522,7 +522,7 @@ export default function KeyboardDetail() {
           }}
         />
       ) : (
-        <EditButtonsContainer
+        <EditButtonsContainerMUI
           onCancel={handleCancelEdits}
           onConfirm={handleSaveChanges}
         />
