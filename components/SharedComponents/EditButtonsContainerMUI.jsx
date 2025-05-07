@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import CancelEditButtonMUI from "./CancelEditButtonMUI";
 import ConfirmEditButtonMUI from "./ConfirmEditButtonMUI";
 
-export default function EditButtonsContainer({ onCancel, onConfirm }) {
+export default function EditButtonsContainerMUI({ onCancel, onConfirm }) {
   return (
     <Box
       sx={{
