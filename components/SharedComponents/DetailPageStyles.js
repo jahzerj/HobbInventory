@@ -43,21 +43,21 @@ export const HeaderSection = styled.div`
 `;
 
 export const HeaderImage = styled.div`
-  width: 340px;
-  height: 170px;
+  width: ${(props) => props.width || "340px"};
+  height: ${(props) => props.height || "170px"};
   border-radius: 10px;
   overflow: hidden;
   position: relative;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
 
   @media (min-width: 430px) {
-    width: 387px;
-    height: 195px;
+    width: ${(props) => (props.width ? props.width : "387px")};
+    height: ${(props) => (props.height ? props.height : "195px")};
   }
 
   @media (min-width: 600px) {
-    width: 640px;
-    height: 320px;
+    width: ${(props) => (props.width ? props.width : "640px")};
+    height: ${(props) => (props.height ? props.height : "320px")};
   }
 `;
 

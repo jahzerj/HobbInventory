@@ -11,6 +11,7 @@ import EditButtonsContainer from "@/components/SharedComponents/EditButtonsConta
 import {
   DetailPageContainer,
   HeaderSection,
+  HeaderImage,
   BoxContainer,
   StyledSpan,
   LoaderWrapper,
@@ -220,7 +221,7 @@ export default function SwitchDetail() {
   return (
     <>
       {!isEditMode && <BackButtonMUI href="/inventories/switches" />}
-      <DetailPageContainer>
+      <DetailPageContainer style={{ marginTop: "0px" }}>
         <HeaderSection>
           {isEditMode ? (
             <h1>Editing {userSwitch.name}</h1>
@@ -229,22 +230,29 @@ export default function SwitchDetail() {
               {userSwitch.manufacturer} {userSwitch.name}
             </h1>
           )}
-          <SwitchHeaderImage>
+          <HeaderImage width="300px" height="300px">
             <Image
               src={userSwitch.image}
               alt={userSwitch.name}
               fill
-              sizes="(max-width: 600px) 200px, 300px"
               style={{ objectFit: "cover" }}
               priority
             />
-          </SwitchHeaderImage>
+          </HeaderImage>
         </HeaderSection>
 
         <h3>Details</h3>
         <BoxContainer>
           {isEditMode ? (
             <>
+              <li>
+                <strong>Name:</strong>
+                <StyledInput
+                  type="text"
+                  value={editedName}
+                  onChange={(event) => setEditedName(event.target.value)}
+                />
+              </li>
               <li>
                 <strong>Manufacturer:</strong>
                 <StyledInput
@@ -441,24 +449,6 @@ export default function SwitchDetail() {
     </>
   );
 }
-
-const SwitchHeaderImage = styled.div`
-  width: 200px;
-  height: 200px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
-
-  @media (min-width: 400px) {
-    width: 250px;
-    height: 250px;
-  }
-  @media (min-width: 600px) {
-    width: 300px;
-    height: 300px;
-  }
-`;
 
 const StyledCheckbox = styled.div`
   display: inline-flex;
