@@ -34,16 +34,16 @@ export default function App({
     []
   );
 
-  // Create theme based on current mode
+  // Create theme based on current mode - using default MUI theme
   const theme = useMemo(
     () =>
       createTheme({
         palette: {
           mode,
-          background: {
-            default: mode === "light" ? "#ccc" : "#333",
-            paper: mode === "light" ? "#fff" : "#424242",
-          },
+          // background: {
+          //   default: mode === "light" ? "#ccc" : "#333",
+          //   paper: mode === "light" ? "#fff" : "#424242",
+          // },
         },
       }),
     [mode]

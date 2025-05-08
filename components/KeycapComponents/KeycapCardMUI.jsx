@@ -14,27 +14,27 @@ import {
 } from "@mui/material";
 import { styled as muiStyled } from "@mui/material/styles";
 import R1Icon from "../icons/R1Icon";
+import { alpha } from "@mui/material/styles";
 
-// Navigation dot styling
+// Navigation dot styling - Updated to match original design
 const Dot = muiStyled(Box)(({ theme, active }) => ({
-  width: 12,
-  height: 12,
+  width: 8,
+  height: 8,
   borderRadius: "50%",
-  backgroundColor: active
-    ? theme.palette.primary.main
-    : theme.palette.grey[400],
+  backgroundColor: active ? "white" : "rgba(255,255,255,0.5)",
   margin: "0 4px",
   cursor: "pointer",
   transition: "all 0.2s ease-in-out",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.3)", // Add shadow for better visibility
 }));
 
-// Styled SVG wrapper for colored icons
+// Styled SVG wrapper for colored icons with improved visibility for light colors
 const ColoredIconWrapper = muiStyled(Box)(({ theme }) => ({
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  width: 24,
-  height: 24,
+  width: 20,
+  height: 20,
   margin: "0 2px",
 }));
 
@@ -96,15 +96,16 @@ export default function KeycapCardMUI({ keycap }) {
       <Card
         variant="outlined"
         sx={{
-          width: { xs: "90%", sm: "70%", md: 500 },
+          width: { xs: "95%", sm: "100%" },
           minWidth: 300,
-          maxWidth: 600,
+          maxWidth: 550,
           m: 2,
           borderRadius: 4,
           transition: "transform 0.3s ease",
           "&:hover": {
             transform: "scale(1.05)",
           },
+          position: "relative",
         }}
       >
         <Skeleton
@@ -117,6 +118,44 @@ export default function KeycapCardMUI({ keycap }) {
           <Skeleton variant="text" width="80%" height={30} />
           <Skeleton variant="text" width="50%" />
         </CardContent>
+
+        {/* Color chips skeleton */}
+        <Box
+          sx={(theme) => ({
+            position: "absolute",
+            bottom: 55,
+            right: 8,
+            height: 28,
+            width: 100, // Approximate width for 4-5 color chips
+            bgcolor:
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.9)
+                : alpha(theme.palette.background.paper, 0.9),
+            borderRadius: 3,
+            boxShadow: `inset 0px 1px 3px ${alpha(
+              theme.palette.common.black,
+              0.2
+            )}, 
+                      inset 0px 1px 2px ${alpha(
+                        theme.palette.common.black,
+                        0.1
+                      )}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+            overflow: "hidden",
+            zIndex: 2,
+          })}
+        >
+          <Skeleton
+            variant="rectangular"
+            height="100%"
+            width="100%"
+            animation="wave"
+            sx={{
+              borderRadius: 3,
+              bgcolor: (theme) => alpha(theme.palette.action.disabled, 0.2),
+            }}
+          />
+        </Box>
       </Card>
     );
   }
@@ -127,9 +166,9 @@ export default function KeycapCardMUI({ keycap }) {
       {...swipeHandlers}
       onClick={handleCardClick}
       sx={{
-        width: { xs: "90%", sm: "70%", md: 500 },
+        width: { xs: "95%", sm: "100%" },
         minWidth: 300,
-        maxWidth: 600,
+        maxWidth: 550, // Max width for the card itself
         m: 2,
         borderRadius: 4,
         cursor: "pointer",
@@ -156,10 +195,36 @@ export default function KeycapCardMUI({ keycap }) {
             fill
             style={{
               objectFit: "cover",
-              objectPosition: "center",
+              objectPosition: "top center",
             }}
             priority
           />
+
+          {/* Navigation dots */}
+          {hasMultipleImages && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 8,
+                left: 0,
+                right: 0,
+                display: "flex",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              {selectedKitData.map((_, index) => (
+                <Dot
+                  key={index}
+                  active={index === imageIndex}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageIndex(index);
+                  }}
+                />
+              ))}
+            </Box>
+          )}
         </Box>
       </CardMedia>
 
@@ -171,39 +236,39 @@ export default function KeycapCardMUI({ keycap }) {
         <Typography variant="body2" color="text.secondary">
           {selectedKitData[imageIndex].name}
         </Typography>
-
-        {/* Navigation dots */}
-        {hasMultipleImages && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-            {selectedKitData.map((_, index) => (
-              <Dot
-                key={index}
-                active={index === imageIndex}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setImageIndex(index);
-                }}
-              />
-            ))}
-          </Box>
-        )}
       </CardContent>
 
       {/* Color chips */}
       {keycap.selectedColors && keycap.selectedColors.length > 0 && (
         <Box
-          sx={{
+          sx={(theme) => ({
             position: "absolute",
-            bottom: 1,
-            right: 1,
-            p: 1,
-            bgcolor: "background.paper",
-            borderRadius: 4,
-            border: "1px solid",
-            borderColor: "grey.300",
+            bottom: 55,
+            right: 8,
+            px: 0.3,
+            py: 0.3,
+            bgcolor:
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.9)
+                : alpha(theme.palette.background.paper, 0.9),
+            borderRadius: 3,
             display: "flex",
-            boxShadow: 1,
-          }}
+            boxShadow: `inset 0px 1px 3px ${alpha(
+              theme.palette.common.black,
+              0.2
+            )}, 
+                      inset 0px 1px 2px ${alpha(
+                        theme.palette.common.black,
+                        0.1
+                      )}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+            zIndex: 2,
+
+            // Old styling (commented out for future reference)
+            // bgcolor: "white",
+            // boxShadow: 1,
+            // border: "1px solid rgba(0,0,0,0.1)",
+          })}
         >
           <Stack direction="row" spacing={0.5}>
             {keycap.selectedColors.map((color, index) => (

@@ -1,41 +1,51 @@
 export default function R1Icon({ color }) {
+  // Determine if the color is light and needs a darker outline for contrast
+  const isLightColor = (color) => {
+    // List of colors that need a darker outline
+    const lightColors = ["white", "beige", "yellow", "cream"];
+    return lightColors.includes(color?.toLowerCase());
+  };
+
+  // Use soft grey for light colors instead of black
+  const outlineColor = isLightColor(color)
+    ? "rgba(120,120,120,0.7)"
+    : "#ffffff";
+
+  // Reduced stroke width for all outlines
+  const strokeWidth = isLightColor(color) ? 0.75 : 1.5;
+
   return (
     <svg
-      version="1.0"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
-      width="300.000000pt"
-      height="228.000000pt"
-      viewBox="0 0 300.000000 228.000000"
-      preserveAspectRatio="xMidYMid meet"
     >
-      <g
-        transform="translate(0.000000,228.000000) scale(0.100000,-0.100000)"
-        fill={color || "#000000"}
-        stroke={color || "#000000"}
-        strokeWidth="100"
-      >
-        <path
-          d="M1684 2200 c-22 -4 -110 -48 -195 -97 -85 -49 -235 -136 -334 -192
-       -404 -232 -373 -209 -439 -323 -23 -40 -111 -190 -196 -333 -226 -383 -280
-       -478 -280 -491 0 -31 61 -74 312 -219 150 -87 327 -189 393 -227 477 -277 517
-       -299 566 -309 85 -18 137 -2 316 102 87 50 203 117 258 149 97 55 197 113 530
-       305 243 140 254 148 263 175 7 19 0 64 -28 172 -20 81 -42 160 -48 175 -6 15
-       -30 102 -52 193 -54 215 -119 439 -135 466 -8 12 -44 34 -82 48 -37 15 -90 40
-       -118 55 -27 16 -81 45 -120 66 -89 49 -206 121 -315 196 -47 32 -102 65 -121
-       73 -47 20 -124 27 -175 16z m131 -25 c40 -11 91 -37 160 -84 159 -108 277
-       -178 457 -268 96 -48 172 -93 179 -104 19 -36 -13 -63 -198 -170 -98 -56 -214
-       -123 -258 -149 -44 -26 -129 -75 -190 -110 -60 -34 -136 -78 -168 -96 -108
-       -62 -223 -87 -305 -64 -121 32 -400 181 -583 311 -112 79 -149 119 -149 160 0
-       55 47 90 330 249 36 20 166 95 290 167 277 160 262 152 313 163 60 11 57 11
-       122 -5z m848 -645 c20 -74 54 -200 76 -280 82 -297 130 -491 125 -505 -7 -18
-       -10 -20 -321 -199 -147 -85 -320 -184 -383 -221 -63 -37 -153 -89 -200 -115
-       -47 -26 -117 -67 -155 -90 -186 -114 -246 -124 -366 -62 -41 21 -132 72 -204
-       113 -121 71 -189 110 -620 359 -318 184 -344 200 -350 220 -6 20 69 155 350
-       630 35 58 76 129 93 159 l30 55 15 -36 c45 -108 604 -434 778 -454 71 -8 176
-       17 254 60 33 19 128 73 210 121 83 49 184 107 225 130 215 120 358 207 380
-       230 13 13 25 24 26 22 1 -1 18 -63 37 -137z"
-        />
-      </g>
+      {/* Cherry profile R1 keycap shape */}
+      <path
+        d="M4 18H20L19.5 16.5L18 8.5L17 6H7L6 8.5L4.5 16.5L4 18Z"
+        fill={color || "#333333"}
+        stroke={outlineColor}
+        strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+      />
+      {/* Top surface of the keycap - slightly curved */}
+      <path
+        d="M7 6H17L16.5 7H7.5L7 6Z"
+        fill={
+          isLightColor(color) ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.15)"
+        }
+        stroke="none"
+      />
+      {/* Subtle side curve */}
+      <path
+        d="M6 8.5L18 8.5"
+        stroke={
+          isLightColor(color) ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.25)"
+        }
+        strokeWidth="0.75"
+        fill="none"
+      />
     </svg>
   );
 }

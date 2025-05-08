@@ -8,13 +8,6 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  FormControl,
-  Select,
-  MenuItem,
   CircularProgress,
 } from "@mui/material";
 
@@ -22,7 +15,6 @@ import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
-import KeycapCard from "@/components/KeycapComponents/KeycapCard";
 import KeycapCardMUI from "@/components/KeycapComponents/KeycapCardMUI";
 
 export default function Keycapz() {
@@ -139,25 +131,45 @@ export default function Keycapz() {
 
         {/* Cards display */}
         <Box
-          sx={{
+          sx={(theme) => ({
+            // Default styles: Handles 1 card (centered) and 2+ cards on small screens (list)
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-          }}
+            alignItems: "center", // Centers single card or the list itself
+            gap: theme.spacing(0), // Reduced vertical spacing in list view
+            width: "100%",
+
+            // Styles for larger screens (md and up) when there are 2+ cards (grid)
+            ...(filteredKeycaps &&
+              filteredKeycaps.length > 1 && {
+                [theme.breakpoints.up("md")]: {
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)", // 2-column grid
+                  justifyItems: "center", // Center cards within their grid cells
+                  alignItems: "start", // Align cards to the top of their cells
+                  columnGap: theme.spacing(2), // Horizontal spacing between columns
+                  rowGap: theme.spacing(0), // Reduced vertical spacing between rows
+                },
+              }),
+          })}
         >
-          {filteredKeycaps?.length > 0 ? (
+          {error && (
+            <Typography color="error">Error loading keycaps.</Typography>
+          )}
+          {!error && filteredKeycaps?.length > 0 ? (
             filteredKeycaps.map((keycap) => (
-              <KeycapCardMUI
-                key={keycap._id}
-                keycap={keycap}
-                onDelete={handleDeleteKeycap}
-              />
+              <KeycapCardMUI key={keycap._id} keycap={keycap} />
             ))
           ) : (
             <Box sx={{ textAlign: "center", mt: 4 }}>
-              {keycaps?.length === 0 && (
+              {!error && keycaps?.length === 0 && (
                 <Typography variant="body1">
-                  Click the ➕ button to add a keycap set to your inventory
+                  No keycaps added yet. Click the ➕ button to add a keycap set.
+                </Typography>
+              )}
+              {!error && keycaps?.length > 0 && colorFilter !== "all" && (
+                <Typography variant="body1">
+                  No keycaps found with the selected color.
                 </Typography>
               )}
             </Box>
@@ -167,7 +179,7 @@ export default function Keycapz() {
 
       <AddButtonMUI
         onOpenModal={handleOpenModal}
-        isEditMode={false}
+        isEditMode={false} // Assuming edit mode is not a feature on this page for the add button
         itemType="Keycap"
       />
 
@@ -175,6 +187,7 @@ export default function Keycapz() {
         open={isOpen}
         onClose={handleCloseModal}
         onAddKeycap={handleAddKeycap}
+        // userId={session.user.uuid} // Pass userId if your modal needs it
       />
     </>
   );

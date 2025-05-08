@@ -37,12 +37,12 @@ const ShimmerEffect = styled.div`
   }
 `;
 
-export default function KeycapCard({ keycap, isEditMode, onDelete }) {
+export default function KeycapCard({ keycap, isEditMode, onDelete, itemObj }) {
   const router = useRouter();
   const [imageIndex, setImageIndex] = useState(0);
 
   // Rename for domain clarity
-  const keycapObj = keycap;
+  const keycapObj = keycap || itemObj;
 
   const selectedKits = keycapObj.selectedKits ?? [];
 
