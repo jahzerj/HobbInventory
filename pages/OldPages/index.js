@@ -3,7 +3,7 @@ import styled from "styled-components";
 import useSWR from "swr";
 import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
-import KeycapCard from "@/components/KeycapComponents/KeycapCard";
+import KeycapCard from "@/components/OldComponents/KeycapCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
