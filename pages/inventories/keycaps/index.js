@@ -180,9 +180,14 @@ export default function Keycaps() {
   if (error) return <p>Error loading keycaps...</p>;
   if (!keycaps)
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
 
   return (
