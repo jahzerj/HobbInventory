@@ -1,23 +1,37 @@
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
 import useSWR from "swr";
 import Image from "next/image";
-import styled from "styled-components";
-import Notes from "@/components/SharedComponents/Notes";
+import { useState, useEffect } from "react";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
+import NotesMUI from "@/components/SharedComponents/NotesMUI";
+import styled from "styled-components";
 
 import {
-  DetailPageContainer,
-  HeaderSection,
-  HeaderImage,
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  Paper,
+  Grid,
+  Chip,
+  CircularProgress,
+  Checkbox,
+  Link,
+} from "@mui/material";
+
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { useSession } from "next-auth/react";
+
+import {
   BoxContainer,
   StyledSpan,
   LoaderWrapper,
   StyledInput,
 } from "@/components/SharedComponents/DetailPageStyles";
-import { useSession } from "next-auth/react";
 
 export default function SwitchDetail() {
   const router = useRouter();
@@ -212,210 +226,299 @@ export default function SwitchDetail() {
   if (userSwitchesError) return <p> Error loading switch details</p>;
   if (!userSwitch) {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
     <>
       {!isEditMode && <BackButtonMUI href="/inventories/switches" />}
-      <DetailPageContainer style={{ marginTop: "0px" }}>
-        <HeaderSection>
-          {isEditMode ? (
-            <h1>Editing {userSwitch.name}</h1>
-          ) : (
-            <h1>
-              {userSwitch.manufacturer} {userSwitch.name}
-            </h1>
-          )}
-          <HeaderImage width="300px" height="300px">
-            <Image
-              src={userSwitch.image}
-              alt={userSwitch.name}
-              fill
-              style={{ objectFit: "cover" }}
-              priority
-            />
-          </HeaderImage>
-        </HeaderSection>
+      <Container
+        maxWidth="md"
+        sx={{
+          py: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            textAlign: "center",
+            mb: 4,
+          }}
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            {isEditMode ? `Editing ${userSwitch.name}` : userSwitch.name}
+          </Typography>
 
-        <h3>Details</h3>
-        <BoxContainer>
-          {isEditMode ? (
-            <>
-              <li>
-                <strong>Name:</strong>
-                <StyledInput
-                  type="text"
-                  value={editedName}
-                  onChange={(event) => setEditedName(event.target.value)}
-                />
-              </li>
-              <li>
-                <strong>Manufacturer:</strong>
-                <StyledInput
-                  type="text"
+          {userSwitch.image && (
+            <Box
+              sx={{
+                position: "relative",
+                width: "60%",
+                maxWidth: "300px",
+                height: {
+                  xs: "200px",
+                  sm: "300px",
+                },
+                borderRadius: 2,
+                overflow: "hidden",
+                mb: 2,
+                mx: "auto",
+              }}
+            >
+              <Image
+                src={userSwitch.image}
+                alt={userSwitch.name}
+                fill
+                style={{ objectFit: "cover" }}
+                priority
+              />
+            </Box>
+          )}
+        </Box>
+
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
+        >
+          Details
+        </Typography>
+        <Paper
+          elevation={1}
+          sx={{ p: 2, mb: 4, width: "100%", maxWidth: 520, borderRadius: 2 }}
+        >
+          <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+            <Box component="li" sx={{ py: 1 }}>
+              {isEditMode && (
+                <>
+                  <Box component="li" sx={{ py: 1 }}>
+                    <Typography component="span" fontWeight="bold">
+                      Name:
+                    </Typography>{" "}
+                    <TextField
+                      size="small"
+                      value={editedName}
+                      onChange={(event) => setEditedName(event.target.value)}
+                      sx={{ ml: 1 }}
+                    />
+                  </Box>
+                </>
+              )}
+              <Typography component="span" fontWeight="bold">
+                Manufacturer:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedManufacturer}
                   onChange={(event) =>
                     setEditedManufacturer(event.target.value)
                   }
+                  placeholder="Manufacturer (e.g. Cherry)"
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Switch Type:</strong>
-                <StyledInput
-                  as="select"
+              ) : (
+                userSwitch.manufacturer || "Not specified"
+              )}
+            </Box>
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Switch Type:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedSwitchType}
                   onChange={(event) => setEditedSwitchType(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
+                  renderValue={(selected) => {
+                    return selected ? selected : "-- Select Type --";
+                  }}
                 >
-                  <option value="">-- Select Type --</option>
-                  <option value="linear">Linear</option>
-                  <option value="tactile">Tactile</option>
-                  <option value="clicky">Clicky</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Quantity:</strong>
-                <StyledInput
+                  <MenuItem value="" disabled>
+                    -- Select Type --
+                  </MenuItem>
+                  <MenuItem value="Linear">Linear</MenuItem>
+                  <MenuItem value="Tactile">Tactile</MenuItem>
+                  <MenuItem value="Clicky">Clicky</MenuItem>
+                </Select>
+              ) : (
+                <Typography component="span">
+                  {userSwitch.switchType}
+                </Typography>
+              )}
+            </Box>
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Quantity:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
                   type="number"
-                  min="0"
-                  max="9999"
+                  size="small"
+                  inputProps={{ min: 0, max: 9999 }}
                   value={editedQuantity}
-                  onChange={(event) => {
-                    // Ensure value is not negative and not too large
+                  onChange={(e) => {
                     const value = Math.min(
                       9999,
-                      Math.max(0, parseInt(event.target.value) || 0)
+                      Math.max(0, parseInt(e.target.value) || 0)
                     );
                     setEditedQuantity(value.toString());
                   }}
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Spring Weight:</strong>
-                <StyledInput
-                  type="text"
+              ) : (
+                userSwitch.quantity
+              )}
+            </Box>
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Spring Weight:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedSpringWeight}
-                  onChange={(event) =>
-                    setEditedSpringWeight(event.target.value)
-                  }
+                  onChange={(e) => setEditedSpringWeight(e.target.value)}
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Top Housing:</strong>
-                <StyledInput
-                  type="text"
-                  value={editedTopMaterial}
-                  onChange={(event) => setEditedTopMaterial(event.target.value)}
-                />
-              </li>
-              <li>
-                <strong>Bottom Housing:</strong>
-                <StyledInput
-                  type="text"
-                  value={editedBottomMaterial}
-                  onChange={(event) =>
-                    setEditedBottomMaterial(event.target.value)
-                  }
-                />
-              </li>
-              <li>
-                <strong>Stem Material:</strong>
-                <StyledInput
-                  type="text"
-                  value={editedStemMaterial}
-                  onChange={(event) =>
-                    setEditedStemMaterial(event.target.value)
-                  }
-                />
-              </li>
-              <li>
-                <strong>Factory Lube:</strong>
-                <StyledCheckbox>
-                  <input
-                    type="checkbox"
-                    id="factoryLubed"
-                    checked={editedFactoryLubed}
-                    onChange={(event) =>
-                      setEditedFactoryLubed(event.target.checked)
-                    }
-                  />
-                  <label htmlFor="factoryLubed">
-                    {editedFactoryLubed ? "Yes" : "No"}
-                  </label>
-                </StyledCheckbox>
-              </li>
-              <li>
-                <strong>Hand Lubed:</strong>
-                <StyledCheckbox>
-                  <input
-                    type="checkbox"
-                    id="handLubed"
-                    checked={editedIsLubed}
-                    onChange={(event) => setEditedIsLubed(event.target.checked)}
-                  />
-                  <label htmlFor="handLubed">
-                    {editedIsLubed ? "Yes" : "No"}
-                  </label>
-                </StyledCheckbox>
-              </li>
-              <li>
-                <strong>Filmed:</strong>
-                <StyledCheckbox>
-                  <input
-                    type="checkbox"
-                    id="filmed"
-                    checked={editedIsFilmed}
-                    onChange={(event) =>
-                      setEditedIsFilmed(event.target.checked)
-                    }
-                  />
-                  <label htmlFor="filmed">
-                    {editedIsFilmed ? "Yes" : "No"}
-                  </label>
-                </StyledCheckbox>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <strong>Manufacturer:</strong> {userSwitch.manufacturer}
-              </li>
-              <li>
-                <strong>Switch Type:</strong> {userSwitch.switchType}
-              </li>
-              <li>
-                <strong>Quantity:</strong> {userSwitch.quantity}
-              </li>
-              <li>
-                <strong>Spring Weight:</strong> {userSwitch.springWeight}
-              </li>
-              <li>
-                <strong>Top Housing:</strong> {userSwitch.topMaterial}
-              </li>
-              <li>
-                <strong>Bottom Housing:</strong> {userSwitch.bottomMaterial}
-              </li>
-              <li>
-                <strong>Stem Material:</strong> {userSwitch.stemMaterial}
-              </li>
-              <li>
-                <strong>Factory Lube:</strong>
-                {userSwitch.factoryLubed ? "Yes" : "No"}
-              </li>
-              <li>
-                <strong>Hand Lubed:</strong> {userSwitch.isLubed ? "Yes" : "No"}
-              </li>
-              <li>
-                <strong>Filmed:</strong> {userSwitch.isFilmed ? "Yes" : "No"}
-              </li>
-            </>
-          )}
-        </BoxContainer>
+              ) : (
+                userSwitch.springWeight || "Not specified"
+              )}
+            </Box>
 
-        <Notes
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Top Housing:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedTopMaterial}
+                  onChange={(e) => setEditedTopMaterial(e.target.value)}
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userSwitch.topMaterial || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Bottom Housing:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedBottomMaterial}
+                  onChange={(e) => setEditedBottomMaterial(e.target.value)}
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userSwitch.bottomMaterial || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Stem Material:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedStemMaterial}
+                  onChange={(e) => setEditedStemMaterial(e.target.value)}
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userSwitch.stemMaterial || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Factory Lube:
+              </Typography>{" "}
+              {isEditMode ? (
+                <>
+                  <Checkbox
+                    checked={editedFactoryLubed}
+                    onChange={(e) => setEditedFactoryLubed(e.target.checked)}
+                    sx={{ ml: 1 }}
+                  />
+                  <Typography component="span">
+                    {editedFactoryLubed ? "Yes" : "No"}
+                  </Typography>
+                </>
+              ) : userSwitch.factoryLubed ? (
+                "Yes"
+              ) : (
+                "No"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Hand Lubed:
+              </Typography>{" "}
+              {isEditMode ? (
+                <>
+                  <Checkbox
+                    checked={editedIsLubed}
+                    onChange={(e) => setEditedIsLubed(e.target.checked)}
+                    sx={{ ml: 1 }}
+                  />
+                  <Typography component="span">
+                    {editedIsLubed ? "Yes" : "No"}
+                  </Typography>
+                </>
+              ) : userSwitch.isLubed ? (
+                "Yes"
+              ) : (
+                "No"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Filmed:
+              </Typography>{" "}
+              {isEditMode ? (
+                <>
+                  <Checkbox
+                    checked={editedIsFilmed}
+                    onChange={(e) => setEditedIsFilmed(e.target.checked)}
+                    sx={{ ml: 1 }}
+                  />
+                  <Typography component="span">
+                    {editedIsFilmed ? "Yes" : "No"}
+                  </Typography>
+                </>
+              ) : userSwitch.isFilmed ? (
+                "Yes"
+              ) : (
+                "No"
+              )}
+            </Box>
+          </Box>
+        </Paper>
+
+        <NotesMUI
           notes={localNotes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
@@ -445,7 +548,7 @@ export default function SwitchDetail() {
             onConfirm={handleSaveChanges}
           />
         )}
-      </DetailPageContainer>
+      </Container>
     </>
   );
 }

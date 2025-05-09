@@ -3,7 +3,6 @@ import useSWR from "swr";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
-import Notes from "@/components/SharedComponents/Notes";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
@@ -249,6 +248,11 @@ export default function KeyCapDetail() {
     }
   };
 
+  if (!session) {
+    return null;
+  }
+
+  if (userKeycapError) return <p>Error loading keycap details.</p>;
   if (status === "loading" || !userKeycaps) {
     return (
       <Box
@@ -261,12 +265,6 @@ export default function KeyCapDetail() {
       </Box>
     );
   }
-
-  if (!session) {
-    return null;
-  }
-
-  if (userKeycapError) return <p>Error loading keycap details.</p>;
 
   const kitsAvailable = userKeycap.kits ?? [];
   const selectedKits = userKeycap?.selectedKits ?? [];
