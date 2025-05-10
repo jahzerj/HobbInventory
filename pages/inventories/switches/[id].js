@@ -16,22 +16,11 @@ import {
   Select,
   MenuItem,
   Paper,
-  Grid,
-  Chip,
   CircularProgress,
   Checkbox,
-  Link,
 } from "@mui/material";
 
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useSession } from "next-auth/react";
-
-import {
-  BoxContainer,
-  StyledSpan,
-  LoaderWrapper,
-  StyledInput,
-} from "@/components/SharedComponents/DetailPageStyles";
 
 export default function SwitchDetail() {
   const router = useRouter();
@@ -54,8 +43,6 @@ export default function SwitchDetail() {
   const notes = userSwitch?.notes ?? [];
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [innerWidth, setInnerWidth] = useState(0);
-
   const [editedName, setEditedName] = useState(userSwitch?.name || "");
   const [editedManufacturer, setEditedManufacturer] = useState(
     userSwitch?.manufacturer || ""
@@ -90,12 +77,6 @@ export default function SwitchDetail() {
   );
 
   const [localNotes, setLocalNotes] = useState(notes);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setInnerWidth(window.innerWidth);
-    }
-  }, []);
 
   useEffect(() => {
     if (userSwitch) {
@@ -211,20 +192,12 @@ export default function SwitchDetail() {
     }
   };
 
-  if (status === "loading") {
-    return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
-    );
-  }
-
   if (!session) {
     return null;
   }
 
   if (userSwitchesError) return <p> Error loading switch details</p>;
-  if (!userSwitch) {
+  if (!userSwitch || status === "loading") {
     return (
       <Box
         display="flex"
@@ -253,7 +226,7 @@ export default function SwitchDetail() {
           sx={{
             width: "100%",
             textAlign: "center",
-            mb: 4,
+            mb: 2,
           }}
         >
           <Typography variant="h4" component="h1" gutterBottom>
@@ -264,12 +237,17 @@ export default function SwitchDetail() {
             <Box
               sx={{
                 position: "relative",
-                width: "60%",
+                width: "80%",
                 maxWidth: "300px",
                 height: {
-                  xs: "200px",
+                  xs: "250px",
                   sm: "300px",
                 },
+                boxShadow: 3,
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? `1px solid ${theme.palette.grey[700]}`
+                    : "none",
                 borderRadius: 2,
                 overflow: "hidden",
                 mb: 2,

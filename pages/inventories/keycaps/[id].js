@@ -285,7 +285,7 @@ export default function KeyCapDetail() {
           sx={{
             width: "100%",
             textAlign: "center",
-            mb: 4,
+            mb: 2,
           }}
         >
           <Typography variant="h4" component="h1" gutterBottom>
