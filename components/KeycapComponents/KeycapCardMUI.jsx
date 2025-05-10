@@ -11,9 +11,26 @@ import {
   Stack,
   Chip,
 } from "@mui/material";
-import { styled as muiStyled } from "@mui/material/styles";
 import R1Icon from "../icons/R1Icon";
 import { alpha } from "@mui/material/styles";
+
+const Dot = ({ $active, onClick }) => {
+  return (
+    <Box
+      sx={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        backgroundColor: $active ? "white" : "rgba(255,255,255,0.5)",
+        margin: "0 4px",
+        cursor: "pointer",
+        transition: "all 0.2s ease-in-out",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+      }}
+      onClick={onClick}
+    />
+  );
+};
 
 export default function KeycapCardMUI({ keycap }) {
   const router = useRouter();
@@ -170,9 +187,9 @@ export default function KeycapCardMUI({ keycap }) {
               {selectedKitData.map((_, index) => (
                 <Dot
                   key={index}
-                  active={index === imageIndex}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  $active={index === imageIndex}
+                  onClick={(event) => {
+                    event.stopPropagation();
                     setImageIndex(index);
                   }}
                 />
@@ -237,24 +254,18 @@ export default function KeycapCardMUI({ keycap }) {
   );
 }
 
-// Navigation dot styling - Updated to match original design
-const Dot = muiStyled(Box)(({ theme, active }) => ({
-  width: 8,
-  height: 8,
-  borderRadius: "50%",
-  backgroundColor: active ? "white" : "rgba(255,255,255,0.5)",
-  margin: "0 4px",
-  cursor: "pointer",
-  transition: "all 0.2s ease-in-out",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.3)", // Add shadow for better visibility
-}));
-
 // Styled SVG wrapper for colored icons with improved visibility for light colors
-const ColoredIconWrapper = muiStyled(Box)(({ theme }) => ({
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 20,
-  height: 20,
-  margin: "0 2px",
-}));
+const ColoredIconWrapper = ({ children }) => (
+  <Box
+    sx={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 20,
+      height: 20,
+      margin: "0 2px",
+    }}
+  >
+    {children}
+  </Box>
+);

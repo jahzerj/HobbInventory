@@ -62,33 +62,6 @@ export default function Keycaps() {
     }
   };
 
-  // Handle deleting keycap
-  const handleDeleteKeycap = async (keycapId, event) => {
-    event.stopPropagation();
-
-    if (!window.confirm("Are you sure you want to remove this keycap set?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/inventories/userkeycaps", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keycapId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete keycap");
-      }
-
-      mutate();
-    } catch (error) {
-      console.error("Failed to delete keycap:", error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-
   // Get unique colors
   const uniqueColors = [
     "all",

@@ -104,7 +104,6 @@ export default function Profile() {
             }}
           >
             <Grid
-              item
               component={Link}
               href="/inventories/keycaps"
               sx={{
@@ -124,7 +123,6 @@ export default function Profile() {
             </Grid>
 
             <Grid
-              item
               component={Link}
               href="/inventories/switches"
               sx={{
@@ -144,7 +142,6 @@ export default function Profile() {
             </Grid>
 
             <Grid
-              item
               component={Link}
               href="/inventories/keyboards"
               sx={{
