@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import InventoryList from "@/components/SharedComponents/InventoryList";
+import InventoryList from "@/components/OldComponents/InventoryList";
 import SwitchCard from "@/components/OldComponents/SwitchCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import { useSession } from "next-auth/react";
