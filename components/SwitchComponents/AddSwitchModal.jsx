@@ -551,7 +551,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
 
                     <h3>Preview</h3>
                     <PreviewWrapper>
-                      <SwitchCard
+                      <SwitchCardMUI
                         itemObj={{
                           _id: "preview",
                           ...switchData,
