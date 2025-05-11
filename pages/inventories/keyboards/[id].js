@@ -2,22 +2,25 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import Image from "next/image";
-import styled from "styled-components";
 import { useSession } from "next-auth/react";
-import Notes from "@/components/SharedComponents/Notes";
+import NotesMUI from "@/components/SharedComponents/NotesMUI";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
 
 import {
-  DetailPageContainer,
-  HeaderSection,
-  HeaderImage,
-  BoxContainer,
-  StyledSpan,
-  LoaderWrapper,
-  StyledInput,
-} from "@/components/SharedComponents/DetailPageStyles";
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Paper,
+  CircularProgress,
+  Checkbox,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  FormGroup,
+} from "@mui/material";
 
 export default function KeyboardDetail() {
   const router = useRouter();
@@ -209,9 +212,14 @@ export default function KeyboardDetail() {
 
   if (status === "loading") {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -222,25 +230,57 @@ export default function KeyboardDetail() {
   if (userKeyboardError) return <p>Error loading keyboards</p>;
   if (!userKeyboard) {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
     <>
       {!isEditMode && <BackButtonMUI href="/inventories/keyboards" />}
-      <DetailPageContainer>
-        <HeaderSection>
-          {isEditMode ? (
-            <h1>Editing {userKeyboard.name}</h1>
-          ) : (
-            <h1>{userKeyboard.name}</h1>
-          )}
+      <Container
+        maxWidth="md"
+        sx={{
+          py: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            textAlign: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            {isEditMode ? `Editing ${userKeyboard.name}` : userKeyboard.name}
+          </Typography>
           {userKeyboard.renders && userKeyboard.renders.length > 0 && (
             <>
-              <HeaderImage>
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: "640px",
+                  height: {
+                    xs: "220px",
+                    sm: "280px",
+                    md: "320px",
+                  },
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  mb: 2,
+                  mx: "auto",
+                }}
+              >
                 <Image
                   src={userKeyboard.renders[activeRenderIndex]}
                   alt={userKeyboard.name}
@@ -248,14 +288,39 @@ export default function KeyboardDetail() {
                   style={{ objectFit: "cover" }}
                   priority
                 />
-              </HeaderImage>
+              </Box>
 
               {userKeyboard.renders.length > 1 && (
-                <ThumbnailGallery>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: "10px",
+                    overflowX: "auto",
+                    maxWidth: "100%",
+                    padding: "10px 0",
+                    justifyContent: "center",
+                  }}
+                >
                   {userKeyboard.renders.map((render, index) => (
-                    <ThumbnailContainer
+                    <Box
                       key={index}
-                      $isActive={index === activeRenderIndex}
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: "5px",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        position: "relative",
+                        border: (theme) =>
+                          index === activeRenderIndex
+                            ? `2px solid ${theme.palette.primary.main}`
+                            : "2px solid transparent",
+                        transition: "all 0.2s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        },
+                      }}
                       onClick={() => setActiveRenderIndex(index)}
                     >
                       <Image
@@ -265,259 +330,339 @@ export default function KeyboardDetail() {
                         height={80}
                         style={{ objectFit: "cover" }}
                       />
-                    </ThumbnailContainer>
+                    </Box>
                   ))}
-                </ThumbnailGallery>
+                </Box>
               )}
             </>
           )}
-        </HeaderSection>
+        </Box>
 
-        <h3>Details</h3>
-        <BoxContainer>
-          {isEditMode ? (
-            <>
-              <li>
-                <strong>Name:</strong>
-                <StyledInput
-                  type="text"
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
+        >
+          Details
+        </Typography>
+        <Paper
+          elevation={1}
+          sx={{ p: 2, mb: 4, width: "100%", maxWidth: 520, borderRadius: 2 }}
+        >
+          <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+            {isEditMode && (
+              <Box component="li" sx={{ py: 1 }}>
+                <Typography component="span" fontWeight="bold">
+                  Name:
+                </Typography>{" "}
+                <TextField
+                  size="small"
                   value={editedName}
                   onChange={(event) => setEditedName(event.target.value)}
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Designer:</strong>
-                <StyledInput
-                  type="text"
+              </Box>
+            )}
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Designer:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedDesigner}
                   onChange={(event) => setEditedDesigner(event.target.value)}
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Layout:</strong>
-                <StyledInput
-                  as="select"
+              ) : (
+                userKeyboard.designer
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Layout:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedLayout}
                   onChange={(event) => setEditedLayout(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
                 >
-                  <option value="">-- Select Layout --</option>
-                  <option value="60%">60%</option>
-                  <option value="65%">65%</option>
-                  <option value="75%">75%</option>
-                  <option value="TKL">TKL</option>
-                  <option value="Full Size">Full Size</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Blocker:</strong>
-                <StyledInput
-                  as="select"
+                  <MenuItem value="">-- Select Layout --</MenuItem>
+                  <MenuItem value="60%">60%</MenuItem>
+                  <MenuItem value="65%">65%</MenuItem>
+                  <MenuItem value="75%">75%</MenuItem>
+                  <MenuItem value="TKL">TKL</MenuItem>
+                  <MenuItem value="Full Size">Full Size</MenuItem>
+                </Select>
+              ) : (
+                userKeyboard.layout
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Blocker:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedBlocker}
                   onChange={(event) => setEditedBlocker(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
                 >
-                  <option value="">-- Select Blocker --</option>
-                  <option value="Winkey">WK</option>
-                  <option value="Winkeyless">WKL</option>
-                  <option value="HHKB">HHKB</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Switch Type:</strong>
-                <StyledInput
-                  as="select"
+                  <MenuItem value="">-- Select Blocker --</MenuItem>
+                  <MenuItem value="Winkey">WK</MenuItem>
+                  <MenuItem value="Winkeyless">WKL</MenuItem>
+                  <MenuItem value="HHKB">HHKB</MenuItem>
+                </Select>
+              ) : (
+                userKeyboard.blocker
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Switch Type:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedSwitchType}
                   onChange={(event) => setEditedSwitchType(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
                 >
-                  <option value="">-- Select Switch Type --</option>
-                  <option value="MX">MX</option>
-                  <option value="Alps">Alps</option>
-                  <option value="Topre">Topre</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Plate Material:</strong>
-                <StyledCheckboxGroup>
-                  {[
-                    "Aluminum",
-                    "Brass",
-                    "Carbon Fiber",
-                    "FR4",
-                    "POM",
-                    "Polycarbonate",
-                  ].map((material) => (
-                    <label key={material}>
-                      <input
-                        type="checkbox"
-                        checked={editedPlateMaterial.includes(material)}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            setEditedPlateMaterial([
-                              ...editedPlateMaterial,
-                              material,
-                            ]);
-                          } else {
-                            setEditedPlateMaterial(
-                              editedPlateMaterial.filter((m) => m !== material)
-                            );
-                          }
-                        }}
+                  <MenuItem value="">-- Select Switch Type --</MenuItem>
+                  <MenuItem value="MX">MX</MenuItem>
+                  <MenuItem value="Alps">Alps</MenuItem>
+                  <MenuItem value="Topre">Topre</MenuItem>
+                </Select>
+              ) : (
+                userKeyboard.switchType
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Plate Material:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: "8px", ml: 1 }}>
+                  <FormGroup>
+                    {[
+                      "Aluminum",
+                      "Brass",
+                      "Carbon Fiber",
+                      "FR4",
+                      "POM",
+                      "Polycarbonate",
+                    ].map((material) => (
+                      <FormControlLabel
+                        key={material}
+                        control={
+                          <Checkbox
+                            checked={editedPlateMaterial.includes(material)}
+                            onChange={(event) => {
+                              if (event.target.checked) {
+                                setEditedPlateMaterial([
+                                  ...editedPlateMaterial,
+                                  material,
+                                ]);
+                              } else {
+                                setEditedPlateMaterial(
+                                  editedPlateMaterial.filter((m) => m !== material)
+                                );
+                              }
+                            }}
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2">{material}</Typography>
+                        }
                       />
-                      {material}
-                    </label>
-                  ))}
-                </StyledCheckboxGroup>
-              </li>
-              <li>
-                <strong>Mounting Style:</strong>
-                <StyledCheckboxGroup>
-                  {[
-                    "Top Mount",
-                    "Gasket Mount",
-                    "O-ring Mount",
-                    "Burger Mount",
-                    "Leaf Spring",
-                  ].map((mount) => (
-                    <label key={mount}>
-                      <input
-                        type="checkbox"
-                        checked={editedMounting.includes(mount)}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            setEditedMounting([...editedMounting, mount]);
-                          } else {
-                            setEditedMounting(
-                              editedMounting.filter((m) => m !== mount)
-                            );
-                          }
-                        }}
+                    ))}
+                  </FormGroup>
+                </Box>
+              ) : (
+                userKeyboard.plateMaterial.join(", ")
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Mounting Style:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: "8px", ml: 1 }}>
+                  <FormGroup>
+                    {[
+                      "Top Mount",
+                      "Gasket Mount",
+                      "O-ring Mount",
+                      "Burger Mount",
+                      "Leaf Spring",
+                    ].map((mount) => (
+                      <FormControlLabel
+                        key={mount}
+                        control={
+                          <Checkbox
+                            checked={editedMounting.includes(mount)}
+                            onChange={(event) => {
+                              if (event.target.checked) {
+                                setEditedMounting([...editedMounting, mount]);
+                              } else {
+                                setEditedMounting(
+                                  editedMounting.filter((m) => m !== mount)
+                                );
+                              }
+                            }}
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2">{mount}</Typography>
+                        }
                       />
-                      {mount}
-                    </label>
-                  ))}
-                </StyledCheckboxGroup>
-              </li>
-              <li>
-                <strong>Typing Angle:</strong>
-                <StyledInput
-                  type="text"
+                    ))}
+                  </FormGroup>
+                </Box>
+              ) : (
+                userKeyboard.mounting.join(", ")
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Typing Angle:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedTypingAngle}
                   onChange={(event) => setEditedTypingAngle(event.target.value)}
                   placeholder="e.g., 6.5°"
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Front Height:</strong>
-                <StyledInput
-                  type="text"
+              ) : (
+                userKeyboard.typingAngle
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Front Height:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedFrontHeight}
                   onChange={(event) => setEditedFrontHeight(event.target.value)}
                   placeholder="e.g., 19mm"
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Surface Finish:</strong>
-                <StyledInput
-                  as="select"
+              ) : (
+                userKeyboard.frontHeight
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Surface Finish:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedSurfaceFinish}
-                  onChange={(event) =>
-                    setEditedSurfaceFinish(event.target.value)
-                  }
+                  onChange={(event) => setEditedSurfaceFinish(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
                 >
-                  <option value="">-- Select Finish --</option>
-                  <option value="Anodization">Anodization</option>
-                  <option value="E-coating">E-coating</option>
-                  <option value="Cerakote">Cerakote</option>
-                  <option value="Raw">Raw</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Color:</strong>
-                <StyledInput
-                  type="text"
+                  <MenuItem value="">-- Select Finish --</MenuItem>
+                  <MenuItem value="Anodization">Anodization</MenuItem>
+                  <MenuItem value="E-coating">E-coating</MenuItem>
+                  <MenuItem value="Cerakote">Cerakote</MenuItem>
+                  <MenuItem value="Raw">Raw</MenuItem>
+                </Select>
+              ) : (
+                userKeyboard.surfaceFinish
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Color:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedColor}
                   onChange={(event) => setEditedColor(event.target.value)}
+                  sx={{ ml: 1 }}
                 />
-              </li>
-              <li>
-                <strong>Weight Material:</strong>
-                <StyledInput
-                  as="select"
+              ) : (
+                userKeyboard.color
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Weight Material:
+              </Typography>{" "}
+              {isEditMode ? (
+                <Select
+                  size="small"
                   value={editedWeightMaterial}
-                  onChange={(event) =>
-                    setEditedWeightMaterial(event.target.value)
-                  }
+                  onChange={(event) => setEditedWeightMaterial(event.target.value)}
+                  sx={{ ml: 1, minWidth: 180 }}
                 >
-                  <option value="">-- Select Material --</option>
-                  <option value="Brass">Brass</option>
-                  <option value="Stainless Steel">Stainless Steel</option>
-                  <option value="Aluminum">Aluminum</option>
-                  <option value="Tungsten">Tungsten</option>
-                </StyledInput>
-              </li>
-              <li>
-                <strong>Build Weight:</strong>
-                <StyledInput
-                  type="text"
+                  <MenuItem value="">-- Select Material --</MenuItem>
+                  <MenuItem value="Brass">Brass</MenuItem>
+                  <MenuItem value="Stainless Steel">Stainless Steel</MenuItem>
+                  <MenuItem value="Aluminum">Aluminum</MenuItem>
+                  <MenuItem value="Tungsten">Tungsten</MenuItem>
+                </Select>
+              ) : (
+                userKeyboard.weightMaterial
+              )}
+            </Box>
+            
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Build Weight:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
                   value={editedBuildWeight}
                   onChange={(event) => setEditedBuildWeight(event.target.value)}
                   placeholder="e.g., 1200g"
+                  sx={{ ml: 1 }}
                 />
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <strong>Designer:</strong> {userKeyboard.designer}
-              </li>
-              <li>
-                <strong>Layout:</strong> {userKeyboard.layout}
-              </li>
-              <li>
-                <strong>Blocker:</strong> {userKeyboard.blocker}
-              </li>
-              <li>
-                <strong>Switch Type:</strong> {userKeyboard.switchType}
-              </li>
-              <li>
-                <strong>Plate Material: </strong>
-                {userKeyboard.plateMaterial.join(", ")}
-              </li>
-              <li>
-                <strong>Mounting Style:</strong>{" "}
-                {userKeyboard.mounting.join(", ")}
-              </li>
-              <li>
-                <strong>Typing Angle:</strong> {userKeyboard.typingAngle}
-              </li>
-              <li>
-                <strong>Front Height:</strong> {userKeyboard.frontHeight}
-              </li>
-              <li>
-                <strong>Surface Finish:</strong> {userKeyboard.surfaceFinish}
-              </li>
-              <li>
-                <strong>Color:</strong> {userKeyboard.color}
-              </li>
-              <li>
-                <strong>Weight Material:</strong> {userKeyboard.weightMaterial}
-              </li>
-              <li>
-                <strong>Build Weight:</strong> {userKeyboard.buildWeight}
-              </li>
-            </>
-          )}
-        </BoxContainer>
-        <Notes
+              ) : (
+                userKeyboard.buildWeight
+              )}
+            </Box>
+          </Box>
+        </Paper>
+        
+        <NotesMUI
           notes={isEditMode ? editedNotes : notes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
         />
-      </DetailPageContainer>
+      </Container>
+      
       {!isEditMode ? (
         <EditButtonMUI
           onEdit={() => {
             setIsEditMode(true);
-            // Make sure to include this with your other state initializations:
             setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
           }}
         />
@@ -530,47 +675,3 @@ export default function KeyboardDetail() {
     </>
   );
 }
-
-const StyledCheckboxGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-left: 8px;
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-  }
-
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const ThumbnailGallery = styled.div`
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  max-width: 100%;
-  padding: 10px 0;
-  justify-content: center;
-`;
-
-const ThumbnailContainer = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 5px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  border: 2px solid ${(props) => (props.$isActive ? "#007bff" : "transparent")};
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-`;

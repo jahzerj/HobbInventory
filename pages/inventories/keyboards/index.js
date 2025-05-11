@@ -1,26 +1,24 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import styled from "styled-components";
+import { useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
-import InventoryList from "@/components/SharedComponents/InventoryList";
-import KeyboardCard from "@/components/OldComponents/KeyboardCard";
-import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import KeyboardCardMUI from "@/components/KeyboardComponents/KeyboardCardMUI";
+import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 
-//MUI STUFF
 import {
   Container,
-  Card,
-  CardContent,
   Typography,
-  CardMedia,
+  Box,
+  CircularProgress,
+  Chip,
+  Stack,
+  NoSsr,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 export default function Keyboards() {
   const router = useRouter();
@@ -32,8 +30,6 @@ export default function Keyboards() {
   });
 
   const [isOpen, setIsOpen] = useState(false);
-  const [userKeyboards, setUserKeyboards] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [selectedLayouts, setSelectedLayouts] = useState(["all"]);
   const layoutScrollRef = useRef(null);
 
@@ -43,18 +39,9 @@ export default function Keyboards() {
     mutate,
   } = useSWR("/api/inventories/userkeyboards");
 
-  useEffect(() => {
-    if (keyboards) {
-      setUserKeyboards(keyboards.map((keyboard) => keyboard._id));
-    }
-  }, [keyboards]);
-
   const handleAddKeyboard = useCallback(
     async (keyboardToAdd) => {
       try {
-        // Update UI optimistically
-        setUserKeyboards((prev) => [...prev, keyboardToAdd.keyboardId]);
-
         const response = await fetch("/api/inventories/userkeyboards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -69,83 +56,11 @@ export default function Keyboards() {
         // Refresh data from server to ensure accuracy
         mutate();
       } catch (error) {
-        // Revert UI change on error
-        setUserKeyboards((prev) =>
-          prev.filter((id) => id !== keyboardToAdd.keyboardId)
-        );
         console.error("Failed to add keyboard:", error);
         alert(`Error: ${error.message}`);
       }
     },
     [mutate]
-  );
-
-  // Make getDeleteConfirmation a memoized function with useCallback
-  const getDeleteConfirmation = useCallback((itemType) => {
-    return window.confirm(
-      `Are you sure you want to remove this ${itemType}?\n\n` +
-        `This will permanently remove:\n` +
-        `• This ${itemType}\n` +
-        `• Selected switches\n` +
-        `• Selected builds\n` +
-        `• Selected keycaps\n` +
-        `• Any personal notes that you have added`
-    );
-  }, []);
-
-  const handleDeleteKeyboard = useCallback(
-    async (keyboardId, event) => {
-      event.stopPropagation();
-
-      if (!getDeleteConfirmation("keyboard")) return;
-
-      try {
-        // Optimistic UI update
-        setUserKeyboards((prev) => prev.filter((id) => id !== keyboardId));
-
-        const response = await fetch("/api/inventories/userkeyboards", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            keyboardId: keyboardId,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to delete keyboard");
-        }
-
-        mutate();
-      } catch (error) {
-        console.error("Failed to delete keyboard:", error);
-        alert(`Error: ${error.message}`);
-        // Force refetch to restore accurate state on error
-        mutate();
-      }
-    },
-    [getDeleteConfirmation, mutate]
-  );
-
-  // Memoized layout filtering function
-  const getFilteredKeyboards = useCallback(
-    (keyboardsData, selectedLayoutArray) => {
-      if (!keyboardsData) return [];
-
-      // If "all" is selected or no layouts are selected, return all keyboards
-      if (
-        selectedLayoutArray.includes("all") ||
-        selectedLayoutArray.length === 0
-      ) {
-        return keyboardsData;
-      }
-
-      // Return keyboards that match the selected layout
-      return keyboardsData.filter((keyboard) =>
-        selectedLayoutArray.includes(keyboard.layout)
-      );
-    },
-    []
   );
 
   // Function to handle layout selection
@@ -174,9 +89,9 @@ export default function Keyboards() {
 
   // Mouse wheel horizontal scrolling
   const handleWheel = useCallback((event) => {
-    if (layoutScrollRef.current) {
+    if (event.currentTarget) {
       event.preventDefault();
-      layoutScrollRef.current.scrollLeft += event.deltaY;
+      event.currentTarget.scrollLeft += event.deltaY;
     }
   }, []);
 
@@ -203,23 +118,27 @@ export default function Keyboards() {
       ]
     : ["all"];
 
-  const filteredKeyboards = getFilteredKeyboards(keyboards, selectedLayouts);
+  // Filter keyboards
+  const filteredKeyboards = keyboards?.filter(
+    (keyboard) =>
+      selectedLayouts.includes("all") ||
+      selectedLayouts.includes(keyboard.layout)
+  );
 
   // Handle opening/closing modal
   const handleOpenModal = useCallback(() => setIsOpen(true), []);
   const handleCloseModal = useCallback(() => setIsOpen(false), []);
 
-  // Handle toggling edit mode
-  const handleToggleEdit = useCallback(
-    () => setIsEditMode((prevMode) => !prevMode),
-    []
-  );
-
   if (status === "loading") {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -230,15 +149,122 @@ export default function Keyboards() {
   if (error) return <p>Error loading keyboards...</p>;
   if (!keyboards)
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
 
   return (
     <>
       <ProfileButtonMUI />
-      <ScrollPositionManager pageId="keyboards" enabled={true} />
+      <BackButtonMUI href="/" />
+
+      <NoSsr>
+        <ScrollPositionManager pageId="keyboards" enabled={true} />
+      </NoSsr>
+
+      <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
+        <Typography variant="h4" component="h1" textAlign="center" gutterBottom>
+          Keyboard Inventory
+        </Typography>
+
+        {/* Layout filters */}
+        <Box
+          ref={layoutScrollRef}
+          sx={{
+            display: "flex",
+            overflowX: "auto",
+            py: 2,
+            px: 1,
+            mb: 2,
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            position: "sticky",
+            top: 16,
+            zIndex: 10,
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.8)
+                : alpha(theme.palette.background.paper, 0.8),
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ px: 1 }}>
+            {uniqueLayouts.map((layout) => (
+              <Chip
+                key={layout}
+                label={layout === "all" ? "All Layouts" : layout}
+                onClick={() => handleLayoutSelect(layout)}
+                color={selectedLayouts.includes(layout) ? "primary" : "default"}
+                variant={
+                  selectedLayouts.includes(layout) ? "filled" : "outlined"
+                }
+              />
+            ))}
+          </Stack>
+        </Box>
+
+        {/* Keyboards display */}
+        <Box
+          sx={(theme) => ({
+            // Default styles: Handles 1 card (centered) and 2+ cards on small screens (list)
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: theme.spacing(0),
+            width: "100%",
+
+            // Styles for larger screens (md and up) when there are 2+ cards (grid)
+            ...(filteredKeyboards &&
+              filteredKeyboards.length > 1 && {
+                [theme.breakpoints.up("md")]: {
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  justifyItems: "center",
+                  alignItems: "start",
+                  columnGap: theme.spacing(2),
+                  rowGap: theme.spacing(0),
+                },
+              }),
+          })}
+        >
+          {error && (
+            <Typography color="error">Error loading keyboards.</Typography>
+          )}
+          {!error && filteredKeyboards?.length > 0 ? (
+            filteredKeyboards.map((keyboard) => (
+              <KeyboardCardMUI key={keyboard._id} itemObj={keyboard} />
+            ))
+          ) : (
+            <Box sx={{ textAlign: "center", mt: 4 }}>
+              {!error && keyboards?.length === 0 && (
+                <Typography variant="body1">
+                  No keyboards added yet. Click the ➕ button to add a keyboard
+                  to your inventory.
+                </Typography>
+              )}
+              {!error &&
+                keyboards?.length > 0 &&
+                selectedLayouts.length === 1 &&
+                selectedLayouts[0] !== "all" && (
+                  <Typography variant="body1">
+                    No keyboards found with the selected layout.
+                  </Typography>
+                )}
+            </Box>
+          )}
+        </Box>
+      </Container>
+
+      <AddButtonMUI onOpenModal={handleOpenModal} itemType="Keyboard" />
 
       <AddKeyboardModal
         open={isOpen}
@@ -246,178 +272,6 @@ export default function Keyboards() {
         onAddKeyboard={handleAddKeyboard}
         userId={session.user.uuid}
       />
-
-      <StyledContainer>
-        <LongTitle>Keyboard Inventory</LongTitle>
-
-        <LayoutFilterContainer ref={layoutScrollRef}>
-          {uniqueLayouts.map((layout) => (
-            <LayoutPill
-              key={layout}
-              $isSelected={selectedLayouts.includes(layout)}
-              onClick={() => handleLayoutSelect(layout)}
-            >
-              {layout === "all" ? "All Layouts" : layout}
-            </LayoutPill>
-          ))}
-        </LayoutFilterContainer>
-
-        <CardContainer $itemCount={filteredKeyboards?.length || 0}>
-          {keyboards?.length === 0 ? (
-            <EmptyStateMessage>
-              <p>No keyboards added yet!</p>
-              <p>Click the ➕ button to add a keyboard to your inventory</p>
-            </EmptyStateMessage>
-          ) : filteredKeyboards?.length === 0 ? (
-            <EmptyStateMessage>
-              <p>No keyboards found with the selected layout!</p>
-              <p>Try selecting a different layout filter</p>
-            </EmptyStateMessage>
-          ) : (
-            <InventoryList
-              data={filteredKeyboards}
-              isEditMode={isEditMode}
-              onDelete={handleDeleteKeyboard}
-              ItemComponent={KeyboardCard}
-            />
-          )}
-        </CardContainer>
-        <KeyboardCardMUI itemObj={keyboards[0]} />
-      </StyledContainer>
-
-      <AddButtonMUI
-        onOpenModal={handleOpenModal}
-        isEditMode={isEditMode}
-        itemType="Keyboard"
-      />
-      <BackButtonMUI href="/" />
     </>
   );
 }
-
-const StyledContainer = styled.ul`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 25px;
-`;
-
-const CardContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  -webkit-tap-highlight-color: transparent;
-  margin-bottom: 50px;
-
-  @media (min-width: 900px) {
-    /* Only use grid layout when we have multiple items */
-    display: ${(props) => (props.$itemCount > 1 ? "grid" : "flex")};
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    width: 90%;
-    max-width: 1200px;
-    margin: 20px auto 0;
-    justify-content: center;
-    align-items: ${(props) => (props.$itemCount > 1 ? "start" : "center")};
-    flex-direction: column;
-  }
-`;
-
-const EmptyStateMessage = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  background: #f8f8f8;
-  border-radius: 10px;
-  margin: 20px auto;
-  max-width: 500px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  p:first-child {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-
-  p:last-child {
-    color: #666;
-  }
-`;
-const LongTitle = styled.h1`
-  @media screen and (max-width: 390px) {
-    font-size: 28px;
-  }
-`;
-
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-`;
-
-const StyledSpan = styled.span`
-  width: 48px;
-  height: 48px;
-  border: 5px solid #fff;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-// Add these styled components
-const LayoutFilterContainer = styled.div`
-  display: flex;
-  width: 100%;
-  overflow-x: auto;
-  padding: 10px 15px;
-  gap: 10px;
-  position: sticky;
-  top: 40px;
-  z-index: 100;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const LayoutPill = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: fit-content;
-  padding: 8px 16px;
-  border-radius: 50px;
-  white-space: nowrap;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: ${(props) => (props.$isSelected ? "#007bff" : "#f0f0f0")};
-  color: ${(props) => (props.$isSelected ? "white" : "#333")};
-  border: 2px solid #007bff;
-  box-shadow: ${(props) =>
-    props.$isSelected ? "0 2px 5px rgba(0,0,0,0.2)" : "none"};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  &:focus {
-    outline: none;
-  }
-`;
