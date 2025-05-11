@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import { useState } from "react";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
-import SwitchCard from "./SwitchCard";
+import SwitchCardMUI from "./SwitchCardMUI";
 import useSWR from "swr";
 import ImageUploader from "@/components/SharedComponents/ImageUploader";
 
@@ -290,7 +290,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
               <SectionContainer>
                 <h3>Preview</h3>
                 <PreviewWrapper>
-                  <SwitchCard
+                  <SwitchCardMUI
                     itemObj={{
                       _id: "preview",
                       ...switchData,

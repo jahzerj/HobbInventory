@@ -112,30 +112,6 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
                 ))}
               </DotsContainer>
             )}
-            {hasMultipleImages && (
-              <>
-                <CarouselButton
-                  className="prev"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handlePrevImage();
-                  }}
-                >
-                  ←
-                </CarouselButton>
-                <CarouselButton
-                  className="next"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handleNextImage();
-                  }}
-                >
-                  →
-                </CarouselButton>
-              </>
-            )}
           </CardContent>
         </>
       ) : (
@@ -160,30 +136,6 @@ export default function KeyboardCard({ itemObj, isEditMode, onDelete }) {
                   </Dot>
                 ))}
               </DotsContainer>
-            )}
-            {hasMultipleImages && (
-              <>
-                <CarouselButton
-                  className="prev"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handlePrevImage();
-                  }}
-                >
-                  ←
-                </CarouselButton>
-                <CarouselButton
-                  className="next"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handleNextImage();
-                  }}
-                >
-                  →
-                </CarouselButton>
-              </>
             )}
           </CardContent>
         </>

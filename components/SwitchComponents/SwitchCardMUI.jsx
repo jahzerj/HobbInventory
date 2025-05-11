@@ -34,11 +34,6 @@ export default function SwitchCardMUI({ itemObj, isPreview = false }) {
     }
   };
 
-  const handleDelete = (event) => {
-    e.stopPropagation();
-    onDelete && onDelete(switchObj._id, event);
-  };
-
   return (
     <Card
       variant="outlined"

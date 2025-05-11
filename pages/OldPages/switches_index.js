@@ -4,7 +4,7 @@ import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
 import InventoryList from "@/components/SharedComponents/InventoryList";
-import SwitchCard from "@/components/SwitchComponents/SwitchCard";
+import SwitchCard from "@/components/OldComponents/SwitchCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";

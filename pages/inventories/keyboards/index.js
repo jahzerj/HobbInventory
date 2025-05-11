@@ -3,7 +3,7 @@ import styled from "styled-components";
 import useSWR from "swr";
 import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import InventoryList from "@/components/SharedComponents/InventoryList";
-import KeyboardCard from "@/components/KeyboardComponents/KeyboardCard";
+import KeyboardCard from "@/components/OldComponents/KeyboardCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -11,6 +11,7 @@ import Image from "next/image";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
+import KeyboardCardMUI from "@/components/KeyboardComponents/KeyboardCardMUI";
 
 //MUI STUFF
 import {
@@ -281,42 +282,7 @@ export default function Keyboards() {
             />
           )}
         </CardContainer>
-        <Container>
-          <Card
-            sx={
-              ({
-                width: {
-                  xs: "80%",
-                  sm: "500px",
-                },
-                m: 2,
-              },
-              { borderRadius: "30px" },
-              { maxWidth: "500px" })
-            }
-          >
-            <CardContent>
-              <CardMedia sx={{ height: 200, position: "relative" }}>
-                <Image
-                  src={keyboards[0]?.renders[0]}
-                  alt={keyboards[0]?.name}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  priority
-                />
-              </CardMedia>
-              <Typography variant="body2" color="text.secondary">
-                {keyboards[0]?.designer}
-              </Typography>
-              <Typography variant="h5" component="div">
-                {keyboards[0]?.name}
-              </Typography>
-              <Typography variant="h6" component="div">
-                {keyboards[0]?.layout} {keyboards[0]?.blocker}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Container>
+        <KeyboardCardMUI itemObj={keyboards[0]} />
       </StyledContainer>
 
       <AddButtonMUI
