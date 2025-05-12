@@ -17,9 +17,9 @@ import { alpha } from "@mui/material/styles";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
-import AddKeycapModal from "@/components/KeycapComponents/AddKeycapModal";
 import KeycapCardMUI from "@/components/KeycapComponents/KeycapCardMUI";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
+import AddKeycapModalMUI from "@/components/KeycapComponents/AddKeycapModalMUI";
 
 export default function Keycaps() {
   const router = useRouter();
@@ -293,10 +293,11 @@ export default function Keycaps() {
 
       <AddButtonMUI onOpenModal={handleOpenModal} itemType="Keycap" />
 
-      <AddKeycapModal
+      <AddKeycapModalMUI
         open={isOpen}
         onClose={handleCloseModal}
         onAddKeycap={handleAddKeycap}
+        userId={session.user.id}
       />
     </>
   );
