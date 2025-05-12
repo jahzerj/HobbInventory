@@ -18,9 +18,9 @@ import { alpha } from "@mui/material/styles";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
-import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
 import SwitchCardMUI from "@/components/SwitchComponents/SwitchCardMUI";
+import AddSwitchModalMUI from "@/components/SwitchComponents/AddSwitchModalMUI";
 
 export default function Switches() {
   const router = useRouter();
@@ -350,7 +350,7 @@ export default function Switches() {
 
       <AddButtonMUI onOpenModal={handleOpenModal} itemType="Switch" />
 
-      <AddSwitchModal
+      <AddSwitchModalMUI
         open={isOpen}
         onClose={handleCloseModal}
         onAddSwitch={handleAddSwitch}
