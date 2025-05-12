@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
-import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
@@ -8,6 +7,7 @@ import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import KeyboardCardMUI from "@/components/KeyboardComponents/KeyboardCardMUI";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
+import AddKeyboardModalMUI from "@/components/KeyboardComponents/AddKeyboardModalMUI";
 
 import {
   Container,
@@ -266,7 +266,7 @@ export default function Keyboards() {
 
       <AddButtonMUI onOpenModal={handleOpenModal} itemType="Keyboard" />
 
-      <AddKeyboardModal
+      <AddKeyboardModalMUI
         open={isOpen}
         onClose={handleCloseModal}
         onAddKeyboard={handleAddKeyboard}
