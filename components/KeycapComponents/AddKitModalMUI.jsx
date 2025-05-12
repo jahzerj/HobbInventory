@@ -1,9 +1,8 @@
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
-import URLValidator, {
-  validateImageUrl,
-} from "@/components/SharedComponents/URLValidator";
+import ImageUploaderMUI, {
+  uploadToCloudinary,
+} from "@/components/SharedComponents/ImageUploaderMUI";
 import {
   Modal,
   Box,
@@ -18,43 +17,64 @@ export default function AddKitModalMUI({ open, onClose, onAddKit, userId }) {
     name: "",
     image: "",
   });
-  const [urlError, setUrlError] = useState(false);
+
+  // Image uploader state
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
-    if (name === "image") {
-      setUrlError(!validateImageUrl(value) && value !== "");
-    }
-
     setKitData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
-  const handleSubmit = () => {
+  const handleImageSelect = (file, preview) => {
+    setSelectedImage(file);
+    setImageUrl(preview);
+  };
+
+  const handleSubmit = async () => {
     if (!kitData.name) {
       alert("Please fill out the kit name.");
       return;
     }
 
-    if (!kitData.image) {
-      alert("Please provide an image URL.");
+    // Verify we have either a file or a URL
+    if (!selectedImage && !imageUrl) {
+      alert("Please provide an image.");
       return;
     }
 
-    if (!validateImageUrl(kitData.image)) {
-      setUrlError(true);
-      alert(
-        "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp)"
-      );
-      return;
+    let finalImageUrl = imageUrl;
+
+    // Upload the image if a file was selected
+    if (selectedImage) {
+      try {
+        finalImageUrl = await uploadToCloudinary(
+          selectedImage,
+          "keycaps_kits",
+          userId
+        );
+      } catch (error) {
+        alert(`Error uploading image: ${error.message}`);
+        return;
+      }
     }
 
-    onAddKit(kitData);
+    // Create the final kit data with the image URL
+    const finalKitData = {
+      ...kitData,
+      image: finalImageUrl,
+    };
+
+    onAddKit(finalKitData);
+
+    // Reset state
     setKitData({ name: "", image: "" });
-    setUrlError(false);
+    setSelectedImage(null);
+    setImageUrl("");
     onClose();
   };
 
@@ -100,27 +120,17 @@ export default function AddKitModalMUI({ open, onClose, onAddKit, userId }) {
             />
           </Box>
 
-          <ImageUploader
-            onImageUpload={(secureUrl) => {
-              setKitData((prevData) => ({
-                ...prevData,
-                image: secureUrl,
-              }));
-              setUrlError(false);
-            }}
-            prePopulatedUrl={kitData.image}
-            category="keycaps_kits"
-            userId={userId}
-          />
-
-          <URLValidator
-            name="image"
-            value={kitData.image}
-            onChange={handleChange}
-            error={urlError}
-            required
-            label="Kit Image URL"
-          />
+          <Box sx={{ mb: 1 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Kit Image
+            </Typography>
+            <ImageUploaderMUI
+              onImageSelect={handleImageSelect}
+              prePopulatedUrl={imageUrl}
+              category="keycaps_kits"
+              userId={userId}
+            />
+          </Box>
         </Paper>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
@@ -142,7 +152,7 @@ export default function AddKitModalMUI({ open, onClose, onAddKit, userId }) {
             variant="contained"
             color="primary"
             onClick={handleSubmit}
-            disabled={!kitData.name || !kitData.image || urlError}
+            disabled={!kitData.name || (!selectedImage && !imageUrl)}
             sx={{ width: "49%" }}
           >
             Add Kit

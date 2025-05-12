@@ -3,7 +3,9 @@ import useSWR from "swr";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { colorOptions } from "@/utils/colors";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
+import ImageUploaderMUI, {
+  uploadToCloudinary,
+} from "@/components/SharedComponents/ImageUploaderMUI";
 import {
   Modal,
   Box,
@@ -36,6 +38,12 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // New state for image files and previews
+  const [renderImageFile, setRenderImageFile] = useState(null);
+  const [renderPreview, setRenderPreview] = useState(null);
+  const [kitImageFiles, setKitImageFiles] = useState({});
+  const [kitPreviews, setKitPreviews] = useState({});
 
   const [keycapData, setKeycapData] = useState({
     name: "",
@@ -79,6 +87,10 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
       selectedColors: [],
       notes: [],
     });
+    setRenderImageFile(null);
+    setRenderPreview(null);
+    setKitImageFiles({});
+    setKitPreviews({});
     setIsAdditionalFieldsVisible(false);
   };
 
@@ -104,6 +116,45 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
       setKeycapData((prevData) => ({
         ...prevData,
         kits: [...prevData.kits, { name: "", image: "" }],
+      }));
+    }
+  };
+
+  // Handle render image selection
+  const handleRenderImageSelect = (file, preview) => {
+    setRenderImageFile(file);
+    setRenderPreview(preview);
+
+    // If it's a URL (file is null), update keycapData
+    if (!file && preview) {
+      setKeycapData((prev) => ({
+        ...prev,
+        render: preview,
+      }));
+    }
+  };
+
+  // Handle kit image selection
+  const handleKitImageSelect = (index, file, preview) => {
+    // Store file for later upload
+    setKitImageFiles((prev) => ({
+      ...prev,
+      [index]: file,
+    }));
+
+    // Store preview for display
+    setKitPreviews((prev) => ({
+      ...prev,
+      [index]: preview,
+    }));
+
+    // If it's a URL (file is null), update keycapData
+    if (!file && preview) {
+      const newKits = [...keycapData.kits];
+      newKits[index].image = preview;
+      setKeycapData((prevData) => ({
+        ...prevData,
+        kits: newKits,
       }));
     }
   };
@@ -158,23 +209,55 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (activeTab === "manual") {
       // Validation for manual entry
-      if (
-        !keycapData.name ||
-        !keycapData.kits[0].name ||
-        !keycapData.kits[0].image ||
-        !keycapData.render
-      ) {
+      const hasKitName = keycapData.kits[0].name;
+      const hasKitImage =
+        keycapData.kits[0].image || kitPreviews[0] || kitImageFiles[0];
+      const hasRender = keycapData.render || renderPreview || renderImageFile;
+
+      if (!keycapData.name || !hasKitName || !hasKitImage || !hasRender) {
         alert(
           "Please fill out all required fields: Name, Kit Name, Kit Image, and Render."
         );
         return;
       }
 
+      // Upload render image if needed
+      let finalRenderUrl = keycapData.render;
+      if (renderImageFile) {
+        try {
+          finalRenderUrl = await uploadToCloudinary(
+            renderImageFile,
+            "keycaps_render",
+            userId
+          );
+        } catch (error) {
+          alert(`Error uploading render image: ${error.message}`);
+          return;
+        }
+      }
+
+      // Upload kit images if needed and build final kit data
+      const finalKits = [...keycapData.kits];
+      for (let i = 0; i < finalKits.length; i++) {
+        if (kitImageFiles[i]) {
+          try {
+            finalKits[i].image = await uploadToCloudinary(
+              kitImageFiles[i],
+              "keycaps_kits",
+              userId
+            );
+          } catch (error) {
+            alert(`Error uploading kit image ${i + 1}: ${error.message}`);
+            return;
+          }
+        }
+      }
+
       // For manual entry, set the selectedKits to be the kit names
-      const kitNames = keycapData.kits.map((kit) => kit.name);
+      const kitNames = finalKits.map((kit) => kit.name);
 
       // Create a complete keycap object with all fields
       const keycapToAdd = {
@@ -185,8 +268,8 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
         profileHeight: keycapData.profileHeight || "",
         designer: keycapData.designer || "",
         geekhacklink: keycapData.geekhacklink || "",
-        render: keycapData.render,
-        kits: keycapData.kits,
+        render: finalRenderUrl,
+        kits: finalKits,
         selectedKits: kitNames,
         selectedColors: keycapData.selectedColors,
         notes: [],
@@ -474,6 +557,14 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
                           ...prevData,
                           kits: newKits,
                         }));
+
+                        // Also remove any stored image files/previews
+                        const newKitImageFiles = { ...kitImageFiles };
+                        const newKitPreviews = { ...kitPreviews };
+                        delete newKitImageFiles[index];
+                        delete newKitPreviews[index];
+                        setKitImageFiles(newKitImageFiles);
+                        setKitPreviews(newKitPreviews);
                       }}
                     >
                       <RemoveIcon fontSize="small" />
@@ -515,59 +606,32 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
                     )}
                 </Box>
 
-                <ImageUploader
-                  onImageUpload={(secureUrl) => {
-                    const newKits = [...keycapData.kits];
-                    if (newKits[index]) {
-                      newKits[index].image = secureUrl;
-                      setKeycapData((prevData) => ({
-                        ...prevData,
-                        kits: newKits,
-                      }));
+                {/* Replace ImageUploader with ImageUploaderMUI */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Kit Image
+                  </Typography>
+                  <ImageUploaderMUI
+                    onImageSelect={(file, preview) =>
+                      handleKitImageSelect(index, file, preview)
                     }
-                  }}
-                  prePopulatedUrl={kit.image}
-                  category="keycaps_kits"
-                  userId={userId}
-                />
-                <TextField
-                  fullWidth
-                  type="url"
-                  label="Kit Image URL"
-                  value={kit.image}
-                  onChange={(event) =>
-                    handleKitChange(index, "image", event.target.value)
-                  }
-                  required
-                  margin="dense"
-                  size="small"
-                />
+                    prePopulatedUrl={kitPreviews[index] || kit.image}
+                  />
+                </Box>
               </Paper>
             ))}
 
             <Paper sx={{ p: 2, mb: 2 }}>
-              <ImageUploader
-                onImageUpload={(secureUrl) => {
-                  setKeycapData((prevData) => ({
-                    ...prevData,
-                    render: secureUrl,
-                  }));
-                }}
-                prePopulatedUrl={keycapData.render}
-                category="keycaps_render"
-                userId={userId}
-              />
-              <TextField
-                fullWidth
-                type="url"
-                label="Render Image URL"
-                value={keycapData.render}
-                onChange={handleChange}
-                name="render"
-                required
-                margin="dense"
-                size="small"
-              />
+              {/* Replace Render ImageUploader with ImageUploaderMUI */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Render Image
+                </Typography>
+                <ImageUploaderMUI
+                  onImageSelect={handleRenderImageSelect}
+                  prePopulatedUrl={renderPreview || keycapData.render}
+                />
+              </Box>
             </Paper>
 
             <Button
@@ -771,8 +835,12 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
               (activeTab === "manual" &&
                 (!keycapData.name ||
                   !keycapData.kits[0].name ||
-                  !keycapData.kits[0].image ||
-                  !keycapData.render)) ||
+                  !(
+                    keycapData.kits[0].image ||
+                    kitPreviews[0] ||
+                    kitImageFiles[0]
+                  ) ||
+                  !(keycapData.render || renderPreview || renderImageFile))) ||
               (activeTab === "dropdown" &&
                 (!selectedKeycap || selectedKits.length === 0))
             }

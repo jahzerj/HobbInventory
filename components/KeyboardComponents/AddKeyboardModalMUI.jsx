@@ -3,7 +3,9 @@ import useSWR from "swr";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { nanoid } from "nanoid";
-import ImageUploader from "../SharedComponents/ImageUploader";
+import ImageUploaderMUI, {
+  uploadToCloudinary,
+} from "../SharedComponents/ImageUploaderMUI";
 import {
   Modal,
   Box,
@@ -38,6 +40,10 @@ export default function AddKeyboardModal({
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
     useState(false);
   const [noteText, setNoteText] = useState("");
+
+  // New states for file uploads
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
 
   const [keyboardData, setKeyboardData] = useState({
     name: "",
@@ -124,6 +130,8 @@ export default function AddKeyboardModal({
     });
     setNoteText("");
     setIsAdditionalFieldsVisible(false);
+    setSelectedImages([]);
+    setPreviewUrls([]);
   };
 
   const handleChange = (event) => {
@@ -156,14 +164,6 @@ export default function AddKeyboardModal({
   };
 
   const handleRenderChange = (index, value) => {
-    const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
-    if (!urlRegex.test(value) && value !== "") {
-      alert(
-        "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp)"
-      );
-      return;
-    }
-
     const newRenders = [...keyboardData.renders];
     newRenders[index] = value;
     setKeyboardData((prevData) => ({
@@ -178,6 +178,10 @@ export default function AddKeyboardModal({
         ...prevData,
         renders: [...prevData.renders, ""],
       }));
+
+      // Add placeholder for image
+      setSelectedImages([...selectedImages, null]);
+      setPreviewUrls([...previewUrls, null]);
     }
   };
 
@@ -199,29 +203,74 @@ export default function AddKeyboardModal({
     setNoteText("");
   };
 
-  const handleSubmit = () => {
+  const handleImageSelect = (index, file, preview) => {
+    // Update the selected image and preview
+    const newSelectedImages = [...selectedImages];
+    newSelectedImages[index] = file;
+    setSelectedImages(newSelectedImages);
+
+    const newPreviewUrls = [...previewUrls];
+    newPreviewUrls[index] = preview;
+    setPreviewUrls(newPreviewUrls);
+
+    // If it's a URL (no file), update the renders array directly
+    if (!file && preview) {
+      handleRenderChange(index, preview);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (activeTab === "manual") {
-      //Validation for manual entry
+      // Validation for manual entry
       if (
         !keyboardData.name ||
         !keyboardData.designer ||
         !keyboardData.layout ||
-        !keyboardData.renders[0] ||
         !keyboardData.blocker ||
         !keyboardData.switchType
       ) {
         alert(
-          "Please fill out all required fields: Name, Designer, Layout, Render, Blocker, and Switch Type."
+          "Please fill out all required fields: Name, Designer, Layout, Blocker, and Switch Type."
         );
         return;
       }
 
-      // Create the keyboard to add
+      // Upload images if necessary and update URLs
+      let updatedRenders = [...keyboardData.renders];
+
+      // Process each image selection
+      for (let i = 0; i < selectedImages.length; i++) {
+        if (selectedImages[i]) {
+          try {
+            // Upload image to Cloudinary
+            const imageUrl = await uploadToCloudinary(
+              selectedImages[i],
+              "keyboards_renders",
+              userId
+            );
+            updatedRenders[i] = imageUrl;
+          } catch (error) {
+            alert(`Error uploading image: ${error.message}`);
+            return;
+          }
+        }
+      }
+
+      // Filter out empty URLs
+      updatedRenders = updatedRenders.filter((url) => url && url.trim() !== "");
+
+      // Validate that we have at least one render
+      if (updatedRenders.length === 0) {
+        alert("Please provide at least one keyboard image.");
+        return;
+      }
+
+      // Create the keyboard to add with updated renders
       const keyboardToAdd = {
         name: keyboardData.name,
         designer: keyboardData.designer,
         layout: keyboardData.layout,
-        renders: keyboardData.renders.filter((url) => url !== ""),
+        renders: updatedRenders,
         blocker: keyboardData.blocker,
         switchType: keyboardData.switchType,
         plateMaterial: keyboardData.plateMaterial,
@@ -545,6 +594,14 @@ export default function AddKeyboardModal({
                             ...prevData,
                             renders: newRenders,
                           }));
+
+                          const newSelectedImages = [...selectedImages];
+                          newSelectedImages.splice(index, 1);
+                          setSelectedImages(newSelectedImages);
+
+                          const newPreviewUrls = [...previewUrls];
+                          newPreviewUrls.splice(index, 1);
+                          setPreviewUrls(newPreviewUrls);
                         }}
                       >
                         <RemoveIcon fontSize="small" />
@@ -552,30 +609,11 @@ export default function AddKeyboardModal({
                     )}
 
                     <Box sx={{ width: "100%" }}>
-                      <ImageUploader
-                        onImageUpload={(secureUrl) => {
-                          const newRenders = [...keyboardData.renders];
-                          newRenders[index] = secureUrl;
-                          setKeyboardData((prevData) => ({
-                            ...prevData,
-                            renders: newRenders,
-                          }));
-                        }}
-                        prePopulatedUrl={render}
-                        category="keyboards_renders"
-                        userId={userId}
-                      />
-                      <TextField
-                        fullWidth
-                        type="url"
-                        label={`Render ${index + 1} Image URL`}
-                        value={render}
-                        onChange={(event) =>
-                          handleRenderChange(index, event.target.value)
+                      <ImageUploaderMUI
+                        onImageSelect={(file, preview) =>
+                          handleImageSelect(index, file, preview)
                         }
-                        required={index === 0}
-                        margin="dense"
-                        size="small"
+                        prePopulatedUrl={render}
                       />
                     </Box>
 
@@ -804,7 +842,6 @@ export default function AddKeyboardModal({
                 (!keyboardData.name ||
                   !keyboardData.designer ||
                   !keyboardData.layout ||
-                  !keyboardData.renders[0] ||
                   !keyboardData.blocker ||
                   !keyboardData.switchType)) ||
               (activeTab === "dropdown" && !selectedKeyboard)

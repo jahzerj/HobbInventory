@@ -3,7 +3,9 @@ import { useState } from "react";
 import { nanoid } from "nanoid";
 import SwitchCardMUI from "./SwitchCardMUI";
 import useSWR from "swr";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
+import ImageUploaderMUI, {
+  uploadToCloudinary,
+} from "@/components/SharedComponents/ImageUploaderMUI";
 import {
   Modal,
   Box,
@@ -29,6 +31,10 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
   const [activeTab, setActiveTab] = useState("dropdown");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedSwitchId, setSelectedSwitchId] = useState("");
+
+  // New state for image file upload
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const { data: dbSwitches, error: dbSwitchesError } = useSWR(
     activeTab === "dropdown" ? "/api/inventories/switches" : null
@@ -99,6 +105,8 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
     });
     setNoteText("");
     setIsAdditionalFieldsVisible(false);
+    setSelectedImage(null);
+    setPreviewUrl(null);
   };
 
   const [isAdditionalFieldsVisible, setIsAdditionalFieldsVisible] =
@@ -137,16 +145,6 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
       return;
     }
 
-    if (name === "image") {
-      const urlRegex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))(?:\?.*)?$/i;
-      if (!urlRegex.test(value) && value !== "") {
-        alert(
-          "Please enter a valid image URL (must be .jpg, .jpeg, .png, .gif, or .webp"
-        );
-        return;
-      }
-    }
-
     // Add quantity validation
     if (name === "quantity") {
       const numValue = parseInt(value) || 0;
@@ -163,6 +161,19 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleImageSelect = (file, preview) => {
+    setSelectedImage(file);
+    setPreviewUrl(preview);
+
+    // If it's a URL (no file), update the switchData directly
+    if (!file && preview) {
+      setSwitchData((prevData) => ({
+        ...prevData,
+        image: preview,
+      }));
+    }
   };
 
   const handleAddNote = () => {
@@ -183,29 +194,59 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
     setNoteText("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (activeTab === "manual") {
       // Validation for manual entry
       if (
         !switchData.name ||
         !switchData.manufacturer ||
-        !switchData.image ||
         !switchData.switchType
       ) {
         alert(
-          "Please fill out all required fields: Name, Manufacturer, Image, and Switch Type."
+          "Please fill out all required fields: Name, Manufacturer, and Switch Type."
         );
         return;
       }
+
+      // Handle image upload if there's a selected file
+      let imageUrl = switchData.image;
+
+      if (selectedImage) {
+        try {
+          // Upload image to Cloudinary
+          imageUrl = await uploadToCloudinary(
+            selectedImage,
+            "switches",
+            userId
+          );
+        } catch (error) {
+          alert(`Error uploading image: ${error.message}`);
+          return;
+        }
+      }
+
+      // Check if we have an image after trying to upload
+      if (!imageUrl) {
+        alert("Please provide an image for the switch.");
+        return;
+      }
+
+      // Create the switch object with the updated image URL
+      const switchToAdd = {
+        ...switchData,
+        image: imageUrl,
+      };
+
+      onAddSwitch(switchToAdd);
     } else if (activeTab === "dropdown") {
       // Validation for dropdown selection
       if (!selectedSwitchId) {
         alert("Please select a manufacturer and switch.");
         return;
       }
-    }
 
-    onAddSwitch(switchData);
+      onAddSwitch(switchData);
+    }
 
     resetForm();
     onClose();
@@ -214,7 +255,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
   const isPreviewVisible =
     switchData.name &&
     switchData.manufacturer &&
-    switchData.image &&
+    (switchData.image || previewUrl) &&
     switchData.switchType;
 
   return createPortal(
@@ -295,26 +336,9 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
                 size="small"
               />
 
-              <ImageUploader
-                onImageUpload={(secureUrl) => {
-                  setSwitchData((prevData) => ({
-                    ...prevData,
-                    image: secureUrl,
-                  }));
-                }}
+              <ImageUploaderMUI
+                onImageSelect={handleImageSelect}
                 prePopulatedUrl={switchData.image}
-                category="switches"
-                userId={userId}
-              />
-              <TextField
-                fullWidth
-                name="image"
-                label="Image URL"
-                value={switchData.image}
-                onChange={handleChange}
-                required
-                margin="dense"
-                size="small"
               />
 
               <FormControl fullWidth margin="dense" size="small">
@@ -352,6 +376,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
                     itemObj={{
                       _id: "preview",
                       ...switchData,
+                      image: previewUrl || switchData.image,
                     }}
                     isEditMode={false}
                     onDelete={() => {}}
@@ -749,7 +774,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
               (activeTab === "manual" &&
                 (!switchData.name ||
                   !switchData.manufacturer ||
-                  !switchData.image ||
+                  (!switchData.image && !selectedImage) ||
                   !switchData.switchType)) ||
               (activeTab === "dropdown" && !selectedSwitchId)
             }
