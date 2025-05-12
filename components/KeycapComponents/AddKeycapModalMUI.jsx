@@ -14,19 +14,17 @@ import {
   Checkbox,
   MenuItem,
   Select,
-  InputLabel,
   FormControl,
   Tabs,
   Tab,
   List,
   ListItem,
-  Divider,
   Paper,
   IconButton,
   Autocomplete,
-  FormGroup,
-  ListItemText,
   Alert,
+  Chip,
+  Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -121,6 +119,45 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
     );
   };
 
+  // Color selection handling
+  const handleColorSelection = (selectedColor, currentColors) => {
+    if (currentColors.includes(selectedColor)) {
+      return { error: "Color already selected" };
+    }
+    if (currentColors.length >= 6) {
+      return { error: "Maximum 6 colors allowed" };
+    }
+    return { newColors: [...currentColors, selectedColor] };
+  };
+
+  const handleColorSelect = (event) => {
+    const selectedColor = event.target.value;
+    if (!selectedColor) return;
+
+    const result = handleColorSelection(
+      selectedColor,
+      keycapData.selectedColors
+    );
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+
+    setKeycapData((prevData) => ({
+      ...prevData,
+      selectedColors: result.newColors,
+    }));
+  };
+
+  const handleRemoveColor = (colorToRemove) => {
+    setKeycapData((prevData) => ({
+      ...prevData,
+      selectedColors: prevData.selectedColors.filter(
+        (color) => color !== colorToRemove
+      ),
+    }));
+  };
+
   const handleSubmit = () => {
     if (activeTab === "manual") {
       // Validation for manual entry
@@ -151,7 +188,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
         render: keycapData.render,
         kits: keycapData.kits,
         selectedKits: kitNames,
-        selectedColors: [],
+        selectedColors: keycapData.selectedColors,
         notes: [],
       };
 
@@ -289,11 +326,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
                       .map((keycap) => keycap.name)
                       .sort((a, b) => a.localeCompare(b))}
                     renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Keycap Set"
-                        size="small"
-                      />
+                      <TextField {...params} label="Keycap Set" size="small" />
                     )}
                     noOptionsText="No matching keycaps found"
                   />
@@ -313,7 +346,8 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
                       Available Kits
                     </Typography>
                     <List dense sx={{ width: "100%" }}>
-                      {dbKeycaps.find((keycap) => keycap.name === selectedKeycap)
+                      {dbKeycaps
+                        .find((keycap) => keycap.name === selectedKeycap)
                         ?.kits?.map((kit) => (
                           <ListItem
                             key={kit.name}
@@ -382,7 +416,8 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
 
                 {selectedKeycap && selectedKits.length === 0 && (
                   <Alert severity="warning" sx={{ mt: 2 }}>
-                    Please select at least one kit before adding this keycap set.
+                    Please select at least one kit before adding this keycap
+                    set.
                   </Alert>
                 )}
               </>
@@ -408,10 +443,7 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
             </Paper>
 
             {keycapData.kits.map((kit, index) => (
-              <Paper
-                key={index}
-                sx={{ p: 2, mb: 2, position: "relative" }}
-              >
+              <Paper key={index} sx={{ p: 2, mb: 2, position: "relative" }}>
                 <Box
                   sx={{
                     display: "flex",
@@ -607,6 +639,107 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
                   margin="dense"
                   size="small"
                 />
+
+                {/* Color Selection Section */}
+                <Typography
+                  variant="subtitle1"
+                  sx={{ mt: 3, mb: 1, fontWeight: 500 }}
+                >
+                  Choose Colors (up to 6)
+                </Typography>
+
+                <FormControl fullWidth margin="dense" size="small">
+                  <Select
+                    displayEmpty
+                    value=""
+                    onChange={handleColorSelect}
+                    MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
+                  >
+                    <MenuItem value="" disabled>
+                      -- Choose up to 6 colors --
+                    </MenuItem>
+                    {colorOptions
+                      .filter(
+                        (color) =>
+                          !keycapData.selectedColors.includes(color.name)
+                      )
+                      .map((color) => (
+                        <MenuItem key={color.name} value={color.name}>
+                          {color.name} {color.emoji}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+
+                {keycapData.selectedColors.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Selected Colors
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {keycapData.selectedColors.map((color) => {
+                        const colorData = colorOptions.find(
+                          (option) => option.name === color
+                        );
+                        return (
+                          <Grid item xs={4} key={color}>
+                            <Chip
+                              label={
+                                <Box
+                                  sx={{ display: "flex", alignItems: "center" }}
+                                >
+                                  <Box component="span">{colorData?.emoji}</Box>
+                                  <Box component="span" sx={{ ml: 1 }}>
+                                    {color}
+                                  </Box>
+                                </Box>
+                              }
+                              sx={{
+                                border: (theme) =>
+                                  `2px solid ${
+                                    theme.palette.mode === "dark" &&
+                                    ["white", "beige"].includes(
+                                      colorData?.name.toLowerCase()
+                                    )
+                                      ? theme.palette.grey[600]
+                                      : colorData?.name.toLowerCase() ||
+                                        theme.palette.text.primary
+                                  }`,
+                                fontWeight: "bold",
+                                width: "100%",
+                                justifyContent: "center",
+                                color: (theme) => {
+                                  const colorLower =
+                                    colorData?.name.toLowerCase();
+                                  if (
+                                    ["white", "beige", "yellow"].includes(
+                                      colorLower
+                                    )
+                                  ) {
+                                    return theme.palette.mode === "dark"
+                                      ? "inherit"
+                                      : theme.palette.text.primary;
+                                  }
+                                  if (
+                                    ["black", "navy", "purple"].includes(
+                                      colorLower
+                                    )
+                                  ) {
+                                    return theme.palette.mode === "dark"
+                                      ? theme.palette.text.primary
+                                      : theme.palette.common.white;
+                                  }
+                                  return "inherit";
+                                },
+                              }}
+                              onDelete={() => handleRemoveColor(color)}
+                            />
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </Box>
+                )}
               </Paper>
             )}
           </>
