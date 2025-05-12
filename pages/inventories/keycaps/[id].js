@@ -24,8 +24,8 @@ import {
 } from "@mui/material";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import AddKitModal from "@/components/KeycapComponents/AddKitModal";
 import { useSession } from "next-auth/react";
+import AddKitModalMUI from "@/components/KeycapComponents/AddKitModalMUI";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -716,7 +716,7 @@ export default function KeyCapDetail() {
           imageUrl={selectedImage?.url}
           kitName={selectedImage?.name}
         />
-        <AddKitModal
+        <AddKitModalMUI
           open={isAddKitModalOpen}
           onClose={() => setIsAddKitModalOpen(false)}
           onAddKit={handleAddKit}
