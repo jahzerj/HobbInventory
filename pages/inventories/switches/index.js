@@ -1,18 +1,26 @@
-import Link from "next/link";
-import styled from "styled-components";
-import { useState, useEffect, useRef, useCallback } from "react";
-import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
-import EditInventoryButton from "@/components/SharedComponents/EditInventoryButton";
-import MenuIcon from "@/components/icons/MenuIcon";
-import InventoryList from "@/components/SharedComponents/InventoryList";
-import SwitchCard from "@/components/SwitchComponents/SwitchCard";
+
+import {
+  Container,
+  Typography,
+  Box,
+  CircularProgress,
+  Chip,
+  Stack,
+  NoSsr,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
+
+import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
+import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
+import AddButtonMUI from "@/components/SharedComponents/AddButtonMUI";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
-import ProfileButton from "@/components/SharedComponents/ProfileButton";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import AddButton from "@/components/SharedComponents/AddButton";
+import SwitchCardMUI from "@/components/SwitchComponents/SwitchCardMUI";
+import AddSwitchModalMUI from "@/components/SwitchComponents/AddSwitchModalMUI";
 
 export default function Switches() {
   const router = useRouter();
@@ -23,13 +31,16 @@ export default function Switches() {
     },
   });
 
+  // Basic state
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedManufacturers, setSelectedManufacturers] = useState(["all"]);
+
+  // Refs for scrolling
   const typeScrollRef = useRef(null);
   const manufacturerScrollRef = useRef(null);
 
+  // Fetch data
   const {
     data: switches,
     error,
@@ -40,7 +51,11 @@ export default function Switches() {
     const tempId = nanoid();
     const optimisticSwitch = { ...newSwitch, _id: tempId };
 
-    mutate([...switches, optimisticSwitch], false);
+    // Optimistically update the UI
+    mutate(
+      (currentSwitches = []) => [...currentSwitches, optimisticSwitch],
+      false
+    );
 
     try {
       const response = await fetch("/api/inventories/userswitches", {
@@ -50,12 +65,19 @@ export default function Switches() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add switch.");
+        const errorData = await response.json();
+        mutate(
+          (currentSwitches) => currentSwitches.filter((s) => s._id !== tempId),
+          false
+        );
+        throw new Error(errorData.message || "Failed to add switch");
       }
 
-      await mutate();
+      mutate();
     } catch (error) {
       console.error("Failed to add switch:", error);
+      alert(`Error: ${error.message}`);
+      // Ensure UI is reverted if fetch failed after optimistic update but before response.ok check
       mutate(
         (currentSwitches) => currentSwitches.filter((s) => s._id !== tempId),
         false
@@ -63,67 +85,21 @@ export default function Switches() {
     }
   };
 
-  const handleDeleteSwitch = async (switchId, event) => {
-    event.stopPropagation();
+  // Filter switches
+  const filteredSwitches = switches?.filter((switchItem) => {
+    const matchesType =
+      typeFilter === "all" ||
+      switchItem.switchType.toLowerCase() === typeFilter.toLowerCase();
 
-    if (!switchId) return;
+    const matchesManufacturer =
+      selectedManufacturers.includes("all") ||
+      selectedManufacturers.includes(switchItem.manufacturer);
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to remove this switch?\n\n" +
-        "This will permanently remove this switch and any personal data you have recorded for it"
-    );
-    if (!confirmDelete) return;
+    return matchesType && matchesManufacturer;
+  });
 
-    mutate(
-      switches.filter((s) => s._id !== switchId),
-      false
-    );
-
-    try {
-      const response = await fetch("/api/inventories/userswitches", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ switchId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete switch");
-      }
-
-      await mutate();
-    } catch (error) {
-      console.error("Error deleting switch.", error);
-      await mutate();
-    }
-  };
-
-  const getFilteredSwitches = (switches, typeFilter, manufacturerFilter) => {
-    if (!switches) return [];
-
-    return switches.filter((switchItem) => {
-      const matchesType =
-        typeFilter === "all" ||
-        switchItem.switchType.toLowerCase() === typeFilter.toLowerCase();
-
-      const matchesManufacturer =
-        manufacturerFilter.includes("all") ||
-        manufacturerFilter.includes(switchItem.manufacturer);
-
-      return matchesType && matchesManufacturer;
-    });
-  };
-
-  const filteredSwitches = getFilteredSwitches(
-    switches,
-    typeFilter,
-    selectedManufacturers
-  );
-
-  // Handle opening/closing modal
-  const handleOpenModal = useCallback(() => setIsOpen(true), []);
-  const handleCloseModal = useCallback(() => setIsOpen(false), []);
-
-  const handleManufacturerSelect = useCallback((manufacturer) => {
+  // Handle manufacturer filter
+  const handleManufacturerSelect = (manufacturer) => {
     setSelectedManufacturers((prev) => {
       if (manufacturer === "all") {
         return ["all"];
@@ -137,56 +113,68 @@ export default function Switches() {
       }
       return [...prev, manufacturer];
     });
-  }, []);
+  };
 
-  const handleTypeSelect = useCallback((type) => {
+  // Handle type filter
+  const handleTypeSelect = (type) => {
     setTypeFilter(type);
-  }, []);
+  };
 
-  const handleWheel = useCallback((event, ref) => {
-    if (ref.current) {
+  // Handle wheel events for horizontal scrolling
+  const handleWheel = (event) => {
+    if (event.currentTarget) {
       event.preventDefault();
-      ref.current.scrollLeft += event.deltaY;
+      event.currentTarget.scrollLeft += event.deltaY;
     }
-  }, []);
+  };
 
+  // Add event listeners
   useEffect(() => {
     const typeContainer = typeScrollRef.current;
     const manufacturerContainer = manufacturerScrollRef.current;
 
-    const handleTypeWheel = (event) => handleWheel(event, typeScrollRef);
-    const handleManufacturerWheel = (event) =>
-      handleWheel(event, manufacturerScrollRef);
-
     if (typeContainer) {
-      typeContainer.addEventListener("wheel", handleTypeWheel, {
+      typeContainer.addEventListener("wheel", handleWheel, {
         passive: false,
       });
     }
     if (manufacturerContainer) {
-      manufacturerContainer.addEventListener("wheel", handleManufacturerWheel, {
+      manufacturerContainer.addEventListener("wheel", handleWheel, {
         passive: false,
       });
     }
 
     return () => {
       if (typeContainer) {
-        typeContainer.removeEventListener("wheel", handleTypeWheel);
+        typeContainer.removeEventListener("wheel", handleWheel);
       }
       if (manufacturerContainer) {
-        manufacturerContainer.removeEventListener(
-          "wheel",
-          handleManufacturerWheel
-        );
+        manufacturerContainer.removeEventListener("wheel", handleWheel);
       }
     };
-  }, [handleWheel]);
+  }, []);
 
+  // Get unique manufacturers
+  const uniqueManufacturers = [
+    "all",
+    ...new Set(switches?.map((sw) => sw.manufacturer) || []),
+  ];
+
+  // Handle modal
+  const handleOpenModal = () => setIsOpen(true);
+  const handleCloseModal = () => setIsOpen(false);
+
+  // Loading state
   if (status === "loading") {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -194,258 +182,180 @@ export default function Switches() {
     return null; // This prevents any flash of content before redirect
   }
 
-  if (error) return <p>Error loading switches</p>;
+  if (error) return <p>Error loading switches...</p>;
   if (!switches)
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
 
   return (
     <>
-      <ProfileButton />
-      <ScrollPositionManager pageId="switches" enabled={true} />
-      <HomeBurger href="/">
-        <MenuIcon />
-      </HomeBurger>
+      <ProfileButtonMUI />
+      <BackButtonMUI href="/" />
 
-      <AddSwitchModal
+      <NoSsr>
+        <ScrollPositionManager pageId="switches" enabled={true} />
+      </NoSsr>
+
+      <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
+        <Typography variant="h4" component="h1" textAlign="center" gutterBottom>
+          Switches Inventory
+        </Typography>
+
+        {/* Manufacturer filters */}
+        <Box
+          ref={manufacturerScrollRef}
+          sx={{
+            display: "flex",
+            overflowX: "auto",
+            py: 1.5,
+            px: 1,
+            mb: 0,
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            position: "sticky",
+            top: 16,
+            zIndex: 10,
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.8)
+                : alpha(theme.palette.background.paper, 0.8),
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ px: 1 }}>
+            {uniqueManufacturers.map((manufacturer) => (
+              <Chip
+                key={manufacturer}
+                label={
+                  manufacturer === "all" ? "All Manufacturers" : manufacturer
+                }
+                onClick={() => handleManufacturerSelect(manufacturer)}
+                color={
+                  selectedManufacturers.includes(manufacturer)
+                    ? "primary"
+                    : "default"
+                }
+                variant={
+                  selectedManufacturers.includes(manufacturer)
+                    ? "filled"
+                    : "outlined"
+                }
+              />
+            ))}
+          </Stack>
+        </Box>
+
+        {/* Type filters */}
+        <Box
+          ref={typeScrollRef}
+          sx={{
+            display: "flex",
+            overflowX: "auto",
+            py: 1,
+            px: 1,
+            mb: 2,
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            position: "sticky",
+            top: 49,
+            zIndex: 10,
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.8)
+                : alpha(theme.palette.background.paper, 0.8),
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ px: 1 }}>
+            {["all", "linear", "tactile", "clicky"].map((type) => (
+              <Chip
+                key={type}
+                label={
+                  type === "all"
+                    ? "All Types"
+                    : type.charAt(0).toUpperCase() + type.slice(1)
+                }
+                onClick={() => handleTypeSelect(type)}
+                color={typeFilter === type ? "primary" : "default"}
+                variant={typeFilter === type ? "filled" : "outlined"}
+              />
+            ))}
+          </Stack>
+        </Box>
+
+        {/* Switches display */}
+        <Box
+          sx={(theme) => ({
+            // Default styles for phone screens (2 cards across)
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 1,
+            width: "100%",
+
+            // Special case for single item (centered regardless of screen size)
+            ...(filteredSwitches?.length === 1 && {
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }),
+
+            // For tablets and larger (600px+): 4 cards across
+            [theme.breakpoints.up("sm")]: {
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 2,
+            },
+          })}
+        >
+          {error && (
+            <Typography color="error" sx={{ gridColumn: "1 / -1" }}>
+              Error loading switches.
+            </Typography>
+          )}
+          {!error && filteredSwitches?.length > 0 ? (
+            filteredSwitches.map((switchItem) => (
+              <SwitchCardMUI key={switchItem._id} itemObj={switchItem} />
+            ))
+          ) : (
+            <Box sx={{ textAlign: "center", mt: 4, gridColumn: "1 / -1" }}>
+              {!error && switches?.length === 0 && (
+                <Typography variant="body1">
+                  No switches added yet. Click the ➕ button to add a switch.
+                </Typography>
+              )}
+              {!error &&
+                switches?.length > 0 &&
+                filteredSwitches?.length === 0 && (
+                  <Typography variant="body1">
+                    No switches found with the selected filters.
+                  </Typography>
+                )}
+            </Box>
+          )}
+        </Box>
+      </Container>
+
+      <AddButtonMUI onOpenModal={handleOpenModal} itemType="Switch" />
+
+      <AddSwitchModalMUI
         open={isOpen}
         onClose={handleCloseModal}
         onAddSwitch={handleAddSwitch}
         userId={session.user.uuid}
       />
-
-      <StyledContainer>
-        <LongTitle> Switches Inventory</LongTitle>
-
-        <FiltersContainer>
-          <FilterGroup ref={manufacturerScrollRef}>
-            {[
-              "all",
-              ...new Set(switches?.map((sw) => sw.manufacturer) || []),
-            ].map((manufacturer) => (
-              <FilterPill
-                key={manufacturer}
-                $isSelected={selectedManufacturers.includes(manufacturer)}
-                onClick={() => handleManufacturerSelect(manufacturer)}
-              >
-                {manufacturer === "all" ? "All Manufacturers" : manufacturer}
-              </FilterPill>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup ref={typeScrollRef}>
-            {["all", "linear", "tactile", "clicky"].map((type) => (
-              <FilterPill
-                key={type}
-                $isSelected={typeFilter === type}
-                onClick={() => handleTypeSelect(type)}
-              >
-                {type === "all"
-                  ? "All Types"
-                  : type.charAt(0).toUpperCase() + type.slice(1)}
-              </FilterPill>
-            ))}
-          </FilterGroup>
-        </FiltersContainer>
-
-        <CardContainer $itemCount={filteredSwitches?.length || 0}>
-          {filteredSwitches && filteredSwitches.length > 0 ? (
-            <SwitchGrid $itemCount={filteredSwitches.length}>
-              <InventoryList
-                data={filteredSwitches}
-                isEditMode={isEditMode}
-                onDelete={handleDeleteSwitch}
-                ItemComponent={SwitchCard}
-              />
-            </SwitchGrid>
-          ) : (
-            <EmptyStateMessage>
-              <p>No Switches added yet.</p>
-              <p>Click the ➕ button to add switches to your inventory</p>
-            </EmptyStateMessage>
-          )}
-        </CardContainer>
-      </StyledContainer>
-
-      <AddButton
-        onOpenModal={handleOpenModal}
-        isEditMode={isEditMode}
-        itemType="Switch"
-      />
-      <EditInventoryButton
-        isEditMode={isEditMode}
-        onToggleEdit={() => setIsEditMode((prevMode) => !prevMode)}
-      />
     </>
   );
 }
-
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 25px;
-`;
-
-const CardContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 50px;
-`;
-
-const SwitchGrid = styled.ul`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  position: relative;
-
-  /* Apply responsive grid based on item count */
-  @media (min-width: 600px) {
-    grid-template-columns: ${(props) =>
-      props.$itemCount === 1 ? "1fr" : "repeat(4, 1fr)"};
-    justify-items: ${(props) => (props.$itemCount === 1 ? "center" : "start")};
-  }
-`;
-
-const StyledInput = styled.input`
-  width: auto;
-  position: absolute;
-  right: 10px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  top: 80px;
-`;
-
-const HomeBurger = styled(Link)`
-  position: fixed; /* Or absolute if preferred */
-  display: flex;
-  align-items: center; /* Center icon */
-  justify-content: center; /* Center icon */
-  background-color: var(--color-primary, #007bff);
-  height: 40px;
-  width: 40px;
-  color: var(--color-primary-fg, white);
-  left: 10px;
-  top: 8px;
-  z-index: 1000;
-  border-radius: 10px;
-  text-decoration: none; /* Remove underline from link */
-
-  svg {
-    /* Style the SVG icon */
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-const StyledSpan = styled.span`
-  width: 48px;
-  height: 48px;
-  border: 5px solid #fff;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-`;
-
-const LongTitle = styled.h1`
-  @media screen and (max-width: 390px) {
-    font-size: 28px;
-  }
-`;
-
-const EmptyStateMessage = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  background: #f8f8f8;
-  border-radius: 10px;
-  margin: 20px auto;
-  max-width: 500px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  p:first-child {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-
-  p:last-child {
-    color: #666;
-  }
-`;
-
-const FiltersContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 10px;
-  position: sticky;
-  top: 40px;
-  z-index: 100;
-  padding: 10px 0;
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  width: 100%;
-  overflow-x: auto;
-  padding: 5px 15px;
-  gap: 10px;
-  align-items: center;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const FilterPill = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: fit-content;
-  padding: 8px 16px;
-  border-radius: 50px;
-  white-space: nowrap;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: ${(props) => (props.$isSelected ? "#007bff" : "#f0f0f0")};
-  color: ${(props) => (props.$isSelected ? "white" : "#333")};
-  border: 2px solid #007bff;
-  box-shadow: ${(props) =>
-    props.$isSelected ? "0 2px 5px rgba(0,0,0,0.2)" : "none"};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  &:focus {
-    outline: none;
-  }
-`;

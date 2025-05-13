@@ -1,30 +1,38 @@
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import Image from "next/image";
-import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { colorOptions } from "@/utils/colors";
-import EditButton from "@/components/SharedComponents/EditButton";
-import CloseButtonIcon from "@/components/icons/ClosebuttonIcon";
-import ConfirmEditButton from "@/components/SharedComponents/ConfirmEditButton";
-import KitImageModal from "@/components/KeycapComponents/KitImageModal";
-import Notes from "@/components/SharedComponents/Notes";
+import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
+import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
+import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
+import KitImageModalMUI from "@/components/KeycapComponents/KitImageModalMUI";
+import NotesMUI from "@/components/SharedComponents/NotesMUI";
+
 import {
-  DetailPageContainer,
-  StyledLink,
-  HeaderSection,
-  HeaderImage,
-  BoxContainer,
-  ExternalLink,
-  AcceptCancelEditButtonContainer,
-  StyledSpan,
-  LoaderWrapper,
-  StyledInput,
-  SectionHeading,
-} from "@/components/SharedComponents/DetailPageStyles";
-import AddIcon from "@/components/icons/AddIcon";
-import AddKitModal from "@/components/KeycapComponents/AddKitModal";
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  Paper,
+  Grid,
+  Chip,
+  CircularProgress,
+  Link,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useSession } from "next-auth/react";
+import AddKitModalMUI from "@/components/KeycapComponents/AddKitModalMUI";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -52,7 +60,6 @@ export default function KeyCapDetail() {
   const [editedKits, setEditedKits] = useState(userKeycap?.selectedKits || []);
   const [editedColors, setEditedColors] = useState(selectedColors || []);
   const [editedNotes, setEditedNotes] = useState(notes || []);
-  const [innerWidth, setInnerWidth] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [editedManufacturer, setEditedManufacturer] = useState(
@@ -74,20 +81,13 @@ export default function KeyCapDetail() {
 
   const [isAddKitModalOpen, setIsAddKitModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setInnerWidth(window.innerWidth);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (userKeycap?.notes) {
-      setEditedNotes(userKeycap.notes);
-    }
-  }, [userKeycap?.notes]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmationName, setConfirmationName] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (userKeycap) {
+      setEditedNotes(userKeycap.notes || []);
       setEditedKits(userKeycap.selectedKits || []);
       setEditedColors(userKeycap.selectedColors || []);
       setEditedManufacturer(userKeycap.manufacturer || "");
@@ -259,24 +259,60 @@ export default function KeyCapDetail() {
     }
   };
 
-  if (status === "loading") {
-    return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
-    );
-  }
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (confirmationName !== userKeycap?.name) {
+      setDeleteError("The name you entered doesn't match the keycap set name.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/inventories/userkeycaps", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keycapId: id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the keycap set");
+      }
+
+      // Redirect to keycaps inventory page
+      router.push("/inventories/keycaps");
+    } catch (error) {
+      console.error("Error deleting keycap set:", error);
+      setDeleteError("Failed to delete: " + error.message);
+    }
+  };
 
   if (!session) {
     return null;
   }
 
   if (userKeycapError) return <p>Error loading keycap details.</p>;
-  if (!userKeycaps) {
+  if (status === "loading" || !userKeycaps) {
     return (
-      <LoaderWrapper>
-        <StyledSpan />
-      </LoaderWrapper>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -285,24 +321,44 @@ export default function KeyCapDetail() {
 
   return (
     <>
-      <DetailPageContainer>
-        {isEditMode ? null : (
-          <StyledLink
-            href="/inventories/keycaps"
-            aria-label="Close Details Page"
-          >
-            <CloseButtonIcon />
-          </StyledLink>
-        )}
+      {!isEditMode && <BackButtonMUI href="/inventories/keycaps" />}
+      <Container
+        maxWidth="md"
+        sx={{
+          py: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            textAlign: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            {isEditMode ? `Editing ${userKeycap.name}` : userKeycap.name}
+          </Typography>
 
-        <HeaderSection>
-          {isEditMode ? (
-            <h1>Editing {userKeycap.name}</h1>
-          ) : (
-            <h1>{userKeycap.name}</h1>
-          )}
           {userKeycap.render && (
-            <HeaderImage>
+            <Box
+              sx={{
+                position: "relative",
+                width: "100%",
+                maxWidth: "640px",
+                height: {
+                  xs: "220px",
+                  sm: "280px",
+                  md: "320px",
+                },
+                borderRadius: 2,
+                overflow: "hidden",
+                mb: 2,
+                mx: "auto",
+              }}
+            >
               <Image
                 src={userKeycap.render}
                 alt={userKeycap.name}
@@ -310,107 +366,236 @@ export default function KeyCapDetail() {
                 style={{ objectFit: "cover" }}
                 priority
               />
-            </HeaderImage>
+            </Box>
           )}
-        </HeaderSection>
+        </Box>
 
-        <SectionHeading>Details</SectionHeading>
-        <BoxContainer>
-          <li>
-            <strong>Manufacturer:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="text"
-                value={editedManufacturer}
-                onChange={(event) => setEditedManufacturer(event.target.value)}
-                placeholder="Manufacturer (e.g., GMK)"
-              />
-            ) : (
-              userKeycap.manufacturer || "Not specified"
-            )}
-          </li>
-          <li>
-            <strong>Material:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="text"
-                value={editedMaterial}
-                onChange={(event) => setEditedMaterial(event.target.value)}
-                placeholder="Material (e.g., ABS)"
-              />
-            ) : (
-              userKeycap.material || "Not specified"
-            )}
-          </li>
-          <li>
-            <strong>Profile:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="text"
-                value={editedProfile}
-                onChange={(event) => setEditedProfile(event.target.value)}
-                placeholder="Profile (e.g., Cherry)"
-              />
-            ) : (
-              userKeycap.profile || "Not specified"
-            )}
-          </li>
-          <li>
-            <strong>Profile Height:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="text"
-                value={editedProfileHeight}
-                onChange={(event) => setEditedProfileHeight(event.target.value)}
-                placeholder="Profile Height (e.g., 1-1-2-3-4-4)"
-              />
-            ) : (
-              userKeycap.profileHeight || "Not specified"
-            )}
-          </li>
-          <li>
-            <strong>Designer:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="text"
-                value={editedDesigner}
-                onChange={(event) => setEditedDesigner(event.target.value)}
-                placeholder="Designer"
-              />
-            ) : (
-              userKeycap.designer || "Not specified"
-            )}
-          </li>
-          <li>
-            <strong>Geekhack Thread:</strong>{" "}
-            {isEditMode ? (
-              <StyledInput
-                type="url"
-                value={editedGeekhackLink}
-                onChange={(event) => setEditedGeekhackLink(event.target.value)}
-                placeholder="Geekhack Link"
-              />
-            ) : userKeycap.geekhacklink ? (
-              <ExternalLink href={userKeycap.geekhacklink} target="_blank">
-                Visit Geekhack
-              </ExternalLink>
-            ) : (
-              "Not specified"
-            )}
-          </li>
-        </BoxContainer>
-        <SectionHeading>Your Kits</SectionHeading>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
+        >
+          Details
+        </Typography>
+        <Paper
+          elevation={1}
+          sx={{ p: 2, mb: 4, width: "100%", maxWidth: 520, borderRadius: 2 }}
+        >
+          <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Manufacturer:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedManufacturer}
+                  onChange={(event) =>
+                    setEditedManufacturer(event.target.value)
+                  }
+                  placeholder="Manufacturer (e.g. GMK)"
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userKeycap.manufacturer || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Material:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedMaterial}
+                  onChange={(event) => setEditedMaterial(event.target.value)}
+                  placeholder="Material (e.g. ABS)"
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userKeycap.material || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Profile:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedProfile}
+                  onChange={(event) => setEditedProfile(event.target.value)}
+                  placeholder="Profile (e.g. Cherry)"
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userKeycap.profile || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Profile Height:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedProfileHeight}
+                  onChange={(event) =>
+                    setEditedProfileHeight(event.target.value)
+                  }
+                  placeholder="Profile Height (e.g. 1-1-2-3-4-4)"
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userKeycap.profileHeight || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Designer:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  value={editedDesigner}
+                  onChange={(event) => setEditedDesigner(event.target.value)}
+                  placeholder="Designer"
+                  sx={{ ml: 1 }}
+                />
+              ) : (
+                userKeycap.designer || "Not specified"
+              )}
+            </Box>
+
+            <Box component="li" sx={{ py: 1 }}>
+              <Typography component="span" fontWeight="bold">
+                Geekhack Thread:
+              </Typography>{" "}
+              {isEditMode ? (
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={editedGeekhackLink}
+                  onChange={(event) =>
+                    setEditedGeekhackLink(event.target.value)
+                  }
+                  placeholder="Geekhack Link"
+                  sx={{ ml: 1 }}
+                />
+              ) : userKeycap.geekhacklink ? (
+                <Link
+                  href={userKeycap.geekhacklink}
+                  target="_blank"
+                  rel="noopener"
+                  sx={{ color: "primary.main" }}
+                >
+                  Visit Geekhack
+                </Link>
+              ) : (
+                "Not specified"
+              )}
+            </Box>
+          </Box>
+        </Paper>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
+        >
+          Your Kits
+        </Typography>
         {isEditMode ? (
-          <GridContainer>
+          <Box
+            component="ul"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: "15px",
+              width: "auto",
+              margin: "0 0 24px 0",
+              maxWidth: 430,
+              backgroundColor: "transparent",
+              padding: 0,
+              listStyle: "none",
+
+              "@media (min-width: 430px)": {
+                maxWidth: 400,
+              },
+              "@media (min-width: 600px)": {
+                maxWidth: 600,
+              },
+            }}
+          >
             {kitsAvailable.map((kit) => {
               const wasPreviouslySelected = selectedKits.includes(kit.name);
               const isCurrentlySelected = editedKits.includes(kit.name);
 
               return (
-                <KitCard
+                <Box
+                  component="li"
                   key={kit.name}
-                  $isEditMode={isEditMode}
-                  $isSelected={isCurrentlySelected}
+                  sx={{
+                    position: "relative",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: 1,
+                    cursor: "pointer",
+                    opacity: isEditMode && !isCurrentlySelected ? 0.33 : 1,
+                    transition: (theme) =>
+                      theme.transitions.create([
+                        "opacity",
+                        "background-color",
+                        "box-shadow",
+                      ]),
+                    border: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? `1px solid ${theme.palette.divider}`
+                        : "none",
+                    backgroundColor: "background.paper",
+                    width: "100%",
+
+                    "&:hover": {
+                      opacity: isEditMode ? 0.8 : 1,
+                      backgroundColor: "action.hover",
+                      boxShadow: 2,
+                    },
+
+                    "& img": {
+                      borderRadius: 1,
+                      border: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? `1px solid ${theme.palette.divider}`
+                          : "none",
+                    },
+
+                    "& input[type='checkbox']": {
+                      position: "absolute",
+                      opacity: 0,
+                      cursor: "pointer",
+                      height: "100%",
+                      width: "100%",
+                      left: 0,
+                      top: 0,
+                      margin: 0,
+                      zIndex: 1,
+                    },
+                  }}
                 >
                   <input
                     type="checkbox"
@@ -437,28 +622,122 @@ export default function KeyCapDetail() {
                         : "(Will be removed)"}
                     </small>
                   )}
-                </KitCard>
+                </Box>
               );
             })}
-            <KitCard
-              as="button"
+            <Box
+              component="li"
               onClick={() => setIsAddKitModalOpen(true)}
-              $isAddCard
+              sx={{
+                position: "relative",
+                borderRadius: "10px",
+                padding: "10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: 1,
+                cursor: "pointer",
+                opacity: 1,
+                transition: (theme) =>
+                  theme.transitions.create(["background-color", "box-shadow"]),
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? `1px solid ${theme.palette.divider}`
+                    : "none",
+                backgroundColor: "background.paper",
+                minHeight: "87px",
+                width: "100%",
+
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                  boxShadow: 2,
+                },
+
+                "& img": {
+                  borderRadius: 1,
+                  border: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? `1px solid ${theme.palette.divider}`
+                      : "none",
+                },
+              }}
             >
-              <AddIcon />
-              <p>Add Kit</p>
-            </KitCard>
-          </GridContainer>
+              <AddCircleOutlineIcon
+                sx={{ fontSize: 40, color: "text.secondary", mb: 1 }}
+              />
+              <Typography variant="body2">Add Kit</Typography>
+            </Box>
+          </Box>
         ) : selectedKits.length > 0 ? (
-          <GridContainer>
+          <Box
+            component="ul"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: "15px",
+              width: "auto",
+              margin: "0 0 24px 0",
+              maxWidth: 430,
+              backgroundColor: "transparent",
+              padding: 0,
+              listStyle: "none",
+
+              "@media (min-width: 430px)": {
+                maxWidth: 400,
+              },
+              "@media (min-width: 600px)": {
+                maxWidth: 600,
+              },
+            }}
+          >
             {kitsAvailable
               .filter((kit) => selectedKits.includes(kit.name))
               .map((kit) => (
-                <KitCard
+                <Box
+                  component="li"
                   key={kit.name}
                   onClick={() =>
                     setSelectedImage({ url: kit.image, name: kit.name })
                   }
+                  sx={{
+                    position: "relative",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: 1,
+                    cursor: "pointer",
+                    opacity: 1,
+                    transition: (theme) =>
+                      theme.transitions.create([
+                        "opacity",
+                        "background-color",
+                        "box-shadow",
+                      ]),
+                    border: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? `1px solid ${theme.palette.divider}`
+                        : "none",
+                    backgroundColor: "background.paper",
+                    width: "100%",
+
+                    "&:hover": {
+                      opacity: 1,
+                      backgroundColor: "action.hover",
+                      boxShadow: 2,
+                    },
+
+                    "& img": {
+                      borderRadius: 1,
+                      border: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? `1px solid ${theme.palette.divider}`
+                          : "none",
+                    },
+                  }}
                 >
                   {kit.image ? (
                     <Image
@@ -473,30 +752,47 @@ export default function KeyCapDetail() {
                     <p>No image available</p>
                   )}
                   <p>{kit.name}</p>
-                </KitCard>
+                </Box>
               ))}
-          </GridContainer>
+          </Box>
         ) : (
           <p>No kits selected.</p>
         )}
 
         {/* Opens image modal */}
-        <KitImageModal
+        <KitImageModalMUI
           open={Boolean(selectedImage)}
           onClose={() => setSelectedImage(null)}
           imageUrl={selectedImage?.url}
           kitName={selectedImage?.name}
         />
-        <SectionHeading>Choose 6 Colors</SectionHeading>
-        <StyledInput
-          as="select"
-          onChange={handleColorSelect}
-          value=""
-          $maxWidth="430px"
+        <AddKitModalMUI
+          open={isAddKitModalOpen}
+          onClose={() => setIsAddKitModalOpen(false)}
+          onAddKit={handleAddKit}
+          userId={session.user.uuid}
+        />
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
         >
-          <option value="" disabled>
+          Choose 6 Colors
+        </Typography>
+        <Select
+          displayEmpty
+          value=""
+          onChange={handleColorSelect}
+          size="small"
+          sx={{ maxWidth: 430, width: "100%", mb: 2 }}
+        >
+          <MenuItem value="" disabled>
             -- Choose up to 6 colors --
-          </option>
+          </MenuItem>
           {colorOptions
             .filter((color) =>
               !isEditMode
@@ -504,189 +800,189 @@ export default function KeyCapDetail() {
                 : !editedColors.includes(color.name)
             )
             .map((color) => (
-              <option key={color.name} value={color.name}>
+              <MenuItem key={color.name} value={color.name}>
                 {color.name} {color.emoji}
-              </option>
+              </MenuItem>
             ))}
-        </StyledInput>
-        <SectionHeading>Selected Colors</SectionHeading>
-        <ColorsContainer
-          $itemCount={editedColors?.length || selectedColors?.length || 0}
+        </Select>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: "bold",
+            mb: 2,
+            alignSelf: "center",
+          }}
         >
-          {(isEditMode ? editedColors : selectedColors).length > 0
-            ? (isEditMode ? editedColors : selectedColors).map((color) => {
+          Selected Colors
+        </Typography>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 4,
+            width: "100%",
+            maxWidth: 430,
+            borderRadius: 2,
+          }}
+        >
+          {(isEditMode ? editedColors : selectedColors).length > 0 ? (
+            <Grid container spacing={1}>
+              {(isEditMode ? editedColors : selectedColors).map((color) => {
                 const colorData = colorOptions.find(
                   (option) => option.name === color
                 );
                 return (
-                  <SelectedColorLi key={color} $bgColor={colorData?.name}>
-                    {colorData?.emoji} {color}
-                    {isEditMode && (
-                      <RemoveColorButton
-                        onClick={() => handleRemoveColor(color)}
-                      >
-                        x
-                      </RemoveColorButton>
-                    )}
-                  </SelectedColorLi>
+                  <Grid item xs={4} key={color}>
+                    <Chip
+                      label={
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Box component="span">{colorData?.emoji}</Box>
+                          <Box component="span" sx={{ ml: 1 }}>
+                            {color}
+                          </Box>
+                        </Box>
+                      }
+                      sx={{
+                        border: (theme) =>
+                          `2px solid ${
+                            theme.palette.mode === "dark" &&
+                            ["white", "beige"].includes(
+                              colorData?.name.toLowerCase()
+                            )
+                              ? theme.palette.grey[600]
+                              : colorData?.name.toLowerCase() ||
+                                theme.palette.text.primary
+                          }`,
+                        fontWeight: "bold",
+                        width: "100%",
+                        justifyContent: "center",
+                        color: (theme) => {
+                          const colorLower = colorData?.name.toLowerCase();
+                          if (
+                            ["white", "beige", "yellow"].includes(colorLower)
+                          ) {
+                            return theme.palette.mode === "dark"
+                              ? "inherit"
+                              : theme.palette.text.primary;
+                          }
+                          if (
+                            ["black", "navy", "purple"].includes(colorLower)
+                          ) {
+                            return theme.palette.mode === "dark"
+                              ? theme.palette.text.primary
+                              : theme.palette.common.white;
+                          }
+                          return "inherit";
+                        },
+                      }}
+                      onDelete={
+                        isEditMode ? () => handleRemoveColor(color) : undefined
+                      }
+                    />
+                  </Grid>
                 );
-              })
-            : "<-- No colors selected -->"}
-        </ColorsContainer>
+              })}
+            </Grid>
+          ) : (
+            <Box sx={{ textAlign: "center", py: 1 }}>
+              <Typography color="text.secondary">
+                &lt;-- No colors selected --&gt;
+              </Typography>
+            </Box>
+          )}
+        </Paper>
 
-        <Notes
+        <NotesMUI
           notes={isEditMode ? editedNotes : notes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
         />
 
-        <AcceptCancelEditButtonContainer
-          $innerWidth={innerWidth}
-          $isEditMode={isEditMode}
-        >
-          <EditButton
-            isEditMode={isEditMode}
-            onToggleEdit={() => {
-              if (isEditMode) {
-                handleCancelEdits();
-              } else {
-                setIsEditMode(true);
-                setEditedColors([...selectedColors]);
-                setEditedKits(userKeycap?.selectedKits || []);
-                setEditedNotes([...notes]);
-              }
+        {isEditMode ? (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                mb: 4,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDeleteClick}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                }}
+              >
+                Delete Keycap Set
+              </Button>
+            </Box>
+
+            <EditButtonsContainerMUI
+              onCancel={handleCancelEdits}
+              onConfirm={handleSaveChanges}
+            />
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleDeleteCancel}
+              aria-labelledby="delete-dialog-title"
+            >
+              <DialogTitle id="delete-dialog-title">
+                Confirm Deletion
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  This action cannot be undone. This will permanently delete the
+                  keycap set
+                  <strong> {userKeycap?.name}</strong> from your inventory.
+                </DialogContentText>
+                <DialogContentText sx={{ mt: 2, mb: 1 }}>
+                  Please type <strong>{userKeycap?.name}</strong> to confirm:
+                </DialogContentText>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  value={confirmationName}
+                  onChange={(event) => setConfirmationName(event.target.value)}
+                  error={!!deleteError}
+                  helperText={deleteError}
+                  variant="outlined"
+                  size="small"
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleDeleteCancel} color="primary">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  color="error"
+                  variant="contained"
+                  disabled={confirmationName !== userKeycap?.name}
+                >
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        ) : (
+          <EditButtonMUI
+            onEdit={() => {
+              setIsEditMode(true);
+              setEditedColors([...selectedColors]);
+              setEditedKits(userKeycap?.selectedKits || []);
+              setEditedNotes([...notes]);
             }}
           />
-          {isEditMode && (
-            <ConfirmEditButton
-              isEditMode={isEditMode}
-              onSaveChanges={handleSaveChanges}
-            />
-          )}
-        </AcceptCancelEditButtonContainer>
-      </DetailPageContainer>
-
-      <AddKitModal
-        open={isAddKitModalOpen}
-        onClose={() => setIsAddKitModalOpen(false)}
-        onAddKit={handleAddKit}
-        userId={session.user.uuid}
-      />
+        )}
+      </Container>
     </>
   );
 }
-
-const GridContainer = styled.ul`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  width: auto;
-  margin: 0 0 24px 0;
-  max-width: 430px;
-  background-color: transparent;
-
-  @media (min-width: 430px) {
-    max-width: 400px;
-  }
-
-  @media (min-width: 600px) {
-    max-width: 600px;
-  }
-`;
-
-const KitCard = styled.li`
-  position: relative;
-  background: white;
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  opacity: ${(props) =>
-    props.$isAddCard
-      ? "1"
-      : props.$isEditMode && !props.$isSelected
-      ? "0.33"
-      : "1"};
-  transition: opacity 0.2s ease-in-out;
-  border: none;
-  min-height: ${(props) => (props.$isAddCard ? "87px" : "auto")};
-  width: 100%;
-
-  &:hover {
-    opacity: ${(props) =>
-      props.$isEditMode && !props.$isAddCard ? "0.8" : "1"};
-    background: ${(props) => (props.$isAddCard ? "#f5f5f5" : "white")};
-  }
-
-  svg {
-    color: #666;
-  }
-
-  input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 100%;
-    width: 100%;
-    left: 0;
-    top: 0;
-    margin: 0;
-    z-index: 1;
-  }
-`;
-
-const ColorsContainer = styled.ul`
-  display: ${(props) => (props.$itemCount > 1 ? "grid" : "flex")};
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 15px;
-  background-color: #f9f9f9;
-  padding: 10px;
-  gap: 15px;
-  width: 430px;
-  margin: 0 0 24px 0;
-  max-width: 430px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-
-  /* For 0-1 items, center it in the container */
-  ${(props) =>
-    props.$itemCount <= 1 &&
-    `
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  `}
-`;
-
-const SelectedColorLi = styled.li`
-  background-color: #f9f9f9;
-  color: black;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-weight: bold;
-  border: 2px solid ${(props) => props.$bgColor || "black"};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-width: 0;
-`;
-
-const RemoveColorButton = styled.button`
-  background-color: #f9f9f9;
-  color: black;
-  font-size: 14px;
-  margin-left: 5px;
-  padding: 0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #ff4d4d;
-  }
-`;
