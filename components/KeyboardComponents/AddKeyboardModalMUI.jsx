@@ -25,6 +25,7 @@ import {
   Divider,
   Paper,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -85,6 +86,25 @@ export default function AddKeyboardModal({
     activeTab === "dropdown" ? "/api/inventories/keyboards" : null
   );
 
+  // First, add these new state variables at the top of your component
+  const [selectedLayout, setSelectedLayout] = useState("");
+  const [selectedKeyboardId, setSelectedKeyboardId] = useState("");
+
+  // Get unique layouts and sort alphabetically (add this after fetching dbKeyboards)
+  const layouts = dbKeyboards
+    ? [...new Set(dbKeyboards.map((kb) => kb.layout))].sort()
+    : [];
+
+  // Get keyboards filtered by selected layout
+  const filteredKeyboards = dbKeyboards
+    ? dbKeyboards
+        .filter((kb) => kb.layout === selectedLayout)
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  // Add these state variables at the top of your component
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     if (open) {
       resetForm();
@@ -93,6 +113,9 @@ export default function AddKeyboardModal({
 
   const resetForm = () => {
     setSelectedKeyboard("");
+    setSelectedLayout("");
+    setSelectedKeyboardId("");
+    setSearchTerm("");
     setKeyboardData({
       name: "",
       designer: "",
@@ -219,6 +242,14 @@ export default function AddKeyboardModal({
     }
   };
 
+  // Add these handler functions
+  const handleLayoutChange = (event) => {
+    const layout = event.target.value;
+    setSelectedLayout(layout);
+    setSelectedKeyboardId(""); // Reset keyboard selection when layout changes
+    setSelectedKeyboard(""); // Reset the keyboard name as well
+  };
+
   const handleSubmit = async () => {
     if (activeTab === "manual") {
       // Validation for manual entry
@@ -288,14 +319,14 @@ export default function AddKeyboardModal({
 
       onAddKeyboard(keyboardToAdd);
     } else if (activeTab === "dropdown") {
-      //Validation for dropdown entry
-      if (!selectedKeyboard) {
-        alert("Please select a keyboard from the dropdown.");
+      // Validation for dropdown entry
+      if (!selectedKeyboardId) {
+        alert("Please select a layout and keyboard.");
         return;
       }
 
       const selectedKeyboardObj = dbKeyboards.find(
-        (keyboard) => keyboard.name === selectedKeyboard
+        (keyboard) => keyboard._id === selectedKeyboardId
       );
 
       if (!selectedKeyboardObj) {
@@ -303,7 +334,7 @@ export default function AddKeyboardModal({
         return;
       }
 
-      //Create the keyboard to add with all fields
+      // Create the keyboard to add with all fields
       const keyboardToAdd = {
         keyboardId: selectedKeyboardObj._id,
         name: selectedKeyboardObj.name,
@@ -396,29 +427,63 @@ export default function AddKeyboardModal({
             ) : (
               <>
                 <Paper sx={{ p: 2, mb: 2 }}>
+                  {/* Step 1: Select Layout */}
                   <FormControl fullWidth margin="dense" size="small">
-                    <InputLabel id="keyboard-select-label">Keyboard</InputLabel>
+                    <InputLabel id="layout-select-label">Layout</InputLabel>
                     <Select
-                      labelId="keyboard-select-label"
-                      value={selectedKeyboard}
-                      onChange={(event) =>
-                        setSelectedKeyboard(event.target.value)
-                      }
-                      label="Keyboard"
+                      labelId="layout-select-label"
+                      value={selectedLayout}
+                      onChange={handleLayoutChange}
+                      label="Layout"
                     >
-                      <MenuItem value="">-- Choose a keyboard --</MenuItem>
-                      {dbKeyboards
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((keyboard) => (
-                          <MenuItem key={keyboard._id} value={keyboard.name}>
-                            {keyboard.name}
-                          </MenuItem>
-                        ))}
+                      <MenuItem value="">-- Select Layout --</MenuItem>
+                      {layouts.map((layout) => (
+                        <MenuItem key={layout} value={layout}>
+                          {layout}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
+
+                  {/* Step 2: Select Keyboard using Autocomplete (only shown if layout is selected) */}
+                  {selectedLayout && (
+                    <FormControl fullWidth margin="normal" size="small">
+                      <Autocomplete
+                        value={selectedKeyboard}
+                        onChange={(event, newValue) => {
+                          setSelectedKeyboard(newValue);
+
+                          // Find the keyboard ID for the selected keyboard name
+                          if (newValue) {
+                            const keyboardObj = filteredKeyboards.find(
+                              (kb) => kb.name === newValue
+                            );
+                            if (keyboardObj) {
+                              setSelectedKeyboardId(keyboardObj._id);
+                            }
+                          } else {
+                            setSelectedKeyboardId("");
+                          }
+                        }}
+                        inputValue={searchTerm}
+                        onInputChange={(event, newInputValue) => {
+                          setSearchTerm(newInputValue);
+                        }}
+                        options={filteredKeyboards.map((kb) => kb.name)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Keyboard"
+                            size="small"
+                          />
+                        )}
+                        noOptionsText="No matching keyboards found"
+                      />
+                    </FormControl>
+                  )}
                 </Paper>
 
-                {selectedKeyboard && (
+                {selectedKeyboardId && (
                   <Paper
                     sx={{
                       p: 2,
@@ -428,13 +493,13 @@ export default function AddKeyboardModal({
                       gap: 1,
                     }}
                   >
-                    {dbKeyboards.find(
-                      (keyboard) => keyboard.name === selectedKeyboard
+                    {filteredKeyboards.find(
+                      (keyboard) => keyboard._id === selectedKeyboardId
                     )?.renders?.[0] && (
                       <Image
                         src={
-                          dbKeyboards.find(
-                            (keyboard) => keyboard.name === selectedKeyboard
+                          filteredKeyboards.find(
+                            (keyboard) => keyboard._id === selectedKeyboardId
                           )?.renders[0]
                         }
                         alt={selectedKeyboard}
@@ -452,18 +517,13 @@ export default function AddKeyboardModal({
                       <Typography variant="body2">
                         <strong>Designer:</strong>{" "}
                         {
-                          dbKeyboards.find(
-                            (keyboard) => keyboard.name === selectedKeyboard
+                          filteredKeyboards.find(
+                            (keyboard) => keyboard._id === selectedKeyboardId
                           )?.designer
                         }
                       </Typography>
                       <Typography variant="body2">
-                        <strong>Layout:</strong>{" "}
-                        {
-                          dbKeyboards.find(
-                            (keyboard) => keyboard.name === selectedKeyboard
-                          )?.layout
-                        }
+                        <strong>Layout:</strong> {selectedLayout}
                       </Typography>
                     </Box>
                   </Paper>
@@ -844,7 +904,7 @@ export default function AddKeyboardModal({
                   !keyboardData.layout ||
                   !keyboardData.blocker ||
                   !keyboardData.switchType)) ||
-              (activeTab === "dropdown" && !selectedKeyboard)
+              (activeTab === "dropdown" && !selectedKeyboardId)
             }
             sx={{ width: "49%" }}
           >

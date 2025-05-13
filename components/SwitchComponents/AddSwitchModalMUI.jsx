@@ -25,6 +25,7 @@ import {
   Divider,
   Paper,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
@@ -51,6 +52,8 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
         .filter((sw) => sw.manufacturer === selectedManufacturer)
         .sort((a, b) => a.name.localeCompare(b.name))
     : [];
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleManufacturerChange = (event) => {
     const manufacturer = event.target.value;
@@ -88,6 +91,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
   const resetForm = () => {
     setSelectedManufacturer("");
     setSelectedSwitchId("");
+    setSearchTerm("");
     setSwitchData({
       name: "",
       manufacturer: "",
@@ -586,23 +590,55 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
                     </MuiSelect>
                   </FormControl>
 
-                  {/* Step 2: Select Switch (only shown if manufacturer is selected) */}
+                  {/* Step 2: Select Switch using Autocomplete (only shown if manufacturer is selected) */}
                   {selectedManufacturer && (
-                    <FormControl fullWidth margin="dense" size="small">
-                      <InputLabel id="switch-select-label">Switch</InputLabel>
-                      <MuiSelect
-                        labelId="switch-select-label"
-                        value={selectedSwitchId}
-                        onChange={handleSwitchChange}
-                        label="Switch"
-                      >
-                        <MenuItem value="">-- Select Switch --</MenuItem>
-                        {filteredSwitches.map((sw) => (
-                          <MenuItem key={sw._id} value={sw._id}>
-                            {sw.name}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
+                    <FormControl fullWidth margin="normal" size="small">
+                      <Autocomplete
+                        value={
+                          selectedSwitchId
+                            ? filteredSwitches.find(
+                                (sw) => sw._id === selectedSwitchId
+                              )?.name || ""
+                            : ""
+                        }
+                        onChange={(event, newValue) => {
+                          // Find the switch ID for the selected switch name
+                          if (newValue) {
+                            const switchObj = filteredSwitches.find(
+                              (sw) => sw.name === newValue
+                            );
+                            if (switchObj) {
+                              setSelectedSwitchId(switchObj._id);
+                              setSwitchData({
+                                name: switchObj.name,
+                                manufacturer: switchObj.manufacturer,
+                                image: switchObj.image,
+                                quantity: 1,
+                                switchType: switchObj.switchType,
+                                factoryLubed: switchObj.factoryLubed || false,
+                                springWeight: switchObj.springWeight || "",
+                                topMaterial: switchObj.topMaterial || "",
+                                bottomMaterial: switchObj.bottomMaterial || "",
+                                stemMaterial: switchObj.stemMaterial || "",
+                                isLubed: switchObj.isLubed || false,
+                                isFilmed: switchObj.isFilmed || false,
+                                notes: [],
+                              });
+                            }
+                          } else {
+                            setSelectedSwitchId("");
+                          }
+                        }}
+                        inputValue={searchTerm}
+                        onInputChange={(event, newInputValue) => {
+                          setSearchTerm(newInputValue);
+                        }}
+                        options={filteredSwitches.map((sw) => sw.name)}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Switch" size="small" />
+                        )}
+                        noOptionsText="No matching switches found"
+                      />
                     </FormControl>
                   )}
                 </Paper>
