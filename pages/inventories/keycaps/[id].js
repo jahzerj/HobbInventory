@@ -21,11 +21,18 @@ import {
   Chip,
   CircularProgress,
   Link,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useSession } from "next-auth/react";
 import AddKitModalMUI from "@/components/KeycapComponents/AddKitModalMUI";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function KeyCapDetail() {
   const router = useRouter();
@@ -73,6 +80,10 @@ export default function KeyCapDetail() {
   );
 
   const [isAddKitModalOpen, setIsAddKitModalOpen] = useState(false);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmationName, setConfirmationName] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (userKeycap) {
@@ -245,6 +256,45 @@ export default function KeyCapDetail() {
     } catch (error) {
       console.error("Error adding kit:", error);
       alert("Failed to add kit. Please try again.");
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (confirmationName !== userKeycap?.name) {
+      setDeleteError("The name you entered doesn't match the keycap set name.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/inventories/userkeycaps", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keycapId: id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the keycap set");
+      }
+
+      // Redirect to keycaps inventory page
+      router.push("/inventories/keycaps");
+    } catch (error) {
+      console.error("Error deleting keycap set:", error);
+      setDeleteError("Failed to delete: " + error.message);
     }
   };
 
@@ -848,7 +898,81 @@ export default function KeyCapDetail() {
           onNotesUpdate={handleNotesUpdate}
         />
 
-        {!isEditMode ? (
+        {isEditMode ? (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                mb: 4,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDeleteClick}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                }}
+              >
+                Delete Keycap Set
+              </Button>
+            </Box>
+
+            <EditButtonsContainerMUI
+              onCancel={handleCancelEdits}
+              onConfirm={handleSaveChanges}
+            />
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleDeleteCancel}
+              aria-labelledby="delete-dialog-title"
+            >
+              <DialogTitle id="delete-dialog-title">
+                Confirm Deletion
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  This action cannot be undone. This will permanently delete the
+                  keycap set
+                  <strong> {userKeycap?.name}</strong> from your inventory.
+                </DialogContentText>
+                <DialogContentText sx={{ mt: 2, mb: 1 }}>
+                  Please type <strong>{userKeycap?.name}</strong> to confirm:
+                </DialogContentText>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  value={confirmationName}
+                  onChange={(event) => setConfirmationName(event.target.value)}
+                  error={!!deleteError}
+                  helperText={deleteError}
+                  variant="outlined"
+                  size="small"
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleDeleteCancel} color="primary">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  color="error"
+                  variant="contained"
+                  disabled={confirmationName !== userKeycap?.name}
+                >
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        ) : (
           <EditButtonMUI
             onEdit={() => {
               setIsEditMode(true);
@@ -856,11 +980,6 @@ export default function KeyCapDetail() {
               setEditedKits(userKeycap?.selectedKits || []);
               setEditedNotes([...notes]);
             }}
-          />
-        ) : (
-          <EditButtonsContainerMUI
-            onCancel={handleCancelEdits}
-            onConfirm={handleSaveChanges}
           />
         )}
       </Container>

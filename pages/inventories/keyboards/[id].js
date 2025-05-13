@@ -7,7 +7,6 @@ import NotesMUI from "@/components/SharedComponents/NotesMUI";
 import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
-
 import {
   Box,
   Container,
@@ -20,7 +19,14 @@ import {
   MenuItem,
   FormControlLabel,
   FormGroup,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function KeyboardDetail() {
   const router = useRouter();
@@ -88,6 +94,11 @@ export default function KeyboardDetail() {
 
   // Add this state declaration with your other useState declarations
   const [editedNotes, setEditedNotes] = useState([]);
+
+  // Add these state variables with your other useState declarations
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmationName, setConfirmationName] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -207,6 +218,45 @@ export default function KeyboardDetail() {
       setEditedWeightMaterial(userKeyboard.weightMaterial || "");
       setEditedBuildWeight(userKeyboard.buildWeight || "");
       setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (confirmationName !== userKeyboard?.name) {
+      setDeleteError("The name you entered doesn't match the keyboard name.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/inventories/userkeyboards", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keyboardId: id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the keyboard");
+      }
+
+      // Redirect to keyboards inventory page
+      router.push("/inventories/keyboards");
+    } catch (error) {
+      console.error("Error deleting keyboard:", error);
+      setDeleteError("Failed to delete: " + error.message);
     }
   };
 
@@ -367,7 +417,7 @@ export default function KeyboardDetail() {
                 />
               </Box>
             )}
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Designer:
@@ -383,7 +433,7 @@ export default function KeyboardDetail() {
                 userKeyboard.designer
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Layout:
@@ -406,7 +456,7 @@ export default function KeyboardDetail() {
                 userKeyboard.layout
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Blocker:
@@ -427,7 +477,7 @@ export default function KeyboardDetail() {
                 userKeyboard.blocker
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Switch Type:
@@ -448,13 +498,20 @@ export default function KeyboardDetail() {
                 userKeyboard.switchType
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Plate Material:
               </Typography>{" "}
               {isEditMode ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: "8px", ml: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    ml: 1,
+                  }}
+                >
                   <FormGroup>
                     {[
                       "Aluminum",
@@ -477,7 +534,9 @@ export default function KeyboardDetail() {
                                 ]);
                               } else {
                                 setEditedPlateMaterial(
-                                  editedPlateMaterial.filter((m) => m !== material)
+                                  editedPlateMaterial.filter(
+                                    (m) => m !== material
+                                  )
                                 );
                               }
                             }}
@@ -495,13 +554,20 @@ export default function KeyboardDetail() {
                 userKeyboard.plateMaterial.join(", ")
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Mounting Style:
               </Typography>{" "}
               {isEditMode ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: "8px", ml: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    ml: 1,
+                  }}
+                >
                   <FormGroup>
                     {[
                       "Top Mount",
@@ -527,9 +593,7 @@ export default function KeyboardDetail() {
                             size="small"
                           />
                         }
-                        label={
-                          <Typography variant="body2">{mount}</Typography>
-                        }
+                        label={<Typography variant="body2">{mount}</Typography>}
                       />
                     ))}
                   </FormGroup>
@@ -538,7 +602,7 @@ export default function KeyboardDetail() {
                 userKeyboard.mounting.join(", ")
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Typing Angle:
@@ -555,7 +619,7 @@ export default function KeyboardDetail() {
                 userKeyboard.typingAngle
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Front Height:
@@ -572,7 +636,7 @@ export default function KeyboardDetail() {
                 userKeyboard.frontHeight
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Surface Finish:
@@ -581,7 +645,9 @@ export default function KeyboardDetail() {
                 <Select
                   size="small"
                   value={editedSurfaceFinish}
-                  onChange={(event) => setEditedSurfaceFinish(event.target.value)}
+                  onChange={(event) =>
+                    setEditedSurfaceFinish(event.target.value)
+                  }
                   sx={{ ml: 1, minWidth: 180 }}
                 >
                   <MenuItem value="">-- Select Finish --</MenuItem>
@@ -594,7 +660,7 @@ export default function KeyboardDetail() {
                 userKeyboard.surfaceFinish
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Color:
@@ -610,7 +676,7 @@ export default function KeyboardDetail() {
                 userKeyboard.color
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Weight Material:
@@ -619,7 +685,9 @@ export default function KeyboardDetail() {
                 <Select
                   size="small"
                   value={editedWeightMaterial}
-                  onChange={(event) => setEditedWeightMaterial(event.target.value)}
+                  onChange={(event) =>
+                    setEditedWeightMaterial(event.target.value)
+                  }
                   sx={{ ml: 1, minWidth: 180 }}
                 >
                   <MenuItem value="">-- Select Material --</MenuItem>
@@ -632,7 +700,7 @@ export default function KeyboardDetail() {
                 userKeyboard.weightMaterial
               )}
             </Box>
-            
+
             <Box component="li" sx={{ py: 1 }}>
               <Typography component="span" fontWeight="bold">
                 Build Weight:
@@ -651,27 +719,94 @@ export default function KeyboardDetail() {
             </Box>
           </Box>
         </Paper>
-        
+
         <NotesMUI
           notes={isEditMode ? editedNotes : notes}
           isEditMode={isEditMode}
           onNotesUpdate={handleNotesUpdate}
         />
+
+        {!isEditMode ? (
+          <EditButtonMUI
+            onEdit={() => {
+              setIsEditMode(true);
+              setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
+            }}
+          />
+        ) : (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                mb: 4,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDeleteClick}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                }}
+              >
+                Delete Keyboard
+              </Button>
+            </Box>
+
+            <EditButtonsContainerMUI
+              onCancel={handleCancelEdits}
+              onConfirm={handleSaveChanges}
+            />
+          </>
+        )}
       </Container>
-      
-      {!isEditMode ? (
-        <EditButtonMUI
-          onEdit={() => {
-            setIsEditMode(true);
-            setEditedNotes(userKeyboard.notes ? [...userKeyboard.notes] : []);
-          }}
-        />
-      ) : (
-        <EditButtonsContainerMUI
-          onCancel={handleCancelEdits}
-          onConfirm={handleSaveChanges}
-        />
-      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This action cannot be undone. This will permanently delete the
+            keyboard
+            <strong> {userKeyboard?.name}</strong> from your inventory.
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 2, mb: 1 }}>
+            Please type <strong>{userKeyboard?.name}</strong> to confirm:
+          </DialogContentText>
+          <TextField
+            autoFocus
+            fullWidth
+            value={confirmationName}
+            onChange={(event) => setConfirmationName(event.target.value)}
+            error={!!deleteError}
+            helperText={deleteError}
+            variant="outlined"
+            size="small"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={confirmationName !== userKeyboard?.name}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

@@ -18,8 +18,16 @@ import {
   Paper,
   CircularProgress,
   Checkbox,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
 } from "@mui/material";
 
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useSession } from "next-auth/react";
 
 export default function SwitchDetail() {
@@ -77,6 +85,11 @@ export default function SwitchDetail() {
   );
 
   const [localNotes, setLocalNotes] = useState(notes);
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmationName, setConfirmationName] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (userSwitch) {
@@ -189,6 +202,46 @@ export default function SwitchDetail() {
       setEditedIsLubed(userSwitch.isLubed || false);
       setEditedIsFilmed(userSwitch.isFilmed || false);
       setLocalNotes(userSwitch.notes ? [...userSwitch.notes] : []);
+    }
+  };
+
+  // Delete functionality
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setConfirmationName("");
+    setDeleteError("");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (confirmationName !== userSwitch?.name) {
+      setDeleteError("The name you entered doesn't match the switch name.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/inventories/userswitches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          switchId: id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the switch");
+      }
+
+      // Redirect to switches inventory page
+      router.push("/inventories/switches");
+    } catch (error) {
+      console.error("Error deleting switch:", error);
+      setDeleteError("Failed to delete: " + error.message);
     }
   };
 
@@ -351,10 +404,10 @@ export default function SwitchDetail() {
                   size="small"
                   inputProps={{ min: 0, max: 9999 }}
                   value={editedQuantity}
-                  onChange={(e) => {
+                  onChange={(event) => {
                     const value = Math.min(
                       9999,
-                      Math.max(0, parseInt(e.target.value) || 0)
+                      Math.max(0, parseInt(event.target.value) || 0)
                     );
                     setEditedQuantity(value.toString());
                   }}
@@ -372,7 +425,9 @@ export default function SwitchDetail() {
                 <TextField
                   size="small"
                   value={editedSpringWeight}
-                  onChange={(e) => setEditedSpringWeight(e.target.value)}
+                  onChange={(event) =>
+                    setEditedSpringWeight(event.target.value)
+                  }
                   sx={{ ml: 1 }}
                 />
               ) : (
@@ -388,7 +443,7 @@ export default function SwitchDetail() {
                 <TextField
                   size="small"
                   value={editedTopMaterial}
-                  onChange={(e) => setEditedTopMaterial(e.target.value)}
+                  onChange={(event) => setEditedTopMaterial(event.target.value)}
                   sx={{ ml: 1 }}
                 />
               ) : (
@@ -404,7 +459,9 @@ export default function SwitchDetail() {
                 <TextField
                   size="small"
                   value={editedBottomMaterial}
-                  onChange={(e) => setEditedBottomMaterial(e.target.value)}
+                  onChange={(event) =>
+                    setEditedBottomMaterial(event.target.value)
+                  }
                   sx={{ ml: 1 }}
                 />
               ) : (
@@ -420,7 +477,9 @@ export default function SwitchDetail() {
                 <TextField
                   size="small"
                   value={editedStemMaterial}
-                  onChange={(e) => setEditedStemMaterial(e.target.value)}
+                  onChange={(event) =>
+                    setEditedStemMaterial(event.target.value)
+                  }
                   sx={{ ml: 1 }}
                 />
               ) : (
@@ -436,7 +495,9 @@ export default function SwitchDetail() {
                 <>
                   <Checkbox
                     checked={editedFactoryLubed}
-                    onChange={(e) => setEditedFactoryLubed(e.target.checked)}
+                    onChange={(event) =>
+                      setEditedFactoryLubed(event.target.checked)
+                    }
                     sx={{ ml: 1 }}
                   />
                   <Typography component="span">
@@ -458,7 +519,7 @@ export default function SwitchDetail() {
                 <>
                   <Checkbox
                     checked={editedIsLubed}
-                    onChange={(e) => setEditedIsLubed(e.target.checked)}
+                    onChange={(event) => setEditedIsLubed(event.target.checked)}
                     sx={{ ml: 1 }}
                   />
                   <Typography component="span">
@@ -480,7 +541,9 @@ export default function SwitchDetail() {
                 <>
                   <Checkbox
                     checked={editedIsFilmed}
-                    onChange={(e) => setEditedIsFilmed(e.target.checked)}
+                    onChange={(event) =>
+                      setEditedIsFilmed(event.target.checked)
+                    }
                     sx={{ ml: 1 }}
                   />
                   <Typography component="span">
@@ -521,26 +584,81 @@ export default function SwitchDetail() {
             }}
           />
         ) : (
-          <EditButtonsContainerMUI
-            onCancel={handleCancelEdits}
-            onConfirm={handleSaveChanges}
-          />
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                mb: 4,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDeleteClick}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                }}
+              >
+                Delete Switch
+              </Button>
+            </Box>
+
+            <EditButtonsContainerMUI
+              onCancel={handleCancelEdits}
+              onConfirm={handleSaveChanges}
+            />
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleDeleteCancel}
+              aria-labelledby="delete-dialog-title"
+            >
+              <DialogTitle id="delete-dialog-title">
+                Confirm Deletion
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  This action cannot be undone. This will permanently delete the
+                  switch
+                  <strong> {userSwitch?.name}</strong> from your inventory.
+                </DialogContentText>
+                <DialogContentText sx={{ mt: 2, mb: 1 }}>
+                  Please type <strong>{userSwitch?.name}</strong> to confirm:
+                </DialogContentText>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  value={confirmationName}
+                  onChange={(event) => setConfirmationName(event.target.value)}
+                  error={!!deleteError}
+                  helperText={deleteError}
+                  variant="outlined"
+                  size="small"
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleDeleteCancel} color="primary">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  color="error"
+                  variant="contained"
+                  disabled={confirmationName !== userSwitch?.name}
+                >
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
         )}
       </Container>
     </>
   );
 }
-
-const StyledCheckbox = styled.div`
-  display: inline-flex;
-  align-items: center;
-  margin-left: 8px;
-
-  input {
-    margin-right: 5px;
-  }
-
-  label {
-    font-size: 14px;
-  }
-`;
