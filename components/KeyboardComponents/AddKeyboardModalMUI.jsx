@@ -30,6 +30,17 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
+const LAYOUT_ORDER = [
+  "40%",
+  "60%",
+  "65%",
+  "70%",
+  "75%",
+  "TKL",
+  "1800",
+  "Full Size",
+];
+
 export default function AddKeyboardModal({
   open,
   onClose,
@@ -90,9 +101,24 @@ export default function AddKeyboardModal({
   const [selectedLayout, setSelectedLayout] = useState("");
   const [selectedKeyboardId, setSelectedKeyboardId] = useState("");
 
-  // Get unique layouts and sort alphabetically (add this after fetching dbKeyboards)
+  // Replace the existing layouts sorting with this:
   const layouts = dbKeyboards
-    ? [...new Set(dbKeyboards.map((kb) => kb.layout))].sort()
+    ? [...new Set(dbKeyboards.map((kb) => kb.layout))].sort((a, b) => {
+        const indexA = LAYOUT_ORDER.indexOf(a);
+        const indexB = LAYOUT_ORDER.indexOf(b);
+
+        // If both layouts are in our predefined order, sort by that
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+
+        // If only one layout is in our order, prioritize it
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+
+        // For any layouts not in our predefined order, sort alphabetically
+        return a.localeCompare(b);
+      })
     : [];
 
   // Get keyboards filtered by selected layout
@@ -571,6 +597,7 @@ export default function AddKeyboardModal({
                   <MenuItem value="40%">40%</MenuItem>
                   <MenuItem value="60%">60%</MenuItem>
                   <MenuItem value="65%">65%</MenuItem>
+                  <MenuItem value="70%">70%</MenuItem>
                   <MenuItem value="75%">75%</MenuItem>
                   <MenuItem value="TKL">TKL</MenuItem>
                   <MenuItem value="1800">1800</MenuItem>
@@ -707,7 +734,22 @@ export default function AddKeyboardModal({
               variant="text"
               onClick={() => {
                 if (isAdditionalFieldsVisible) {
-                  resetForm();
+                  setKeyboardData((prevData) => ({
+                    ...prevData,
+                    // Reset only additional fields
+                    surfaceFinish: "",
+                    color: "",
+                    typingAngle: "",
+                    frontHeight: "",
+                    weightMaterial: "",
+                    buildWeight: "",
+                    pcbOptions: {
+                      ...prevData.pcbOptions,
+                      flexCuts: false,
+                    },
+                    notes: [],
+                  }));
+                  setNoteText("");
                 }
                 setIsAdditionalFieldsVisible(!isAdditionalFieldsVisible);
               }}

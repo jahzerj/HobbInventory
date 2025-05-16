@@ -446,10 +446,13 @@ export default function KeyboardDetail() {
                   sx={{ ml: 1, minWidth: 180 }}
                 >
                   <MenuItem value="">-- Select Layout --</MenuItem>
+                  <MenuItem value="40%">40%</MenuItem>
+                  
                   <MenuItem value="60%">60%</MenuItem>
                   <MenuItem value="65%">65%</MenuItem>
                   <MenuItem value="75%">75%</MenuItem>
                   <MenuItem value="TKL">TKL</MenuItem>
+                  <MenuItem value="1800">1800</MenuItem>
                   <MenuItem value="Full Size">Full Size</MenuItem>
                 </Select>
               ) : (
@@ -492,7 +495,8 @@ export default function KeyboardDetail() {
                   <MenuItem value="">-- Select Switch Type --</MenuItem>
                   <MenuItem value="MX">MX</MenuItem>
                   <MenuItem value="Alps">Alps</MenuItem>
-                  <MenuItem value="Topre">Topre</MenuItem>
+                  <MenuItem value="EC">EC</MenuItem>
+                  <MenuItem value="HE">HE</MenuItem>
                 </Select>
               ) : (
                 userKeyboard.switchType
