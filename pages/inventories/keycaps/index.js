@@ -42,23 +42,88 @@ export default function Keycaps() {
   } = useSWR("/api/inventories/userkeycaps");
 
   // Handle adding keycap
-  const handleAddKeycap = async (keycapToAdd) => {
+  const handleAddKeycap = async (
+    keycapToAdd,
+    isTemp = false,
+    tempId = null
+  ) => {
     try {
-      const response = await fetch("/api/inventories/userkeycaps", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(keycapToAdd),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add keycap");
+      // If we're dealing with a temporary keycap, update local state first
+      if (isTemp) {
+        // Optimistically update the UI with the temporary keycap
+        mutate(
+          (currentKeycaps = []) => [...currentKeycaps, keycapToAdd],
+          false
+        );
+        return;
       }
 
-      mutate();
+      // If we're replacing a temp keycap, remove it first
+      if (tempId) {
+        // If keycap is null, just remove the temp item
+        if (!keycapToAdd) {
+          mutate(
+            (currentKeycaps) => currentKeycaps.filter((k) => k._id !== tempId),
+            false
+          );
+          return;
+        }
+
+        // Otherwise, make the API call to add the real keycap
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...keycapToAdd,
+            _id: undefined, // Don't send the temp ID
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add keycap");
+        }
+
+        const data = await response.json();
+
+        // Replace the temp keycap with the real one
+        mutate(
+          (currentKeycaps) =>
+            currentKeycaps.map((k) =>
+              k._id === tempId ? { ...data.keycap } : k
+            ),
+          false
+        );
+
+        // Now revalidate to ensure everything is in sync
+        mutate();
+      } else {
+        // Regular flow for dropdown selection
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(keycapToAdd),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add keycap");
+        }
+
+        // Refresh data from server
+        mutate();
+      }
     } catch (error) {
       console.error("Failed to add keycap:", error);
       alert(`Error: ${error.message}`);
+
+      // If there was an error with a temp keycap, remove it
+      if (tempId) {
+        mutate(
+          (currentKeycaps) => currentKeycaps.filter((k) => k._id !== tempId),
+          false
+        );
+      }
     }
   };
 

@@ -224,59 +224,39 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
         return;
       }
 
-      // Upload render image if needed
-      let finalRenderUrl = keycapData.render;
-      if (renderImageFile) {
-        try {
-          finalRenderUrl = await uploadToCloudinary(
-            renderImageFile,
-            "keycaps_render",
-            userId
-          );
-        } catch (error) {
-          alert(`Error uploading render image: ${error.message}`);
-          return;
-        }
-      }
+      // Create a temporary ID for the loading state
+      const tempId = `temp-${Date.now()}`;
 
-      // Upload kit images if needed and build final kit data
-      const finalKits = [...keycapData.kits];
-      for (let i = 0; i < finalKits.length; i++) {
-        if (kitImageFiles[i]) {
-          try {
-            finalKits[i].image = await uploadToCloudinary(
-              kitImageFiles[i],
-              "keycaps_kits",
-              userId
-            );
-          } catch (error) {
-            alert(`Error uploading kit image ${i + 1}: ${error.message}`);
-            return;
-          }
-        }
-      }
+      // Close the modal immediately
+      resetForm();
+      onClose();
 
-      // For manual entry, set the selectedKits to be the kit names
-      const kitNames = finalKits.map((kit) => kit.name);
-
-      // Create a complete keycap object with all fields
-      const keycapToAdd = {
+      // Create the keycap with a temporary ID and loading state
+      const tempKeycap = {
+        _id: tempId,
         name: keycapData.name,
-        manufacturer: keycapData.manufacturer,
+        manufacturer: keycapData.manufacturer || "",
         profile: keycapData.profile || "",
         material: keycapData.material || "",
         profileHeight: keycapData.profileHeight || "",
         designer: keycapData.designer || "",
         geekhacklink: keycapData.geekhacklink || "",
-        render: finalRenderUrl,
-        kits: finalKits,
-        selectedKits: kitNames,
+        render: "",
+        kits: keycapData.kits.map((kit) => ({
+          name: kit.name,
+          image: "",
+        })),
+        selectedKits: keycapData.kits.map((kit) => kit.name),
         selectedColors: keycapData.selectedColors,
         notes: [],
+        isLoading: true,
       };
 
-      // Add to inventory (send complete object)
-      onAddKeycap(keycapToAdd);
+      // Add the temporary keycap to the inventory
+      onAddKeycap(tempKeycap, true);
+
+      // Process the uploads in the background
+      processUploadsAndSave(tempKeycap, tempId);
     } else if (activeTab === "dropdown") {
       // Validation for dropdown selection
       if (!selectedKeycap || selectedKits.length === 0) {
@@ -324,10 +304,61 @@ export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
 
       // Add to inventory (send complete object)
       onAddKeycap(keycapToAdd);
+      resetForm();
+      onClose();
     }
+  };
 
-    resetForm();
-    onClose();
+  // New function to handle the background processing
+  const processUploadsAndSave = async (tempKeycap, tempId) => {
+    try {
+      // Upload render image if needed
+      let finalRenderUrl = keycapData.render;
+      if (renderImageFile) {
+        try {
+          finalRenderUrl = await uploadToCloudinary(
+            renderImageFile,
+            "keycaps_render",
+            userId
+          );
+        } catch (error) {
+          console.error(`Error uploading render image: ${error.message}`);
+        }
+      }
+
+      // Upload kit images if needed and build final kit data
+      const finalKits = [...keycapData.kits];
+      for (let i = 0; i < finalKits.length; i++) {
+        if (kitImageFiles[i]) {
+          try {
+            finalKits[i].image = await uploadToCloudinary(
+              kitImageFiles[i],
+              "keycaps_kits",
+              userId
+            );
+          } catch (error) {
+            console.error(
+              `Error uploading kit image ${i + 1}: ${error.message}`
+            );
+          }
+        }
+      }
+
+      // Create the final keycap to add with updated images
+      const finalKeycap = {
+        ...tempKeycap,
+        render: finalRenderUrl,
+        kits: finalKits,
+        isLoading: false,
+      };
+
+      // Replace the temp keycap with the final one
+      onAddKeycap(finalKeycap, false, tempId);
+    } catch (error) {
+      console.error("Error in background processing:", error);
+      // Handle error state - remove the temp keycap
+      onAddKeycap(null, false, tempId);
+    }
   };
 
   if (!open) return null;

@@ -47,35 +47,65 @@ export default function AddKitModalMUI({ open, onClose, onAddKit, userId }) {
       return;
     }
 
-    let finalImageUrl = imageUrl;
+    // Create a temporary ID for the loading state
+    const tempId = `temp-kit-${Date.now()}`;
 
-    // Upload the image if a file was selected
-    if (selectedImage) {
-      try {
-        finalImageUrl = await uploadToCloudinary(
-          selectedImage,
-          "keycaps_kits",
-          userId
-        );
-      } catch (error) {
-        alert(`Error uploading image: ${error.message}`);
-        return;
-      }
-    }
-
-    // Create the final kit data with the image URL
-    const finalKitData = {
-      ...kitData,
-      image: finalImageUrl,
-    };
-
-    onAddKit(finalKitData);
-
-    // Reset state
+    // Close the modal immediately
     setKitData({ name: "", image: "" });
     setSelectedImage(null);
     setImageUrl("");
     onClose();
+
+    // Create the kit with a temporary ID and loading state
+    const tempKit = {
+      name: kitData.name,
+      image: "",
+      _tempId: tempId,
+      isLoading: true,
+    };
+
+    // Add the temporary kit to the inventory
+    onAddKit(tempKit, true);
+
+    // Process the upload in the background
+    processUploadAndSave(tempKit, tempId);
+  };
+
+  // New function to handle the background processing
+  const processUploadAndSave = async (tempKit, tempId) => {
+    try {
+      let finalImageUrl = imageUrl;
+
+      // Upload the image if a file was selected
+      if (selectedImage) {
+        try {
+          finalImageUrl = await uploadToCloudinary(
+            selectedImage,
+            "keycaps_kits",
+            userId
+          );
+        } catch (error) {
+          console.error(`Error uploading image: ${error.message}`);
+          // Continue with empty image if upload fails
+          finalImageUrl = "";
+        }
+      }
+
+      // Create the final kit with the image URL, but keep the tempId
+      const finalKit = {
+        name: kitData.name,
+        image: finalImageUrl,
+        _tempId: tempId,
+        isLoading: false,
+      };
+
+      // Replace the temp kit with the final one
+      onAddKit(finalKit, false, tempId);
+    } catch (error) {
+      console.error("Error in background processing:", error);
+      // Handle error state - remove the temp kit
+      onAddKit(null, false, tempId);
+    }
   };
 
   if (!open) return null;

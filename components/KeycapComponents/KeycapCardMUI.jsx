@@ -9,7 +9,7 @@ import {
   Typography,
   Box,
   Stack,
-  Chip,
+  Skeleton,
 } from "@mui/material";
 import R1Icon from "../icons/R1Icon";
 import { alpha } from "@mui/material/styles";
@@ -38,7 +38,7 @@ export default function KeycapCardMUI({ keycap }) {
   const [isHovered, setIsHovered] = useState(false);
   const timerRef = useRef(null);
 
-  // Move useEffect hooks to the top level, before any conditional returns
+  // Move all hooks to the top level before any conditionals
   useEffect(() => {
     // Only set up timer if card is hovered AND there are multiple images
     if (isHovered && keycap?.kits && keycap.selectedKits) {
@@ -103,7 +103,58 @@ export default function KeycapCardMUI({ keycap }) {
     trackTouch: true,
   });
 
+  // Now handle conditional returns after all hooks
   if (!keycap) return null;
+
+  // Show loading skeleton if keycap is in loading state
+  if (keycap.isLoading) {
+    return (
+      <Card
+        variant="outlined"
+        sx={{
+          width: { xs: "95%", sm: "100%" },
+          minWidth: 300,
+          maxWidth: 550,
+          m: 2,
+          borderRadius: 4,
+          position: "relative",
+        }}
+      >
+        <CardMedia
+          component="div"
+          sx={{
+            height: 240,
+            borderRadius: "16px 16px 0 0",
+            overflow: "hidden",
+          }}
+        >
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height="100%"
+            animation="wave"
+          />
+        </CardMedia>
+
+        <CardContent>
+          <Skeleton variant="text" width="70%" height={32} />
+          <Skeleton variant="text" width="40%" height={24} />
+
+          {/* Skeleton for color chips */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 55,
+              right: 8,
+              display: "flex",
+            }}
+          >
+            <Skeleton variant="rounded" width={100} height={24} />
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const selectedKits = keycap.selectedKits || [];
 

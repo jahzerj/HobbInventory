@@ -27,6 +27,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Skeleton,
 } from "@mui/material";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -224,38 +225,141 @@ export default function KeyCapDetail() {
     setIsEditMode(false);
   };
 
-  const handleAddKit = async (newKit) => {
+  const handleAddKit = async (newKit, isTemp = false, tempId = null) => {
     try {
-      // Add the new kit to the existing kits
-      const updatedKits = [...(userKeycap.kits || []), newKit];
+      if (isTemp) {
+        // Optimistically update the UI with the temporary kit
+        mutate((currentData) => {
+          if (!currentData) return currentData;
 
-      // Add the new kit name to selectedKits if it's not already there
-      const updatedSelectedKits = userKeycap.selectedKits.includes(newKit.name)
-        ? userKeycap.selectedKits
-        : [...userKeycap.selectedKits, newKit.name];
+          const updatedKeycap = { ...userKeycap };
+          updatedKeycap.kits = [...(updatedKeycap.kits || []), newKit];
 
-      // Make the PUT request to update the keycap with the new kit
-      const response = await fetch("/api/inventories/userkeycaps", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...userKeycap,
-          kits: updatedKits,
-          selectedKits: updatedSelectedKits,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update keycap with new kit");
+          // Don't add to selectedKits yet since it's a temp kit
+          return currentData.map((keycap) =>
+            keycap._id === id ? updatedKeycap : keycap
+          );
+        }, false);
+        return;
       }
 
-      // Update the local state
-      mutate(); // Refetch data using SWR
+      if (tempId) {
+        // If kit is null, just remove the temp item
+        if (!newKit) {
+          mutate((currentData) => {
+            if (!currentData) return currentData;
+
+            const updatedKeycap = { ...userKeycap };
+            updatedKeycap.kits = updatedKeycap.kits.filter(
+              (kit) => !kit._tempId || kit._tempId !== tempId
+            );
+
+            return currentData.map((keycap) =>
+              keycap._id === id ? updatedKeycap : keycap
+            );
+          }, false);
+          return;
+        }
+
+        // Create the final kit data without temp properties
+        const finalKit = {
+          name: newKit.name,
+          image: newKit.image,
+        };
+
+        // Get updated kits by replacing the temp kit with the final one
+        const updatedKits = userKeycap.kits.map((kit) =>
+          kit._tempId && kit._tempId === tempId ? finalKit : kit
+        );
+
+        // If the temp kit wasn't found in the map, add it (fallback)
+        if (
+          !updatedKits.some(
+            (kit) =>
+              (kit._tempId && kit._tempId === tempId) ||
+              (kit.name === newKit.name && kit.image === newKit.image)
+          )
+        ) {
+          updatedKits.push(finalKit);
+        }
+
+        // Add the new kit name to selectedKits if it's not already there
+        const updatedSelectedKits = userKeycap.selectedKits.includes(
+          newKit.name
+        )
+          ? userKeycap.selectedKits
+          : [...userKeycap.selectedKits, newKit.name];
+
+        // Make the PUT request to update the keycap with the new kit
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...userKeycap,
+            kits: updatedKits,
+            selectedKits: updatedSelectedKits,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update keycap with new kit");
+        }
+
+        // Update the local state
+        mutate();
+      } else {
+        // Original flow for non-temp kits
+        // Add the new kit to the existing kits
+        const updatedKits = [...(userKeycap.kits || []), newKit];
+
+        // Add the new kit name to selectedKits if it's not already there
+        const updatedSelectedKits = userKeycap.selectedKits.includes(
+          newKit.name
+        )
+          ? userKeycap.selectedKits
+          : [...userKeycap.selectedKits, newKit.name];
+
+        // Make the PUT request to update the keycap with the new kit
+        const response = await fetch("/api/inventories/userkeycaps", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...userKeycap,
+            kits: updatedKits,
+            selectedKits: updatedSelectedKits,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update keycap with new kit");
+        }
+
+        // Update the local state
+        mutate();
+      }
     } catch (error) {
       console.error("Error adding kit:", error);
       alert("Failed to add kit. Please try again.");
+
+      // If there was an error with a temp kit, remove it
+      if (tempId) {
+        mutate((currentData) => {
+          if (!currentData) return currentData;
+
+          const updatedKeycap = { ...userKeycap };
+          updatedKeycap.kits = updatedKeycap.kits.filter(
+            (kit) => !kit._tempId || kit._tempId !== tempId
+          );
+
+          return currentData.map((keycap) =>
+            keycap._id === id ? updatedKeycap : keycap
+          );
+        }, false);
+      }
     }
   };
 
@@ -541,11 +645,12 @@ export default function KeyCapDetail() {
             {kitsAvailable.map((kit) => {
               const wasPreviouslySelected = selectedKits.includes(kit.name);
               const isCurrentlySelected = editedKits.includes(kit.name);
+              const isLoading = kit.isLoading;
 
               return (
                 <Box
                   component="li"
-                  key={kit.name}
+                  key={kit.name || kit._tempId}
                   sx={{
                     position: "relative",
                     borderRadius: "10px",
@@ -555,7 +660,7 @@ export default function KeyCapDetail() {
                     alignItems: "center",
                     justifyContent: "center",
                     boxShadow: 1,
-                    cursor: "pointer",
+                    cursor: isLoading ? "default" : "pointer",
                     opacity: isEditMode && !isCurrentlySelected ? 0.33 : 1,
                     transition: (theme) =>
                       theme.transitions.create([
@@ -571,9 +676,11 @@ export default function KeyCapDetail() {
                     width: "100%",
 
                     "&:hover": {
-                      opacity: isEditMode ? 0.8 : 1,
-                      backgroundColor: "action.hover",
-                      boxShadow: 2,
+                      opacity: isEditMode && !isLoading ? 0.8 : 1,
+                      backgroundColor: isLoading
+                        ? "background.paper"
+                        : "action.hover",
+                      boxShadow: isLoading ? 1 : 2,
                     },
 
                     "& img": {
@@ -587,40 +694,64 @@ export default function KeyCapDetail() {
                     "& input[type='checkbox']": {
                       position: "absolute",
                       opacity: 0,
-                      cursor: "pointer",
+                      cursor: isLoading ? "default" : "pointer",
                       height: "100%",
                       width: "100%",
                       left: 0,
                       top: 0,
                       margin: 0,
                       zIndex: 1,
+                      pointerEvents: isLoading ? "none" : "auto",
                     },
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={isCurrentlySelected}
-                    onChange={() => handleKitSelection(kit.name)}
-                  />
-                  {kit.image ? (
-                    <Image
-                      src={kit.image}
-                      alt={kit.name}
-                      width={116}
-                      height={67}
-                      style={{ objectFit: "cover" }}
-                      priority
+                  {!isLoading && (
+                    <input
+                      type="checkbox"
+                      checked={isCurrentlySelected}
+                      onChange={() => handleKitSelection(kit.name)}
+                      disabled={isLoading}
                     />
-                  ) : (
-                    <p>No image available</p>
                   )}
-                  <p>{kit.name}</p>
-                  {wasPreviouslySelected !== isCurrentlySelected && (
-                    <small>
-                      {isCurrentlySelected
-                        ? "(Will be added)"
-                        : "(Will be removed)"}
-                    </small>
+
+                  {isLoading ? (
+                    <>
+                      <Skeleton
+                        variant="rectangular"
+                        width={116}
+                        height={67}
+                        animation="wave"
+                      />
+                      <Skeleton
+                        variant="text"
+                        width={80}
+                        height={24}
+                        sx={{ mt: 1 }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {kit.image ? (
+                        <Image
+                          src={kit.image}
+                          alt={kit.name}
+                          width={116}
+                          height={67}
+                          style={{ objectFit: "cover" }}
+                          priority
+                        />
+                      ) : (
+                        <p>No image available</p>
+                      )}
+                      <p>{kit.name}</p>
+                      {wasPreviouslySelected !== isCurrentlySelected && (
+                        <small>
+                          {isCurrentlySelected
+                            ? "(Will be added)"
+                            : "(Will be removed)"}
+                        </small>
+                      )}
+                    </>
                   )}
                 </Box>
               );
