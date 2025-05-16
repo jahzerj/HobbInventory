@@ -25,8 +25,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Skeleton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import AddRenderModalMUI from "@/components/KeyboardComponents/AddRenderModalMUI";
 
 export default function KeyboardDetail() {
   const router = useRouter();
@@ -99,6 +102,13 @@ export default function KeyboardDetail() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [confirmationName, setConfirmationName] = useState("");
   const [deleteError, setDeleteError] = useState("");
+
+  // Add state for the modal
+  const [isAddRenderModalOpen, setIsAddRenderModalOpen] = useState(false);
+
+  // Add this state for the render delete confirmation dialog
+  const [renderDeleteDialogOpen, setRenderDeleteDialogOpen] = useState(false);
+  const [renderToDeleteIndex, setRenderToDeleteIndex] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -260,6 +270,205 @@ export default function KeyboardDetail() {
     }
   };
 
+  const handleAddRender = async (newRender, isTemp = false, tempId = null) => {
+    try {
+      if (isTemp) {
+        // Optimistically update the UI with the temporary render
+        mutate((currentData) => {
+          if (!currentData) return currentData;
+
+          const updatedKeyboard = { ...userKeyboard };
+          // Add temp render as an object that includes the temp ID
+          updatedKeyboard.renders = [
+            ...(updatedKeyboard.renders || []),
+            newRender,
+          ];
+
+          return currentData.map((keyboard) =>
+            keyboard._id === id ? updatedKeyboard : keyboard
+          );
+        }, false);
+        return;
+      }
+
+      if (tempId) {
+        // If render is null, just remove the temp item
+        if (!newRender) {
+          mutate((currentData) => {
+            if (!currentData) return currentData;
+
+            const updatedKeyboard = { ...userKeyboard };
+            updatedKeyboard.renders = updatedKeyboard.renders.filter(
+              (render) =>
+                typeof render === "string" ||
+                !render._tempId ||
+                render._tempId !== tempId
+            );
+
+            return currentData.map((keyboard) =>
+              keyboard._id === id ? updatedKeyboard : keyboard
+            );
+          }, false);
+          return;
+        }
+
+        console.log("Replacing temp render with:", newRender);
+        console.log("Current renders:", userKeyboard.renders);
+
+        // SIMPLER APPROACH: Just add the new render to the renders array
+        // instead of trying to replace a temp render that might not be in the array
+        const updatedRenders = [...userKeyboard.renders, newRender];
+
+        console.log("Updated renders:", updatedRenders);
+
+        // Make the PUT request to update the keyboard with the new render
+        const response = await fetch("/api/inventories/userkeyboards", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...userKeyboard,
+            renders: updatedRenders,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update keyboard with new render");
+        }
+
+        // Update the local state
+        mutate();
+      } else {
+        // Original flow for direct render addition
+        const updatedRenders = [...(userKeyboard.renders || []), newRender];
+
+        // Make the PUT request to update the keyboard with the new render
+        const response = await fetch("/api/inventories/userkeyboards", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...userKeyboard,
+            renders: updatedRenders,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update keyboard with new render");
+        }
+
+        // Update the local state
+        mutate();
+      }
+    } catch (error) {
+      console.error("Error adding render:", error);
+      alert("Failed to add render. Please try again.");
+
+      // If there was an error with a temp render, remove it
+      if (tempId) {
+        mutate((currentData) => {
+          if (!currentData) return currentData;
+
+          const updatedKeyboard = { ...userKeyboard };
+          updatedKeyboard.renders = updatedKeyboard.renders.filter(
+            (render) =>
+              typeof render === "string" ||
+              !render._tempId ||
+              render._tempId !== tempId
+          );
+
+          return currentData.map((keyboard) =>
+            keyboard._id === id ? updatedKeyboard : keyboard
+          );
+        }, false);
+      }
+    }
+  };
+
+  const handleRemoveRender = async (index) => {
+    setRenderToDeleteIndex(index);
+    setRenderDeleteDialogOpen(true);
+  };
+
+  const handleConfirmRemoveRender = async () => {
+    const index = renderToDeleteIndex;
+
+    // Check if this is the last render - prevent removal
+    if (userKeyboard.renders.length <= 1) {
+      setRenderDeleteDialogOpen(false);
+      setRenderToDeleteIndex(null);
+      alert("At least one image must remain for the keyboard entry.");
+      return;
+    }
+
+    const renderToRemove = userKeyboard.renders[index];
+    const updatedRenders = [...userKeyboard.renders];
+    updatedRenders.splice(index, 1);
+
+    try {
+      // First update the database
+      const response = await fetch("/api/inventories/userkeyboards", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...userKeyboard,
+          renders: updatedRenders,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove render");
+      }
+
+      // Only delete from Cloudinary if it's in the keyboards_renders folder
+      if (
+        typeof renderToRemove === "string" &&
+        renderToRemove.includes("cloudinary") &&
+        renderToRemove.includes("/keyboards_renders/")
+      ) {
+        // Extract the public_id from the URL
+        const urlParts = renderToRemove.split("/");
+        const folderIndex = urlParts.indexOf("keyboards_renders");
+
+        if (folderIndex !== -1 && folderIndex < urlParts.length - 1) {
+          const filename = urlParts[folderIndex + 1];
+          const publicId = `keyboards_renders/${filename.split(".")[0]}`;
+
+          // Call API to delete from Cloudinary
+          await fetch("/api/upload/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              public_id: publicId,
+            }),
+          });
+        }
+      }
+
+      // Update local state
+      mutate();
+
+      // Reset active index if necessary
+      if (activeRenderIndex >= updatedRenders.length) {
+        setActiveRenderIndex(Math.max(0, updatedRenders.length - 1));
+      }
+    } catch (error) {
+      console.error("Error removing render:", error);
+      alert("Failed to remove render. Please try again.");
+    } finally {
+      setRenderDeleteDialogOpen(false);
+    }
+  };
+
+  const handleCancelRemoveRender = () => {
+    setRenderDeleteDialogOpen(false);
+    setRenderToDeleteIndex(null);
+  };
+
   if (status === "loading") {
     return (
       <Box
@@ -331,59 +540,181 @@ export default function KeyboardDetail() {
                   mx: "auto",
                 }}
               >
-                <Image
-                  src={userKeyboard.renders[activeRenderIndex]}
-                  alt={userKeyboard.name}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  priority
-                />
+                {/* Show loading skeleton for temp renders */}
+                {typeof userKeyboard.renders[activeRenderIndex] === "object" &&
+                userKeyboard.renders[activeRenderIndex].isLoading ? (
+                  <Skeleton
+                    variant="rectangular"
+                    width="100%"
+                    height="100%"
+                    animation="wave"
+                  />
+                ) : (
+                  <Image
+                    src={
+                      typeof userKeyboard.renders[activeRenderIndex] ===
+                      "string"
+                        ? userKeyboard.renders[activeRenderIndex]
+                        : userKeyboard.renders[activeRenderIndex].url || ""
+                    }
+                    alt={userKeyboard.name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    priority
+                  />
+                )}
               </Box>
 
-              {userKeyboard.renders.length > 1 && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: "10px",
-                    overflowX: "auto",
-                    maxWidth: "100%",
-                    padding: "10px 0",
-                    justifyContent: "center",
-                  }}
-                >
-                  {userKeyboard.renders.map((render, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "5px",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        position: "relative",
-                        border: (theme) =>
-                          index === activeRenderIndex
-                            ? `2px solid ${theme.palette.primary.main}`
-                            : "2px solid transparent",
-                        transition: "all 0.2s ease-in-out",
-                        "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                        },
-                      }}
-                      onClick={() => setActiveRenderIndex(index)}
-                    >
-                      <Image
-                        src={render}
-                        alt={`${userKeyboard.name} render ${index + 1}`}
-                        width={80}
-                        height={80}
-                        style={{ objectFit: "cover" }}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: "10px",
+                  overflowX: "auto",
+                  maxWidth: "100%",
+                  padding: "10px 0",
+                  justifyContent: "center",
+                }}
+              >
+                {userKeyboard.renders.map((render, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "5px",
+                      overflow: "hidden",
+                      cursor:
+                        isEditMode &&
+                        typeof render === "object" &&
+                        render.isLoading
+                          ? "default"
+                          : "pointer",
+                      position: "relative",
+                      border: (theme) =>
+                        index === activeRenderIndex
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : "2px solid transparent",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        transform:
+                          typeof render === "object" && render.isLoading
+                            ? "none"
+                            : "translateY(-2px)",
+                        boxShadow:
+                          typeof render === "object" && render.isLoading
+                            ? "none"
+                            : "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      },
+                    }}
+                    onClick={() => {
+                      // Only change active render when clicking thumbnail
+                      // (Not in edit mode or not a loading render)
+                      if (
+                        !(
+                          isEditMode &&
+                          typeof render === "object" &&
+                          render.isLoading
+                        )
+                      ) {
+                        setActiveRenderIndex(index);
+                      }
+                    }}
+                  >
+                    {/* Show loading state for temp renders */}
+                    {typeof render === "object" && render.isLoading ? (
+                      <Skeleton
+                        variant="rectangular"
+                        width="100%"
+                        height="100%"
+                        animation="wave"
                       />
-                    </Box>
-                  ))}
-                </Box>
-              )}
+                    ) : (
+                      <>
+                        <Image
+                          src={
+                            typeof render === "string"
+                              ? render
+                              : render.url || ""
+                          }
+                          alt={`${userKeyboard.name} render ${index + 1}`}
+                          width={80}
+                          height={80}
+                          style={{ objectFit: "cover" }}
+                        />
+
+                        {/* Add delete button overlay when in edit mode */}
+                        {isEditMode && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 0,
+                              right: 0,
+                              bottom: 0,
+                              left: 0,
+                              backgroundColor: "rgba(0, 0, 0, 0.5)",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              opacity:
+                                userKeyboard.renders.length <= 1 ? 0.2 : 0,
+                              transition: "opacity 0.2s",
+                              "&:hover": {
+                                opacity:
+                                  userKeyboard.renders.length <= 1 ? 0.2 : 1,
+                                cursor:
+                                  userKeyboard.renders.length <= 1
+                                    ? "not-allowed"
+                                    : "pointer",
+                              },
+                            }}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (userKeyboard.renders.length > 1) {
+                                handleRemoveRender(index);
+                              } else {
+                                alert(
+                                  "At least one image must remain for the keyboard entry."
+                                );
+                              }
+                            }}
+                          >
+                            <DeleteIcon sx={{ color: "white" }} />
+                          </Box>
+                        )}
+                      </>
+                    )}
+                  </Box>
+                ))}
+
+                {/* Add the "Add Render" button when in edit mode */}
+                {isEditMode && (
+                  <Box
+                    onClick={() => setIsAddRenderModalOpen(true)}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "5px",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      position: "relative",
+                      border: "2px dashed grey",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  >
+                    <AddIcon />
+                    <Typography variant="caption">Add Render</Typography>
+                  </Box>
+                )}
+              </Box>
             </>
           )}
         </Box>
@@ -447,7 +778,6 @@ export default function KeyboardDetail() {
                 >
                   <MenuItem value="">-- Select Layout --</MenuItem>
                   <MenuItem value="40%">40%</MenuItem>
-                  
                   <MenuItem value="60%">60%</MenuItem>
                   <MenuItem value="65%">65%</MenuItem>
                   <MenuItem value="75%">75%</MenuItem>
@@ -808,6 +1138,48 @@ export default function KeyboardDetail() {
             disabled={confirmationName !== userKeyboard?.name}
           >
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add the modal component at the end of your component */}
+      <AddRenderModalMUI
+        open={isAddRenderModalOpen}
+        onClose={() => setIsAddRenderModalOpen(false)}
+        onAddRender={handleAddRender}
+        userId={session.user.uuid}
+      />
+
+      {/* Render Delete Confirmation Dialog */}
+      <Dialog
+        open={renderDeleteDialogOpen}
+        onClose={handleCancelRemoveRender}
+        aria-labelledby="render-delete-dialog-title"
+      >
+        <DialogTitle id="render-delete-dialog-title">
+          Confirm Removal
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to remove this image from your keyboard entry?
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 2 }}>
+            This action cannot be undone. If this is a custom uploaded image, it
+            will be permanently deleted from storage and you will need to
+            re-upload it if you want to use it again.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelRemoveRender} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmRemoveRender}
+            color="error"
+            variant="contained"
+            disabled={userKeyboard.renders.length <= 1}
+          >
+            Remove
           </Button>
         </DialogActions>
       </Dialog>
