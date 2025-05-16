@@ -212,6 +212,53 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
         return;
       }
 
+      // Create a temporary ID for the loading state
+      const tempId = `temp-${Date.now()}`;
+
+      // Close the modal immediately
+      resetForm();
+      onClose();
+
+      // Create the switch with a temporary ID and loading state
+      const tempSwitch = {
+        _id: tempId,
+        name: switchData.name,
+        manufacturer: switchData.manufacturer,
+        switchType: switchData.switchType,
+        isLoading: true, // Flag to indicate loading state
+        image: "", // Will be populated after upload
+        quantity: switchData.quantity,
+        factoryLubed: switchData.factoryLubed,
+        springWeight: switchData.springWeight,
+        topMaterial: switchData.topMaterial,
+        bottomMaterial: switchData.bottomMaterial,
+        stemMaterial: switchData.stemMaterial,
+        isLubed: switchData.isLubed,
+        isFilmed: switchData.isFilmed,
+        notes: switchData.notes,
+      };
+
+      // Add the temporary switch to the inventory
+      onAddSwitch(tempSwitch, true); // Pass true to indicate it's a temp switch
+
+      // Process the upload in the background
+      processUploadAndSave(tempSwitch, tempId);
+    } else if (activeTab === "dropdown") {
+      // Validation for dropdown selection
+      if (!selectedSwitchId) {
+        alert("Please select a manufacturer and switch.");
+        return;
+      }
+
+      onAddSwitch(switchData);
+      resetForm();
+      onClose();
+    }
+  };
+
+  // New function to handle the background processing
+  const processUploadAndSave = async (tempSwitch, tempId) => {
+    try {
       // Handle image upload if there's a selected file
       let imageUrl = switchData.image;
 
@@ -224,36 +271,26 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
             userId
           );
         } catch (error) {
-          alert(`Error uploading image: ${error.message}`);
-          return;
+          console.error(`Error uploading image: ${error.message}`);
+          // If image upload fails, continue with empty image
+          imageUrl = "";
         }
       }
 
-      // Check if we have an image after trying to upload
-      if (!imageUrl) {
-        alert("Please provide an image for the switch.");
-        return;
-      }
-
-      // Create the switch object with the updated image URL
-      const switchToAdd = {
-        ...switchData,
+      // Create the final switch to add with updated image
+      const finalSwitch = {
+        ...tempSwitch,
         image: imageUrl,
+        isLoading: false,
       };
 
-      onAddSwitch(switchToAdd);
-    } else if (activeTab === "dropdown") {
-      // Validation for dropdown selection
-      if (!selectedSwitchId) {
-        alert("Please select a manufacturer and switch.");
-        return;
-      }
-
-      onAddSwitch(switchData);
+      // Replace the temp switch with the final one
+      onAddSwitch(finalSwitch, false, tempId);
+    } catch (error) {
+      console.error("Error in background processing:", error);
+      // Handle error state - remove the temp switch or show error
+      onAddSwitch(null, false, tempId);
     }
-
-    resetForm();
-    onClose();
   };
 
   const isPreviewVisible =

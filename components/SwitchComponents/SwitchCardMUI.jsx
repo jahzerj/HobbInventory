@@ -7,6 +7,7 @@ import {
   Box,
   Chip,
   useTheme,
+  Skeleton,
 } from "@mui/material";
 
 export default function SwitchCardMUI({ itemObj, isPreview = false }) {
@@ -16,6 +17,49 @@ export default function SwitchCardMUI({ itemObj, isPreview = false }) {
   const switchObj = itemObj;
 
   if (!switchObj) return null;
+
+  // Add handling for loading state
+  if (switchObj.isLoading) {
+    return (
+      <Card
+        variant="outlined"
+        sx={{
+          width: "100%",
+          maxWidth: { xs: 160, sm: 170 },
+          borderRadius: 2,
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          m: 1,
+        }}
+      >
+        {/* Image skeleton */}
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            height: 120,
+            backgroundColor: isDarkMode ? "#333" : "#f5f5f5",
+          }}
+        >
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height="100%"
+            animation="wave"
+          />
+        </Box>
+
+        {/* Content skeleton */}
+        <CardContent sx={{ flexGrow: 1, p: 2 }}>
+          <Skeleton variant="text" width="60%" height={15} />
+          <Skeleton variant="text" width="90%" height={20} sx={{ mb: 1 }} />
+          <Skeleton variant="rectangular" width="100%" height={24} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   const formatQuantity = (quantity) => {
     const num = parseInt(quantity) || 0;

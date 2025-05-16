@@ -47,41 +47,86 @@ export default function Switches() {
     mutate,
   } = useSWR("/api/inventories/userswitches");
 
-  const handleAddSwitch = async (newSwitch) => {
-    const tempId = nanoid();
-    const optimisticSwitch = { ...newSwitch, _id: tempId };
-
-    // Optimistically update the UI
-    mutate(
-      (currentSwitches = []) => [...currentSwitches, optimisticSwitch],
-      false
-    );
-
+  const handleAddSwitch = async (newSwitch, isTemp = false, tempId = null) => {
     try {
-      const response = await fetch("/api/inventories/userswitches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSwitch),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
+      // If we're dealing with a temporary switch, update local state first
+      if (isTemp) {
+        // Optimistically update the UI with the temporary switch
         mutate(
-          (currentSwitches) => currentSwitches.filter((s) => s._id !== tempId),
+          (currentSwitches = []) => [...currentSwitches, newSwitch],
           false
         );
-        throw new Error(errorData.message || "Failed to add switch");
+        return;
       }
 
-      mutate();
+      // If we're replacing a temp switch, remove it first
+      if (tempId) {
+        // If switch is null, just remove the temp item
+        if (!newSwitch) {
+          mutate(
+            (currentSwitches) =>
+              currentSwitches.filter((s) => s._id !== tempId),
+            false
+          );
+          return;
+        }
+
+        // Otherwise, make the API call to add the real switch
+        const response = await fetch("/api/inventories/userswitches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...newSwitch,
+            _id: undefined, // Don't send the temp ID
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add switch");
+        }
+
+        const data = await response.json();
+
+        // Replace the temp switch with the real one
+        mutate(
+          (currentSwitches) =>
+            currentSwitches.map((sw) =>
+              sw._id === tempId ? { ...data.switch } : sw
+            ),
+          false
+        );
+
+        // Now revalidate to ensure everything is in sync
+        mutate();
+      } else {
+        // Regular flow for dropdown selection
+        const response = await fetch("/api/inventories/userswitches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newSwitch),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add switch");
+        }
+
+        // Refresh data from server
+        mutate();
+      }
     } catch (error) {
       console.error("Failed to add switch:", error);
       alert(`Error: ${error.message}`);
-      // Ensure UI is reverted if fetch failed after optimistic update but before response.ok check
-      mutate(
-        (currentSwitches) => currentSwitches.filter((s) => s._id !== tempId),
-        false
-      );
+
+      // If there was an error with a temp switch, remove it
+      if (tempId) {
+        mutate(
+          (currentSwitches) =>
+            currentSwitches.filter((sw) => sw._id !== tempId),
+          false
+        );
+      }
     }
   };
 
@@ -154,10 +199,12 @@ export default function Switches() {
     };
   }, []);
 
-  // Get unique manufacturers
+  // Get unique manufacturers and sort alphabetically
   const uniqueManufacturers = [
     "all",
-    ...new Set(switches?.map((sw) => sw.manufacturer) || []),
+    ...Array.from(new Set(switches?.map((sw) => sw.manufacturer) || [])).sort(
+      (a, b) => a.localeCompare(b)
+    ),
   ];
 
   // Handle modal
