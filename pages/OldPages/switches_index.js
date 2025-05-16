@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useEffect, useRef, useCallback } from "react";
-import AddSwitchModal from "@/components/SwitchComponents/AddSwitchModal";
+import AddSwitchModal from "@/components/OldComponents/AddSwitchModal";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
 import InventoryList from "@/components/OldComponents/InventoryList";

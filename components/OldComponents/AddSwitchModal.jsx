@@ -2,9 +2,9 @@ import { createPortal } from "react-dom";
 import { useState } from "react";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
-import SwitchCardMUI from "./SwitchCardMUI";
+import SwitchCardMUI from "../SwitchComponents/SwitchCardMUI";
 import useSWR from "swr";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
+import ImageUploader from "@/components/OldComponents/ImageUploader";
 
 export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
   const [activeTab, setActiveTab] = useState("dropdown");

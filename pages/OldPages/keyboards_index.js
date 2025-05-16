@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import useSWR from "swr";
-import AddKeyboardModal from "@/components/KeyboardComponents/AddKeyboardModal";
+import AddKeyboardModal from "@/components/OldComponents/AddKeyboardModal";
 import InventoryList from "@/components/OldComponents/InventoryList";
 import KeyboardCard from "@/components/OldComponents/KeyboardCard";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";

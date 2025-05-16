@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { nanoid } from "nanoid";
-import ImageUploader from "../SharedComponents/ImageUploader";
+import ImageUploader from "./ImageUploader";
 
 export default function AddKeyboardModal({
   open,

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import { colorOptions } from "@/utils/colors";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
+import ImageUploader from "@/components/OldComponents/ImageUploader";
 
 export default function AddKeycapModal({ open, onClose, onAddKeycap, userId }) {
   const [activeTab, setActiveTab] = useState("dropdown");

@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import { useState } from "react";
-import ImageUploader from "@/components/SharedComponents/ImageUploader";
+import ImageUploader from "@/components/OldComponents/ImageUploader";
 
 export default function AddKitModal({ open, onClose, onAddKit, userId }) {
   const [kitData, setKitData] = useState({
