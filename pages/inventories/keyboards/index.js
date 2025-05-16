@@ -7,7 +7,9 @@ import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import KeyboardCardMUI from "@/components/KeyboardComponents/KeyboardCardMUI";
 import ScrollPositionManager from "@/components/SharedComponents/ScrollPositionManager";
-import AddKeyboardModalMUI from "@/components/KeyboardComponents/AddKeyboardModalMUI";
+import AddKeyboardModalMUI, {
+  LAYOUT_ORDER,
+} from "@/components/KeyboardComponents/AddKeyboardModalMUI";
 
 import {
   Container,
@@ -40,24 +42,79 @@ export default function Keyboards() {
   } = useSWR("/api/inventories/userkeyboards");
 
   const handleAddKeyboard = useCallback(
-    async (keyboardToAdd) => {
+    async (keyboardToAdd, isTemp = false, tempId = null) => {
       try {
-        const response = await fetch("/api/inventories/userkeyboards", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(keyboardToAdd),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to add keyboard");
+        // If we're dealing with a temporary keyboard, update local state first
+        if (isTemp) {
+          // Optimistically update the UI with the temporary keyboard
+          mutate((currentData) => {
+            return [...(currentData || []), keyboardToAdd];
+          }, false); // Don't revalidate yet
+          return;
         }
 
-        // Refresh data from server to ensure accuracy
-        mutate();
+        // If we're replacing a temp keyboard, remove it first
+        if (tempId) {
+          // If keyboard is null, just remove the temp item
+          if (!keyboardToAdd) {
+            mutate((currentData) => {
+              return currentData.filter((kb) => kb._id !== tempId);
+            }, false);
+            return;
+          }
+
+          // Otherwise, make the API call to add the real keyboard
+          const response = await fetch("/api/inventories/userkeyboards", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...keyboardToAdd,
+              _id: undefined, // Don't send the temp ID
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add keyboard");
+          }
+
+          const data = await response.json();
+
+          // Replace the temp keyboard with the real one
+          mutate((currentData) => {
+            return currentData.map((kb) =>
+              kb._id === tempId ? { ...data.keyboard } : kb
+            );
+          }, false);
+
+          // Now revalidate to ensure everything is in sync
+          mutate();
+        } else {
+          // Regular flow for dropdown selection
+          const response = await fetch("/api/inventories/userkeyboards", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(keyboardToAdd),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add keyboard");
+          }
+
+          // Refresh data from server
+          mutate();
+        }
       } catch (error) {
         console.error("Failed to add keyboard:", error);
         alert(`Error: ${error.message}`);
+
+        // If there was an error with a temp keyboard, remove it
+        if (tempId) {
+          mutate((currentData) => {
+            return currentData.filter((kb) => kb._id !== tempId);
+          }, false);
+        }
       }
     },
     [mutate]
@@ -114,7 +171,24 @@ export default function Keyboards() {
   const uniqueLayouts = keyboards
     ? [
         "all",
-        ...Array.from(new Set(keyboards.map((keyboard) => keyboard.layout))),
+        ...Array.from(
+          new Set(keyboards.map((keyboard) => keyboard.layout))
+        ).sort((a, b) => {
+          const indexA = LAYOUT_ORDER.indexOf(a);
+          const indexB = LAYOUT_ORDER.indexOf(b);
+
+          // If both layouts are in our predefined order, sort by that
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+
+          // If only one layout is in our order, prioritize it
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+
+          // For any layouts not in our predefined order, sort alphabetically
+          return a.localeCompare(b);
+        }),
       ]
     : ["all"];
 

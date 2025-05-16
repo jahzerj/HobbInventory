@@ -30,7 +30,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
-const LAYOUT_ORDER = [
+export const LAYOUT_ORDER = [
   "40%",
   "60%",
   "65%",
@@ -292,42 +292,22 @@ export default function AddKeyboardModal({
         return;
       }
 
-      // Upload images if necessary and update URLs
-      let updatedRenders = [...keyboardData.renders];
+      // Create a temporary ID for the loading state
+      const tempId = `temp-${Date.now()}`;
 
-      // Process each image selection
-      for (let i = 0; i < selectedImages.length; i++) {
-        if (selectedImages[i]) {
-          try {
-            // Upload image to Cloudinary
-            const imageUrl = await uploadToCloudinary(
-              selectedImages[i],
-              "keyboards_renders",
-              userId
-            );
-            updatedRenders[i] = imageUrl;
-          } catch (error) {
-            alert(`Error uploading image: ${error.message}`);
-            return;
-          }
-        }
-      }
+      // Close the modal immediately
+      resetForm();
+      onClose();
 
-      // Filter out empty URLs
-      updatedRenders = updatedRenders.filter((url) => url && url.trim() !== "");
-
-      // Validate that we have at least one render
-      if (updatedRenders.length === 0) {
-        alert("Please provide at least one keyboard image.");
-        return;
-      }
-
-      // Create the keyboard to add with updated renders
-      const keyboardToAdd = {
+      // Create the keyboard with a temporary ID and loading state
+      const tempKeyboard = {
+        _id: tempId,
         name: keyboardData.name,
         designer: keyboardData.designer,
         layout: keyboardData.layout,
-        renders: updatedRenders,
+        isLoading: true, // Flag to indicate loading state
+        renders: [], // Will be populated after upload
+        // Include other fields from keyboardData
         blocker: keyboardData.blocker,
         switchType: keyboardData.switchType,
         plateMaterial: keyboardData.plateMaterial,
@@ -340,10 +320,14 @@ export default function AddKeyboardModal({
         buildWeight: keyboardData.buildWeight,
         pcbOptions: keyboardData.pcbOptions,
         builds: keyboardData.builds,
-        notes: [],
+        notes: keyboardData.notes,
       };
 
-      onAddKeyboard(keyboardToAdd);
+      // Add the temporary keyboard to the inventory
+      onAddKeyboard(tempKeyboard, true); // Pass true to indicate it's a temp keyboard
+
+      // Process the uploads in the background
+      processUploadsAndSave(tempKeyboard, tempId);
     } else if (activeTab === "dropdown") {
       // Validation for dropdown entry
       if (!selectedKeyboardId) {
@@ -383,9 +367,51 @@ export default function AddKeyboardModal({
       };
 
       onAddKeyboard(keyboardToAdd);
+      resetForm();
+      onClose();
     }
-    resetForm();
-    onClose();
+  };
+
+  // New function to handle the background processing
+  const processUploadsAndSave = async (tempKeyboard, tempId) => {
+    try {
+      // Upload images if necessary and update URLs
+      let updatedRenders = [...keyboardData.renders];
+
+      // Process each image selection
+      for (let i = 0; i < selectedImages.length; i++) {
+        if (selectedImages[i]) {
+          try {
+            // Upload image to Cloudinary
+            const imageUrl = await uploadToCloudinary(
+              selectedImages[i],
+              "keyboards_renders",
+              userId
+            );
+            updatedRenders[i] = imageUrl;
+          } catch (error) {
+            console.error(`Error uploading image: ${error.message}`);
+          }
+        }
+      }
+
+      // Filter out empty URLs
+      updatedRenders = updatedRenders.filter((url) => url && url.trim() !== "");
+
+      // Create the final keyboard to add with updated renders
+      const finalKeyboard = {
+        ...tempKeyboard,
+        renders: updatedRenders,
+        isLoading: false,
+      };
+
+      // Replace the temp keyboard with the final one
+      onAddKeyboard(finalKeyboard, false, tempId);
+    } catch (error) {
+      console.error("Error in background processing:", error);
+      // Handle error state - remove the temp keyboard or show error
+      onAddKeyboard(null, false, tempId);
+    }
   };
 
   if (!open) return null;

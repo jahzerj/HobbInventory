@@ -2,7 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { useSwipeable } from "react-swipeable";
-import { Card, CardContent, Box, Typography, useTheme } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  useTheme,
+  Paper,
+  Skeleton,
+} from "@mui/material";
 import { alpha } from "@mui/material/styles";
 
 // Exact Dot component from KeycapCardMUI
@@ -83,6 +91,29 @@ export default function KeyboardCardMUI({ itemObj }) {
   const handleCardClick = () => {
     router.push(`/inventories/keyboards/${keyboardObj._id}`);
   };
+
+  if (itemObj.isLoading) {
+    return (
+      <Paper
+        sx={{
+          width: "100%",
+          maxWidth: 480,
+          m: 1,
+          p: 0,
+          borderRadius: 2,
+          overflow: "hidden",
+          boxShadow: 3,
+        }}
+      >
+        <Box sx={{ height: 200, bgcolor: "grey.300", width: "100%" }} />
+        <Box sx={{ p: 2 }}>
+          <Skeleton variant="text" width="80%" height={32} />
+          <Skeleton variant="text" width="60%" height={24} />
+          <Skeleton variant="text" width="40%" height={24} />
+        </Box>
+      </Paper>
+    );
+  }
 
   return (
     <Card
