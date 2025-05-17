@@ -33,3 +33,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#data
+
+**/switch_collection_sorted
+**/OldComponents/
+**/OldPages/
+
+
+
