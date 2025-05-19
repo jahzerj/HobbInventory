@@ -17,9 +17,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { ColorModeContext } from "./_app";
+import { ThemeContext } from "./_app";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PaletteIcon from "@mui/icons-material/Palette";
 
 export default function Profile() {
   const { data: session, status } = useSession({
@@ -33,7 +34,7 @@ export default function Profile() {
 
   // Get theme and colorMode from context
   const theme = useTheme();
-  const colorMode = useContext(ColorModeContext);
+  const themeContext = useContext(ThemeContext);
 
   // Fetch counts for each inventory type
   const { data: keycaps } = useSWR("/api/inventories/userkeycaps");
@@ -166,10 +167,22 @@ export default function Profile() {
           <Button
             variant="contained"
             color="secondary"
-            onClick={colorMode.toggleColorMode}
+            onClick={themeContext.toggleColorMode}
             fullWidth
           >
             {theme.palette.mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<PaletteIcon />}
+            onClick={themeContext.toggleThemeStyle}
+            fullWidth
+          >
+            {themeContext.themeStyle === "highContrast"
+              ? "Kandinsky Theme"
+              : "High Contrast Theme"}
           </Button>
 
           <Button

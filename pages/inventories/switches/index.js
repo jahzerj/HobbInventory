@@ -273,10 +273,7 @@ export default function Switches() {
             position: "sticky",
             top: 16,
             zIndex: 10,
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? alpha(theme.palette.background.paper, 0.8)
-                : alpha(theme.palette.background.paper, 0.8),
+            bgcolor: "transparent",
             backdropFilter: "blur(8px)",
           }}
         >
@@ -320,10 +317,7 @@ export default function Switches() {
             position: "sticky",
             top: 49,
             zIndex: 10,
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? alpha(theme.palette.background.paper, 0.8)
-                : alpha(theme.palette.background.paper, 0.8),
+            bgcolor: "transparent",
             backdropFilter: "blur(8px)",
           }}
         >

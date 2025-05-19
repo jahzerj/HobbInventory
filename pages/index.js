@@ -12,10 +12,13 @@ import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, useThemeProps } from "@mui/material/styles";
+import { ThemeContext } from "./_app"; // Import ThemeContext to check theme style
+import { useContext } from "react"; // Add useContext
 
 export default function InventoryHub() {
   const theme = useTheme();
+  const themeContext = useContext(ThemeContext); // Access the theme context
   const { data: session, status } = useSession();
 
   // Function to clear scroll position for a specific inventory page
@@ -92,7 +95,8 @@ export default function InventoryHub() {
     );
   }
 
-  // URLs for light and dark mode images
+  // URLs for various theme modes and styles
+  // Default theme images (light/dark)
   const keycapsImageLight =
     "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596336/keycaps_WB_cuvxvh.png";
   const keycapsImageDark =
@@ -105,6 +109,14 @@ export default function InventoryHub() {
     "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596347/keyboard_WB_lguoy5.png";
   const keyboardsImageDark =
     "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596389/keyboard_BW_invert_pwkcam.png";
+
+  // Kandinsky theme images (same for both light/dark)
+  const keycapsImageKandinsky =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596323/keycaps_JJ_dmqh3g.png";
+  const switchesImageKandinsky =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596325/Switches_JJ_oi7mnp.png";
+  const keyboardsImageKandinsky =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596330/keyboard_JJ_fuakuc.png";
 
   // Hub view for authenticated users
   return (
@@ -146,6 +158,7 @@ export default function InventoryHub() {
               title: "KEYCAPS",
               lightImg: keycapsImageLight,
               darkImg: keycapsImageDark,
+              kandinskyImg: keycapsImageKandinsky,
               link: "/inventories/keycaps",
               pageId: "keycaps",
             },
@@ -153,6 +166,7 @@ export default function InventoryHub() {
               title: "SWITCHES",
               lightImg: switchesImageLight,
               darkImg: switchesImageDark,
+              kandinskyImg: switchesImageKandinsky,
               link: "/inventories/switches",
               pageId: "switches",
             },
@@ -160,6 +174,7 @@ export default function InventoryHub() {
               title: "KEYBOARD KITS",
               lightImg: keyboardsImageLight,
               darkImg: keyboardsImageDark,
+              kandinskyImg: keyboardsImageKandinsky,
               link: "/inventories/keyboards",
               pageId: "keyboards",
             },
@@ -211,7 +226,11 @@ export default function InventoryHub() {
                       height: "100%",
                     }}
                     image={
-                      theme.palette.mode === "dark"
+                      // Check if using Kandinsky theme first, regardless of light/dark mode
+                      themeContext?.themeStyle === "kandinsky"
+                        ? item.kandinskyImg
+                        : // If not Kandinsky, then follow light/dark mode selection
+                        theme.palette.mode === "dark"
                         ? item.darkImg
                         : item.lightImg
                     }
