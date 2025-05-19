@@ -1,11 +1,21 @@
-import styled from "styled-components";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  Typography,
+  Card,
+  CardMedia,
+} from "@mui/material";
+import Grid from "@mui/material/Grid";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
+import { useTheme } from "@mui/material/styles";
 
 export default function InventoryHub() {
-  // Get session data and status
+  const theme = useTheme();
   const { data: session, status } = useSession();
 
   // Function to clear scroll position for a specific inventory page
@@ -21,197 +31,198 @@ export default function InventoryHub() {
   // If user is not authenticated, show splash screen
   if (!session) {
     return (
-      <SplashScreen>
-        <ImageSection>
-          <Image
-            src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1745845655/F1_wk1fpp.jpg"
-            alt="F1-8x ISO-DE GMK Dualshot"
-            fill
-            style={{ objectFit: "cover" }}
-            priority
-          />
-        </ImageSection>
-        <ContentSection>
-          <h1>HobbInventory</h1>
-          <p>The one stop shop for all your hobby needs</p>
-          <button onClick={() => signIn()}>Sign in</button>
-        </ContentSection>
-      </SplashScreen>
+      <Grid container sx={{ minHeight: "100vh" }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Box
+            sx={{
+              position: "relative",
+              height: {
+                xs: "50vh",
+                sm: "100vh",
+              },
+            }}
+          >
+            <Image
+              src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1745845655/F1_wk1fpp.jpg"
+              alt="F1-8x ISO-DE GMK Dualshot"
+              fill
+              sizes="(max-width: 599px) 100vw, 50vw"
+              style={{ objectFit: "cover" }}
+              priority
+            />
+          </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: {
+                xs: "50vh",
+                sm: "100vh",
+              },
+              p: 3,
+            }}
+          >
+            <Typography variant="h3" color="primary" gutterBottom>
+              HobbInventory
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              align="center"
+              gutterBottom
+              sx={{ mb: 4 }}
+            >
+              The one stop shop for all your hobby needs
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => signIn()}
+            >
+              Sign in
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
     );
   }
 
-  // Minimal hub view for authenticated users
+  // URLs for light and dark mode images
+  const keycapsImageLight =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596336/keycaps_WB_cuvxvh.png";
+  const keycapsImageDark =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596374/keycaps_BW_invert_cnxbr8.png";
+  const switchesImageLight =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596341/Switches_WB_juwdf7.png";
+  const switchesImageDark =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596381/Switches_BW_invert_mcs5ec.png";
+  const keyboardsImageLight =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596347/keyboard_WB_lguoy5.png";
+  const keyboardsImageDark =
+    "https://res.cloudinary.com/dgn86s1e2/image/upload/v1747596389/keyboard_BW_invert_pwkcam.png";
+
+  // Hub view for authenticated users
   return (
     <>
       <ProfileButtonMUI />
-      <MinimalContainer>
-        <HubTitle>Inventory Hub</HubTitle>
+      <Container
+        maxWidth="md"
+        sx={{
+          py: { xs: 1, sm: 2, md: 4 },
+          px: { xs: 1, sm: 2 },
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          variant="h4"
+          align="center"
+          gutterBottom
+          sx={{
+            fontSize: { xs: "1.7rem", sm: "2.125rem" },
+            mt: { xs: 1, sm: 2 },
+            mb: { xs: 1, sm: 2 },
+          }}
+        >
+          Inventory Hub
+        </Typography>
 
-        <InventoryGrid>
-          <CategoryItem>
-            <CategoryLabel>Keycaps</CategoryLabel>
-            <Link
-              href="/inventories/keycaps"
-              onClick={() => handleNavigation("keycaps")}
-            >
-              <ImageWrapper>
-                <Image
-                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744729995/Keycap_nshyrk.png"
-                  alt="Keycaps"
-                  width={300}
-                  height={300}
-                  style={{ objectFit: "contain" }}
-                />
-              </ImageWrapper>
-            </Link>
-          </CategoryItem>
-
-          <CategoryItem>
-            <CategoryLabel>Switches</CategoryLabel>
-            <Link
-              href="/inventories/switches"
-              onClick={() => handleNavigation("switches")}
-            >
-              <ImageWrapper>
-                <Image
-                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744730282/MX_Switch_um3qef.png"
-                  alt="Switches"
-                  width={300}
-                  height={300}
-                  style={{ objectFit: "contain" }}
-                />
-              </ImageWrapper>
-            </Link>
-          </CategoryItem>
-
-          <CategoryItem>
-            <CategoryLabel>Keyboard Kits</CategoryLabel>
-            <Link
-              href="/inventories/keyboards"
-              onClick={() => handleNavigation("keyboards")}
-            >
-              <ImageWrapper>
-                <Image
-                  src="https://res.cloudinary.com/dgn86s1e2/image/upload/v1744730460/Keyboard_q2kisx.png"
-                  alt="Keyboard Kits"
-                  width={300}
-                  height={300}
-                  style={{ objectFit: "contain" }}
-                />
-              </ImageWrapper>
-            </Link>
-          </CategoryItem>
-        </InventoryGrid>
-      </MinimalContainer>
+        <Stack
+          spacing={{ xs: 1.5, sm: 2, md: 4 }}
+          alignItems="center"
+          sx={{
+            flex: 1,
+            justifyContent: "space-evenly",
+          }}
+        >
+          {[
+            {
+              title: "KEYCAPS",
+              lightImg: keycapsImageLight,
+              darkImg: keycapsImageDark,
+              link: "/inventories/keycaps",
+              pageId: "keycaps",
+            },
+            {
+              title: "SWITCHES",
+              lightImg: switchesImageLight,
+              darkImg: switchesImageDark,
+              link: "/inventories/switches",
+              pageId: "switches",
+            },
+            {
+              title: "KEYBOARD KITS",
+              lightImg: keyboardsImageLight,
+              darkImg: keyboardsImageDark,
+              link: "/inventories/keyboards",
+              pageId: "keyboards",
+            },
+          ].map((item) => (
+            <Box key={item.title} sx={{ width: "100%", textAlign: "center" }}>
+              <Typography
+                variant="h5"
+                align="center"
+                gutterBottom
+                sx={{
+                  fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                  mb: { xs: 0.5, sm: 1 },
+                }}
+              >
+                {item.title}
+              </Typography>
+              <Link
+                href={item.link}
+                onClick={() => handleNavigation(item.pageId)}
+                style={{ textDecoration: "none" }}
+              >
+                <Card
+                  sx={{
+                    // Square cards at all screen sizes
+                    width: { xs: "26vh", sm: 280, md: 320 },
+                    height: { xs: "26vh", sm: 280, md: 320 },
+                    // Added min-width/height to ensure minimum size
+                    minWidth: { xs: 180, sm: 280, md: 320 },
+                    minHeight: { xs: 180, sm: 280, md: 320 },
+                    // Added max-width/height to prevent them from being too large
+                    maxWidth: { xs: 280, sm: 280, md: 320 },
+                    maxHeight: { xs: 280, sm: 280, md: 320 },
+                    borderRadius: 3,
+                    transition: "transform 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                    },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    sx={{
+                      objectFit: "contain",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                    image={
+                      theme.palette.mode === "dark"
+                        ? item.darkImg
+                        : item.lightImg
+                    }
+                    alt={item.title}
+                  />
+                </Card>
+              </Link>
+            </Box>
+          ))}
+        </Stack>
+      </Container>
     </>
   );
 }
-
-// Simple, flat splash screen components
-const SplashScreen = styled.div`
-  display: grid;
-  width: 100%;
-  height: 100vh;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (max-width: 767px) {
-    grid-template-rows: 1fr 1fr;
-  }
-`;
-
-const ImageSection = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-`;
-
-const ContentSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-
-  h1 {
-    color: #007bff;
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: #333;
-    font-size: 1.2rem;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.8rem 3rem;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: rgb(10, 37, 66);
-    }
-  }
-`;
-
-// New minimal hub components
-const MinimalContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 40px 20px;
-`;
-
-const HubTitle = styled.h1`
-  font-size: 2 rem;
-  margin-bottom: 10px;
-  text-align: center;
-`;
-
-const InventoryGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  width: 100%;
-
-  @media (min-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-  }
-`;
-
-const CategoryItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const CategoryLabel = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-`;
-
-const ImageWrapper = styled.div`
-  border-radius: 24px;
-  overflow: hidden;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.05);
-    cursor: pointer;
-  }
-`;

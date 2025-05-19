@@ -8,7 +8,7 @@ import { SWRConfig } from "swr";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { useState, useMemo, createContext } from "react";
+import { useState, useMemo, createContext, useEffect } from "react";
 import Head from "next/head";
 import { Box } from "@mui/material";
 
@@ -21,14 +21,27 @@ export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }) {
-  // Add state for mode
+  // Initialize mode state with a function to handle server-side rendering
   const [mode, setMode] = useState("light");
+
+  // Load theme preference from localStorage on initial render (client-side only)
+  useEffect(() => {
+    const savedMode = localStorage.getItem("themeMode");
+    if (savedMode) {
+      setMode(savedMode);
+    }
+  }, []);
 
   // Create color mode toggle context
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+        setMode((prevMode) => {
+          const newMode = prevMode === "light" ? "dark" : "light";
+          // Save to localStorage when mode changes
+          localStorage.setItem("themeMode", newMode);
+          return newMode;
+        });
       },
     }),
     []

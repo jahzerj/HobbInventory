@@ -207,20 +207,27 @@ export default function SwitchCardMUI({ itemObj, isPreview = false }) {
             backgroundColor:
               switchObj.switchType?.toLowerCase() === "linear"
                 ? isDarkMode
-                  ? "#1b5e20"
-                  : "#a5d6a7"
+                  ? "rgba(215, 54, 54, 0.8)" // Linear dark mode - Kandinsky red
+                  : "#d73636" // Linear light mode - Kandinsky red
                 : switchObj.switchType?.toLowerCase() === "tactile"
                 ? isDarkMode
-                  ? "#0d47a1"
-                  : "#90caf9"
+                  ? "rgba(38, 75, 135, 0.8)" // Tactile dark mode - Kandinsky blue
+                  : "#264b87" // Tactile light mode - Kandinsky blue
                 : switchObj.switchType?.toLowerCase() === "clicky"
                 ? isDarkMode
-                  ? "#e65100"
-                  : "#ffcc80"
+                  ? "rgba(230, 184, 0, 0.8)" // Clicky dark mode - Kandinsky yellow
+                  : "#e6b800" // Clicky light mode - Kandinsky yellow
                 : isDarkMode
-                ? "#616161"
-                : "#e0e0e0",
-            color: isDarkMode ? "#fff" : "#333",
+                ? "#616161" // Default dark
+                : "#e0e0e0", // Default light
+            color:
+              switchObj.switchType?.toLowerCase() === "linear" ||
+              switchObj.switchType?.toLowerCase() === "tactile" ||
+              switchObj.switchType?.toLowerCase() === "clicky"
+                ? "#fff"
+                : isDarkMode
+                ? "#fff"
+                : "#333",
             fontWeight: "500",
           }}
         />
