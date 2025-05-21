@@ -12,7 +12,6 @@ import {
   Stack,
   NoSsr,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
@@ -259,10 +258,7 @@ export default function Keycaps() {
             position: "sticky",
             top: 16,
             zIndex: 10,
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? alpha(theme.palette.background.paper, 0.8)
-                : alpha(theme.palette.background.paper, 0.8),
+            bgcolor: "transparent",
             backdropFilter: "blur(8px)",
           }}
         >
@@ -272,7 +268,7 @@ export default function Keycaps() {
                 key={color}
                 label={color === "all" ? "All Colors" : color}
                 onClick={() => handleColorChange(color)}
-                color={colorFilters.includes(color) ? "primary" : "default"}
+                color={colorFilters.includes(color) ? "secondary" : "default"}
                 variant={colorFilters.includes(color) ? "filled" : "outlined"}
                 sx={
                   color !== "all"

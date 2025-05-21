@@ -264,10 +264,7 @@ export default function Keyboards() {
             position: "sticky",
             top: 16,
             zIndex: 10,
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? alpha(theme.palette.background.paper, 0.8)
-                : alpha(theme.palette.background.paper, 0.8),
+            bgcolor: "transparent",
             backdropFilter: "blur(8px)",
           }}
         >
@@ -277,7 +274,9 @@ export default function Keyboards() {
                 key={layout}
                 label={layout === "all" ? "All Layouts" : layout}
                 onClick={() => handleLayoutSelect(layout)}
-                color={selectedLayouts.includes(layout) ? "primary" : "default"}
+                color={
+                  selectedLayouts.includes(layout) ? "secondary" : "default"
+                }
                 variant={
                   selectedLayouts.includes(layout) ? "filled" : "outlined"
                 }

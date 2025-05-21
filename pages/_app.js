@@ -3,68 +3,88 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+// DM Sans for the Kandinsky theme
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/600.css";
+import "@fontsource/dm-sans/700.css";
 
 import { SWRConfig } from "swr";
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { useState, useMemo, createContext, useEffect } from "react";
 import Head from "next/head";
 import { Box } from "@mui/material";
+import {
+  highContrastLightTheme,
+  highContrastDarkTheme,
+  kandinskyLightTheme,
+  kandinskyDarkTheme,
+} from "../styles/theme";
 
-// Create context for theme mode
-export const ColorModeContext = createContext({ toggleColorMode: () => {} });
-
-const fetcher = (url) => fetch(url).then((r) => r.json());
+// Create context for theme settings
+export const ThemeContext = createContext({
+  toggleColorMode: () => {},
+  toggleThemeStyle: () => {},
+  themeStyle: "highContrast",
+});
 
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }) {
-  // Initialize mode state with a function to handle server-side rendering
+  // Initialize state with default values
   const [mode, setMode] = useState("light");
+  const [themeStyle, setThemeStyle] = useState("highContrast"); // "highContrast" or "kandinsky"
 
-  // Load theme preference from localStorage on initial render (client-side only)
+  // Load theme preferences from localStorage on initial render (client-side only)
   useEffect(() => {
     const savedMode = localStorage.getItem("themeMode");
     if (savedMode) {
       setMode(savedMode);
     }
+
+    const savedThemeStyle = localStorage.getItem("themeStyle");
+    if (savedThemeStyle) {
+      setThemeStyle(savedThemeStyle);
+    }
   }, []);
 
-  // Create color mode toggle context
-  const colorMode = useMemo(
+  // Create theme context with both toggles
+  const themeContext = useMemo(
     () => ({
       toggleColorMode: () => {
         setMode((prevMode) => {
           const newMode = prevMode === "light" ? "dark" : "light";
-          // Save to localStorage when mode changes
           localStorage.setItem("themeMode", newMode);
           return newMode;
         });
       },
+      toggleThemeStyle: () => {
+        setThemeStyle((prevStyle) => {
+          const newStyle =
+            prevStyle === "highContrast" ? "kandinsky" : "highContrast";
+          localStorage.setItem("themeStyle", newStyle);
+          return newStyle;
+        });
+      },
+      themeStyle,
     }),
-    []
+    [themeStyle]
   );
 
-  // Create theme based on current mode - using default MUI theme
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          // background: {
-          //   default: mode === "light" ? "#ccc" : "#333",
-          //   paper: mode === "light" ? "#fff" : "#424242",
-          // },
-        },
-      }),
-    [mode]
-  );
+  // Select the appropriate theme based on both mode and style
+  const theme = useMemo(() => {
+    if (themeStyle === "highContrast") {
+      return mode === "light" ? highContrastLightTheme : highContrastDarkTheme;
+    } else {
+      return mode === "light" ? kandinskyLightTheme : kandinskyDarkTheme;
+    }
+  }, [mode, themeStyle]);
 
   return (
     <SessionProvider session={session}>
-      <ColorModeContext.Provider value={colorMode}>
+      <ThemeContext.Provider value={themeContext}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Box
@@ -99,7 +119,7 @@ export default function App({
             </SWRConfig>
           </Box>
         </ThemeProvider>
-      </ColorModeContext.Provider>
+      </ThemeContext.Provider>
     </SessionProvider>
   );
 }
