@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Container,
-  Stack,
   Typography,
   Card,
   CardMedia,
@@ -13,6 +12,7 @@ import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 export default function InventoryHub() {
   const theme = useTheme();
@@ -22,6 +22,14 @@ export default function InventoryHub() {
   const handleNavigation = (pageId) => {
     sessionStorage.removeItem(`scrollPosition_${pageId}`);
   };
+
+  const isMediumScreen = useMediaQuery(
+    "(min-width: 768px) and (max-width: 1024px)"
+  );
+  const isPortrait = useMediaQuery("(orientation: portrait)");
+  const isLargeScreen = useMediaQuery(
+    "(min-width: 1000px) and (orientation: landscape)"
+  );
 
   // Show loading state
   if (status === "loading") {
@@ -110,35 +118,19 @@ export default function InventoryHub() {
   return (
     <>
       <ProfileButtonMUI />
-      <Container
-        maxWidth="md"
-        sx={{
-          py: { xs: 1, sm: 2, md: 4 },
-          px: { xs: 1, sm: 2 },
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Typography
-          variant="h4"
-          align="center"
-          gutterBottom
-          sx={{
-            fontSize: { xs: "1.7rem", sm: "2.125rem" },
-            mt: { xs: 1, sm: 2 },
-            mb: { xs: 1, sm: 2 },
-          }}
-        >
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Typography variant="h4" align="center" sx={{ mb: 4 }}>
           Inventory Hub
         </Typography>
 
-        <Stack
-          spacing={{ xs: 1.5, sm: 2, md: 4 }}
-          alignItems="center"
+        <Box
           sx={{
-            flex: 1,
-            justifyContent: "space-evenly",
+            display: "flex",
+            flexDirection: isLargeScreen && !isPortrait ? "row" : "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            flexWrap: "wrap",
           }}
         >
           {[
@@ -164,64 +156,48 @@ export default function InventoryHub() {
               pageId: "keyboards",
             },
           ].map((item) => (
-            <Box key={item.title} sx={{ width: "100%", textAlign: "center" }}>
-              <Typography
-                variant="h5"
-                align="center"
-                gutterBottom
-                sx={{
-                  fontSize: { xs: "1.2rem", sm: "1.5rem" },
-                  mb: { xs: 0.5, sm: 1 },
-                }}
-              >
+            <Box
+              key={item.title}
+              sx={{
+                textAlign: "center",
+                width: {
+                  xs: "100%",
+                  sm: "80%",
+                  md: "40%",
+                  lg: "30%",
+                },
+              }}
+            >
+              <Typography variant="h5" sx={{ mb: 2 }}>
                 {item.title}
               </Typography>
-              <Link
-                href={item.link}
-                onClick={() => handleNavigation(item.pageId)}
-                style={{ textDecoration: "none" }}
-              >
-                <Card
-                  sx={{
-                    // Square cards at all screen sizes
-                    width: { xs: "26vh", sm: 280, md: 320 },
-                    height: { xs: "26vh", sm: 280, md: 320 },
-                    // Added min-width/height to ensure minimum size
-                    minWidth: { xs: 180, sm: 280, md: 320 },
-                    minHeight: { xs: 180, sm: 280, md: 320 },
-                    // Added max-width/height to prevent them from being too large
-                    maxWidth: { xs: 280, sm: 280, md: 320 },
-                    maxHeight: { xs: 280, sm: 280, md: 320 },
-                    borderRadius: 3,
-                    transition: "transform 0.2s",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                    },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                  }}
+              <Card sx={{ borderRadius: 3 }}>
+                <Link
+                  href={item.link}
+                  onClick={() => handleNavigation(item.pageId)}
+                  style={{ display: "block" }}
                 >
                   <CardMedia
                     component="img"
-                    sx={{
-                      objectFit: "contain",
-                      width: "100%",
-                      height: "100%",
-                    }}
                     image={
                       theme.palette.mode === "dark"
                         ? item.darkImg
                         : item.lightImg
                     }
                     alt={item.title}
+                    sx={{
+                      width: "100%",
+                      aspectRatio: 1,
+                      objectFit: "contain",
+                      transition: "transform 0.2s",
+                      "&:hover": { transform: "scale(1.05)" },
+                    }}
                   />
-                </Card>
-              </Link>
+                </Link>
+              </Card>
             </Box>
           ))}
-        </Stack>
+        </Box>
       </Container>
     </>
   );

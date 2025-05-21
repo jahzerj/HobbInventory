@@ -479,6 +479,40 @@ export default function AddKeyboardModal({
             ) : (
               <>
                 <Paper sx={{ p: 2, mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Search by name
+                  </Typography>
+                  <Autocomplete
+                    freeSolo
+                    options={dbKeyboards.map((kb) => kb.name)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Search keyboards"
+                        size="small"
+                        fullWidth
+                      />
+                    )}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        const keyboardObj = dbKeyboards.find(
+                          (kb) => kb.name === newValue
+                        );
+                        if (keyboardObj) {
+                          setSelectedKeyboard(newValue);
+                          setSelectedKeyboardId(keyboardObj._id);
+                          setSelectedLayout(keyboardObj.layout);
+                        }
+                      }
+                    }}
+                  />
+                </Paper>
+
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Or select by layout
+                </Typography>
+
+                <Paper sx={{ p: 2, mb: 2 }}>
                   {/* Step 1: Select Layout */}
                   <FormControl fullWidth margin="dense" size="small">
                     <InputLabel id="layout-select-label">Layout</InputLabel>
@@ -497,7 +531,7 @@ export default function AddKeyboardModal({
                     </Select>
                   </FormControl>
 
-                  {/* Step 2: Select Keyboard using Autocomplete (only shown if layout is selected) */}
+                  {/* Existing keyboard selection code */}
                   {selectedLayout && (
                     <FormControl fullWidth margin="normal" size="small">
                       <Autocomplete

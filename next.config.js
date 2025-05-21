@@ -41,6 +41,7 @@ const nextConfig = {
       "switchmod.net",
       "unikeyboards.com",
       "www.ashkeebs.com",
+      "deltakeyco.com",
     ],
   },
 };

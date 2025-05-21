@@ -606,6 +606,55 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
               </Box>
             ) : (
               <>
+                {/* Add direct search by name */}
+                <Paper sx={{ p: 2, mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Search by name
+                  </Typography>
+                  <Autocomplete
+                    freeSolo
+                    options={dbSwitches.map((sw) => sw.name)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Search switches"
+                        size="small"
+                        fullWidth
+                      />
+                    )}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        const switchObj = dbSwitches.find(
+                          (sw) => sw.name === newValue
+                        );
+                        if (switchObj) {
+                          setSelectedSwitchId(switchObj._id);
+                          setSelectedManufacturer(switchObj.manufacturer);
+                          setSwitchData({
+                            name: switchObj.name,
+                            manufacturer: switchObj.manufacturer,
+                            image: switchObj.image,
+                            quantity: 1,
+                            switchType: switchObj.switchType,
+                            factoryLubed: switchObj.factoryLubed || false,
+                            springWeight: switchObj.springWeight || "",
+                            topMaterial: switchObj.topMaterial || "",
+                            bottomMaterial: switchObj.bottomMaterial || "",
+                            stemMaterial: switchObj.stemMaterial || "",
+                            isLubed: switchObj.isLubed || false,
+                            isFilmed: switchObj.isFilmed || false,
+                            notes: [],
+                          });
+                        }
+                      }
+                    }}
+                  />
+                </Paper>
+
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Or select by manufacturer
+                </Typography>
+
                 <Paper sx={{ p: 2, mb: 2 }}>
                   {/* Step 1: Select Manufacturer */}
                   <FormControl fullWidth margin="dense" size="small">
@@ -627,7 +676,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
                     </MuiSelect>
                   </FormControl>
 
-                  {/* Step 2: Select Switch using Autocomplete (only shown if manufacturer is selected) */}
+                  {/* Keep existing switch selection dropdown */}
                   {selectedManufacturer && (
                     <FormControl fullWidth margin="normal" size="small">
                       <Autocomplete
@@ -680,7 +729,7 @@ export default function AddSwitchModal({ open, onClose, onAddSwitch, userId }) {
                   )}
                 </Paper>
 
-                {/* Step 3: Quantity and Preview (only shown if switch is selected) */}
+                {/* Keep existing preview section */}
                 {selectedSwitchId && (
                   <Paper sx={{ p: 2, mb: 2 }}>
                     <TextField
