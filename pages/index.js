@@ -14,7 +14,6 @@ import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import { useTheme, useThemeProps } from "@mui/material/styles";
 import { ThemeContext } from "./_app"; // Import ThemeContext to check theme style
 import { useContext } from "react"; // Add useContext
-import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 export default function InventoryHub() {

@@ -110,11 +110,19 @@ export default function Profile() {
               sx={{
                 textDecoration: "none",
                 textAlign: "center",
-                width: 80,
+                width: 100,
               }}
             >
-              <Paper elevation={0} sx={{ p: 1 }}>
-                <Typography variant="h5" color="primary.main">
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  border: (theme) => `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  backgroundColor: (theme) => theme.palette.background.paper,
+                }}
+              >
+                <Typography variant="h5" color="text.primary">
                   {keycapCount}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
@@ -129,11 +137,19 @@ export default function Profile() {
               sx={{
                 textDecoration: "none",
                 textAlign: "center",
-                width: 80,
+                width: 100,
               }}
             >
-              <Paper elevation={0} sx={{ p: 1 }}>
-                <Typography variant="h5" color="primary.main">
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  border: (theme) => `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  backgroundColor: (theme) => theme.palette.background.paper,
+                }}
+              >
+                <Typography variant="h5" color="text.primary">
                   {switchCount}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
@@ -148,11 +164,19 @@ export default function Profile() {
               sx={{
                 textDecoration: "none",
                 textAlign: "center",
-                width: 80,
+                width: 100,
               }}
             >
-              <Paper elevation={0} sx={{ p: 1 }}>
-                <Typography variant="h5" color="primary.main">
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  border: (theme) => `2px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  backgroundColor: (theme) => theme.palette.background.paper,
+                }}
+              >
+                <Typography variant="h5" color="text.primary">
                   {keyboardCount}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
@@ -181,13 +205,13 @@ export default function Profile() {
             fullWidth
           >
             {themeContext.themeStyle === "highContrast"
-              ? "Kandinsky Theme"
+              ? "Primary Colors Theme"
               : "High Contrast Theme"}
           </Button>
 
           <Button
             variant="contained"
-            color="error"
+            color="warning"
             startIcon={<LogoutIcon />}
             onClick={() => signOut()}
             fullWidth

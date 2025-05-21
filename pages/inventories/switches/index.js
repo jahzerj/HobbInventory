@@ -287,7 +287,7 @@ export default function Switches() {
                 onClick={() => handleManufacturerSelect(manufacturer)}
                 color={
                   selectedManufacturers.includes(manufacturer)
-                    ? "primary"
+                    ? "secondary"
                     : "default"
                 }
                 variant={
@@ -331,7 +331,7 @@ export default function Switches() {
                     : type.charAt(0).toUpperCase() + type.slice(1)
                 }
                 onClick={() => handleTypeSelect(type)}
-                color={typeFilter === type ? "primary" : "default"}
+                color={typeFilter === type ? "warning" : "default"}
                 variant={typeFilter === type ? "filled" : "outlined"}
               />
             ))}

@@ -274,7 +274,9 @@ export default function Keyboards() {
                 key={layout}
                 label={layout === "all" ? "All Layouts" : layout}
                 onClick={() => handleLayoutSelect(layout)}
-                color={selectedLayouts.includes(layout) ? "primary" : "default"}
+                color={
+                  selectedLayouts.includes(layout) ? "secondary" : "default"
+                }
                 variant={
                   selectedLayouts.includes(layout) ? "filled" : "outlined"
                 }
