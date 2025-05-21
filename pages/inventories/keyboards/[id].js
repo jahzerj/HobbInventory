@@ -850,6 +850,7 @@ export default function KeyboardDetail() {
                     {[
                       "Aluminum",
                       "Brass",
+                      "Copper",
                       "Carbon Fiber",
                       "FR4",
                       "POM",
@@ -1026,6 +1027,7 @@ export default function KeyboardDetail() {
                 >
                   <MenuItem value="">-- Select Material --</MenuItem>
                   <MenuItem value="Brass">Brass</MenuItem>
+                  <MenuItem value="Copper">Copper</MenuItem>
                   <MenuItem value="Stainless Steel">Stainless Steel</MenuItem>
                   <MenuItem value="Aluminum">Aluminum</MenuItem>
                   <MenuItem value="Tungsten">Tungsten</MenuItem>
