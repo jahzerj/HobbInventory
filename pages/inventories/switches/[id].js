@@ -269,6 +269,7 @@ export default function SwitchDetail() {
         <title>{`${userSwitch.name} Details`}</title>
         <meta name="description" content="View and edit switch details" />
       </Head>
+      {!isEditMode && <BackButtonMUI href="/inventories/switches" />}
       <Container
         maxWidth="md"
         sx={{
