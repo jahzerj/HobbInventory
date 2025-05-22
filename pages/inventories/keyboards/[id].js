@@ -30,6 +30,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import AddRenderModalMUI from "@/components/KeyboardComponents/AddRenderModalMUI";
+import Head from "next/head";
 
 export default function KeyboardDetail() {
   const router = useRouter();
@@ -502,6 +503,10 @@ export default function KeyboardDetail() {
 
   return (
     <>
+      <Head>
+        <title>{`${userKeyboard.name} Details`}</title>
+        <meta name="description" content="View and edit keyboard details" />
+      </Head>
       {!isEditMode && <BackButtonMUI href="/inventories/keyboards" />}
       <Container
         maxWidth="md"

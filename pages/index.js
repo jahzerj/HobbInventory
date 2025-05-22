@@ -15,6 +15,7 @@ import { useTheme, useThemeProps } from "@mui/material/styles";
 import { ThemeContext } from "./_app"; // Import ThemeContext to check theme style
 import { useContext } from "react"; // Add useContext
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Head from "next/head";
 
 export default function InventoryHub() {
   const theme = useTheme();
@@ -129,6 +130,13 @@ export default function InventoryHub() {
   // Hub view for authenticated users
   return (
     <>
+      <Head>
+        <title>Inventory Hub</title>
+        <meta
+          name="description"
+          content="Landing Page for all your inventory needs"
+        />
+      </Head>
       <ProfileButtonMUI />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Typography variant="h4" align="center" sx={{ mb: 4 }}>

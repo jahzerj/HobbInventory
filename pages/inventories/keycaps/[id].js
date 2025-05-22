@@ -8,6 +8,7 @@ import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
 import KitImageModalMUI from "@/components/KeycapComponents/KitImageModalMUI";
 import NotesMUI from "@/components/SharedComponents/NotesMUI";
+import Head from "next/head";
 
 import {
   Box,
@@ -425,6 +426,10 @@ export default function KeyCapDetail() {
 
   return (
     <>
+      <Head>
+        <title>{`${userKeycap.name} Details`}</title>
+        <meta name="description" content="View and edit keycap details" />
+      </Head>
       {!isEditMode && <BackButtonMUI href="/inventories/keycaps" />}
       <Container
         maxWidth="md"

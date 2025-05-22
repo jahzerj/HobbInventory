@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
+import Head from "next/head";
 
 import {
   Container,
@@ -229,6 +230,13 @@ export default function Keycaps() {
 
   return (
     <>
+      <Head>
+        <title>Keycap Inventory</title>
+        <meta
+          name="description"
+          content="View and manage your keycap inventory"
+        />
+      </Head>
       <ProfileButtonMUI />
       <BackButtonMUI href="/" />
 

@@ -13,7 +13,7 @@ import {
   Stack,
   NoSsr,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import Head from "next/head";
 
 import ProfileButtonMUI from "@/components/SharedComponents/ProfileButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
@@ -244,6 +244,13 @@ export default function Switches() {
 
   return (
     <>
+      <Head>
+        <title>Switch Inventory</title>
+        <meta
+          name="description"
+          content="View and manage your switch inventory"
+        />
+      </Head>
       <ProfileButtonMUI />
       <BackButtonMUI href="/" />
 

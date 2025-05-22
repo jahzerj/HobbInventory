@@ -20,7 +20,7 @@ import {
   Stack,
   NoSsr,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import Head from "next/head";
 
 export default function Keyboards() {
   const router = useRouter();
@@ -235,6 +235,13 @@ export default function Keyboards() {
 
   return (
     <>
+      <Head>
+        <title>Keyboard Inventory</title>
+        <meta
+          name="description"
+          content="View and manage your keyboard inventory"
+        />
+      </Head>
       <ProfileButtonMUI />
       <BackButtonMUI href="/" />
 

@@ -6,7 +6,7 @@ import EditButtonMUI from "@/components/SharedComponents/EditButtonMUI";
 import BackButtonMUI from "@/components/SharedComponents/BackButtonMUI";
 import EditButtonsContainerMUI from "@/components/SharedComponents/EditButtonsContainerMUI";
 import NotesMUI from "@/components/SharedComponents/NotesMUI";
-import styled from "styled-components";
+import Head from "next/head";
 
 import {
   Box,
@@ -265,7 +265,10 @@ export default function SwitchDetail() {
 
   return (
     <>
-      {!isEditMode && <BackButtonMUI href="/inventories/switches" />}
+      <Head>
+        <title>{`${userSwitch.name} Details`}</title>
+        <meta name="description" content="View and edit switch details" />
+      </Head>
       <Container
         maxWidth="md"
         sx={{
